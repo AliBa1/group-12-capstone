@@ -1,5 +1,7 @@
 asgiref==3.8.1
 Django==5.1.2
+django-browser-reload==1.16.0
+django-tailwind==3.8.0
 psycopg==3.2.3
 psycopg-binary==3.2.3
 python-dotenv==1.0.1
