@@ -33,8 +33,10 @@ DB_PORT = 5432
 Recommended to use GitHub Desktop <br/>
 
 - Create branches for each feature or section of work being done (ex: auth-ui)
+- Create branch from main
 - Commit often
-- 
+- Send a pull request when branch work is complete
+-
 
 ## Make changes to database model
 
@@ -51,3 +53,8 @@ To access admin page go to `http://127.0.0.1:8000/admin` while the project is ru
 ## After downloading a package
 
 Always run `pip freeze > requirements.txt`
+
+## Naming Conventions
+
+- Use underscore to seperate words in variables (ex: blue_car)
+- Classes should be uppercase and follow camel case (ex: class Car)
