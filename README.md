@@ -7,7 +7,9 @@
 
 To check run `python3 --version`
 
-- Create a database is postgres <br />
+- Create a python environment using `python -m venv env`
+
+- Create a database in postgres <br />
   Once it's created make a .env file in the root folder (in group-12-capstone) and place these variables in it then fill out empty ones
 
 ```
@@ -21,13 +23,17 @@ DB_PORT = 5432
 
 - Setup Ruff with your code editor: https://docs.astral.sh/ruff/editors/setup/#vs-code
 
-### Run Project
+### Run Project (in CLI)
 
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
 - Install dependencies: `pip install -r requirements.txt`
-- Enter project directory: `cd project`
+- Enter project directory: `cd sre`
 - Run server `python manage.py runserver` and follow instructions on terminal
 - (optional) To use tailwind with hot reloading run `python manage.py tailwind start` in a seperate terminal
+
+### Run Project (in Docker)
+
+_STILL NOT FULLY SET UP YET_
 
 ### GitHub
 
@@ -52,7 +58,8 @@ To access admin page go to `http://127.0.0.1:8000/admin` while the project is ru
 
 ### After downloading a package
 
-Run `pip freeze > requirements.txt`
+- Enter src directory `cd src`
+- Run `pip freeze > requirements.txt`
 
 ### Naming Conventions
 
