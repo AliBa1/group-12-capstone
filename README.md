@@ -3,16 +3,17 @@
 ## Before starting development
 
 - Make sure python3 is on your machine <br />
-Version: Python 3.13.0
+  Version: Python 3.13.0
 
 To check run `python3 --version`
 
 - Create a database is postgres <br />
-Once it's created make a .env file in the root folder (in group-12-capstone) and place these variables in it then fill out empty ones
+  Once it's created make a .env file in the root folder (in group-12-capstone) and place these variables in it then fill out empty ones
+
 ```
-DB_NAME = 
-DB_USER = 
-DB_PASSWORD = 
+DB_NAME =
+DB_USER =
+DB_PASSWORD =
 DB_HOST = localhost
 DB_PORT = 5432
 
@@ -26,6 +27,14 @@ DB_PORT = 5432
 - Install dependencies: `pip install -r requirements.txt`
 - Enter project directory: `cd project`
 - Run server `python manage.py runserver` and follow instructions on terminal
+
+## GitHub
+
+Recommended to use GitHub Desktop <br/>
+
+- Create branches for each feature or section of work being done (ex: auth-ui)
+- Commit often
+- 
 
 ## Make changes to database model
 
