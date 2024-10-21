@@ -44,7 +44,10 @@ INSTALLED_APPS = [
   "django.contrib.staticfiles",
   "tailwind",
   "theme",
-  'django_browser_reload'
+  "django_browser_reload",
+  "allauth",
+  "allauth.account",
+  "user",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +59,7 @@ MIDDLEWARE = [
   "django.contrib.messages.middleware.MessageMiddleware",
   "django.middleware.clickjacking.XFrameOptionsMiddleware",
   "django_browser_reload.middleware.BrowserReloadMiddleware",
+  "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -149,5 +153,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #  Django-Tailwind config
 TAILWIND_APP_NAME = "theme"
 INTERNAL_IPS = [
-    "127.0.0.1",
+  "127.0.0.1",
+]
+
+AUTHENTICATION_BACKENDS = [
+  # Needed to login by username in Django admin, regardless of `allauth`
+  "django.contrib.auth.backends.ModelBackend",
+  # `allauth` specific authentication methods, such as login by email
+  "allauth.account.auth_backends.AuthenticationBackend",
 ]
