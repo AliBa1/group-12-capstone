@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 
 
 # Create your views here.
@@ -48,6 +48,7 @@ def login_user(request):
       messages.error(request, "Incorrect email or password")
       return render(request, "partial_messages.html", {"messages": messages.get_messages(request)})
     else:
+      login(request, user)
       messages.success(request, "You are now logged in")
       return render(request, "partial_messages.html", {"messages": messages.get_messages(request)})
 
