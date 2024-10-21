@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate
 
 
 # Create your views here.
@@ -11,8 +12,6 @@ def register_user(request):
     email = request.POST.get("email")
     password = request.POST.get("password")
     confirm_password = request.POST.get("confirm-password")
-
-    print(email)
 
     if not email or not password or not confirm_password:
       messages.error(request, "Fields cannot be left empty")
@@ -38,4 +37,19 @@ def register_user(request):
     return render(request, "partial_messages.html", {"messages": messages.get_messages(request)})
 
   return render(request, "register.html")
+
+def login_user(request):
+  if request.method == "POST":
+    email = request.POST.get("email")
+    password = request.POST.get("password")
+
+    user = authenticate(username=email, password=password)
+    if not user:
+      messages.error(request, "Incorrect email or password")
+      return render(request, "partial_messages.html", {"messages": messages.get_messages(request)})
+    else:
+      messages.success(request, "You are now logged in")
+      return render(request, "partial_messages.html", {"messages": messages.get_messages(request)})
+
+  return render(request, "login.html")
 

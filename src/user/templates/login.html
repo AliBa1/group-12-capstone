@@ -4,13 +4,13 @@
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register</title>
+    <title>Login</title>
   </head>
   <body>
     <div>
       <form
         method="POST"
-        hx-post="/register/"
+        hx-post="/login/"
         hx-target="#messages-container"
         hx-swap="innerHTML"
       >
@@ -25,11 +25,6 @@
           <input type="password" id="password" name="password" required />
         </div>
 
-        <div>
-          <label for="confirm-password">Confirm Password</label>
-          <input type="password" id="confirm-password" name="confirm-password" required />
-        </div>
-
         <div id="messages-container">
           {% if messages %}
           <div>
@@ -40,7 +35,7 @@
           {% endif %}
         </div>
 
-        <button type="submit">Register</button>
+        <button type="submit">Login</button>
       </form>
     </div>
   </body>
