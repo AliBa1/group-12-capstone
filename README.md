@@ -5,7 +5,7 @@
 - Make sure python3 is on your machine <br />
   Version: Python 3.13.0
 
-To check run `python3 --version`
+To check run `python3 --version` OR `python --version`
 
 - Create a python environment using `python -m venv env`
 
@@ -26,9 +26,9 @@ DB_PORT = 5432
 ### Run Project (in CLI)
 
 - Create virtual envirnoment (follow steps above if not created)
-- Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
-- Enter project directory: `cd src`
+- Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate` (to exit environment use `deactivate`)
 - Install dependencies: `pip install -r requirements.txt`
+- Enter project directory: `cd src`
 - Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
 - (optional) To use tailwind with hot reloading run<br /> Linux/Mac:  `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
@@ -46,15 +46,15 @@ _STILL NOT FULLY SET UP YET_
 Recommended to use GitHub Desktop <br/>
 
 - Create branches for each feature or section of work being done (ex: yourname-auth-ui)
-- Create branch from main
+- Create branch from main if not dependent on any other branches
 - Commit often
 - Send a pull request when branch work is complete
 
 ### Make changes to database model
 
 1. change models in models.py
-2. run `python manage.py makemigrations` (use py instead of python on Windows) to create migrations
-3. run `python manage.py migrate` (use py instead of python on Windows) to apply changes in the db
+2. To create migrations run <br /> Linux/Mac: `python manage.py makemigrations` <br /> Windows: `py manage.py makemigrations`<br /> 
+3. To apply changes in the db run <br />Linux/Mac: `python manage.py migrate` <br /> Windows: `py manage.py migrate`<br />
 
 ### Access admin page
 
@@ -64,8 +64,7 @@ To access admin page go to `http://127.0.0.1:8000/admin` while the project is ru
 
 ### After downloading a package
 
-- Enter src directory `cd src`
-- Run `pip freeze > requirements.txt`
+- Run `pip freeze > requirements.txt` in the root directory
 
 ### Naming Conventions
 
