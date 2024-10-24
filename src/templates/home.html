@@ -1,0 +1,21 @@
+{% extends 'layouts/mainpage.html' %}
+
+{% block class %}
+bg-[url('/static/images/homeback.jpg')] bg-cover bg-center bg-norepeat 
+{% endblock %}
+
+{% block content %}
+    <div class="max-w-4xl mx-auto px-8 py-24 text-center">
+        <main class="px-3 flex-grow">
+            <h1 class="text-6xl font-bold text-slate-50">Embarkr</h1>
+            <p class="text-lg mt-4 leading-relaxed text-slate-50">
+                Welcome to Embarkr! <br> Where we save you time and reduce stress. <br>
+                Jump right in and explore the world.
+            </p>
+            <a href="{% url 'register' %}" class="mt-8 inline-block bg-white text-gray-900 text-lg font-semibold py-2 px-6 border border-white hover:bg-gray-200">
+                Get Started &rarr;
+            </a>
+            
+        </main>
+    </div>
+{% endblock %}

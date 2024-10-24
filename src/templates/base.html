@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.13/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/creativetimofficial/tailwind-starter-kit/tailwind.css">
+</head>
+
+<body class="min-h-screen flex flex-col font-mono {% block class %}{% endblock %}">
+    {% include 'includes/header.html' %}
+    {% include 'includes/partial_messages.html' %}
+
+    <main class="flex-1">
+        {% block layout %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        {% include 'includes/footer.html' %}
+    </footer>
+</body>
+
+</html>

@@ -1,47 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register</title>
-  </head>
-  <body>
-    <div>
-      <form
-        method="POST"
-        hx-post="/register/"
-        hx-target="#messages-container"
-        hx-swap="innerHTML"
-      >
-        {% csrf_token %}
+{% extends 'layouts/mainpage.html' %}
+{% block content %}
+<div class="min-h-6 flex justify-center">
+  <div class="bg-gradient-to-r from-indigo-500 to-blue-500 
+              rounded-2xl shadow-2xl shadow-indigo-500/60
+              w-full max-w-2xl p-16 min-h-[400px] mx-auto mt-8">
+
+    <h1 class="text-6xl text-center dark:text-white mb-5">Register</h1>
+    <p class="text-md text-center dark:text-white mb-5">Already have an account? Then please <a href="{% url 'login' %}" class="underline"> sign in</a>.</p>
+    <form 
+      method="POST" 
+      hx-post="/register/" 
+      hx-target="#messages-container" 
+      hx-swap="innerHTML" 
+      class="space-y-6">
+      {% csrf_token %}
+      <div class="mb-5 mt-5">
+        <label for="email" class="block mb-2 text-xl font-medium text-gray-900 dark:text-white">Email</label>
+        <input type="email" id="email" name="email"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          required />
+      </div>
+
+      <div class="mb-5">
+        <label for="password" class="block mb-2 text-xl font-medium text-gray-900 dark:text-white">Password</label>
+        <input type="password" id="password" name="password"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          required />
+      </div>
+
+      <div class="mb-5">
+        <label for="confirm-password" class="block mb-2 text-xl font-medium text-gray-900 dark:text-white">Confirm
+          password</label>
+        <input type="password" id="confirm-password" name="confirm-password"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          required />
+      </div>
+
+
+      <div id="messages-container">
+        {% if messages %}
         <div>
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required />
+          {% for message in messages %}
+          <p>{{ message }}</p>
+          {% endfor %}
         </div>
+        {% endif %}
+      </div>
 
-        <div>
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required />
-        </div>
+      <button type="submit" class="btn btn-primary">Register</button>
 
-        <div>
-          <label for="confirm-password">Confirm Password</label>
-          <input type="password" id="confirm-password" name="confirm-password" required />
-        </div>
-
-        <div id="messages-container">
-          {% if messages %}
-          <div>
-            {% for message in messages %}
-            <p>{{ message }}</p>
-            {% endfor %}
-          </div>
-          {% endif %}
-        </div>
-
-        <button type="submit">Register</button>
-      </form>
-    </div>
-  </body>
-</html>
+    </form>
+  </div>
+</div>
+{% endblock %}

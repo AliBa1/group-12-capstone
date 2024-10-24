@@ -67,7 +67,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
   {
     "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [],
+    "DIRS": [BASE_DIR / "templates"],
     "APP_DIRS": True,
     "OPTIONS": {
       "context_processors": [
@@ -143,8 +143,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
-
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -156,9 +158,13 @@ INTERNAL_IPS = [
   "127.0.0.1",
 ]
 
+LOGIN_URL = 'login'  # or whatever your login URL name is
+LOGIN_REDIRECT_URL = 'explore'  # where to redirect after successful login
+
 AUTHENTICATION_BACKENDS = [
   # Needed to login by username in Django admin, regardless of `allauth`
   "django.contrib.auth.backends.ModelBackend",
   # `allauth` specific authentication methods, such as login by email
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
+

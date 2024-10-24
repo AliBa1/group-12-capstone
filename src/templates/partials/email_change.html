@@ -1,0 +1,13 @@
+<form action="{% url 'account_emailchange' %}" method="post" class="flex gap-2 items-center" autocomplete="off">
+    {% csrf_token %}
+    <input type="email" id="email" name="email"  value="{{ request.user.email }}"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        required />
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+
+    <a hx-swap-oob="true" id="email-edit" href="{% url 'account_settings' %}"
+        class="font-bold text-indigo-900 hover:underline">
+        Cancel
+    </a>
+</form>
