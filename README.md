@@ -27,14 +27,19 @@ DB_PORT = 5432
 
 - Create virtual envirnoment (follow steps above if not created)
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
-- Install dependencies: `pip install -r requirements.txt`
 - Enter project directory: `cd src`
+- Install dependencies: `pip install -r requirements.txt`
 - Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
 - (optional) To use tailwind with hot reloading run<br /> Linux/Mac:  `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
 ### Run Project (in Docker)
 
 _STILL NOT FULLY SET UP YET_
+
+### Run Tests
+- Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
+- Enter project directory: `cd src`
+- To run all tests use<br /> Linux/Mac: `python manage.py test`<br /> Windows:`py manage.py test`
 
 ### GitHub
 
