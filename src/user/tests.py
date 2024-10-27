@@ -15,7 +15,7 @@ class UserTests(TestCase):
     self.assertEqual(response.status_code, 200)
     messages = list(get_messages(response.wsgi_request))
     self.assertGreater(len(messages), 0)
-    self.assertEqual("You are now logged in", str(messages[0]))
+    self.assertEqual("You have been logged in.", str(messages[0]))
 
   def test_login_wrong_email(self):
     response = self.client.post("/login/", {"email": "t@test.com", "password": "as12as12"}, follow=True)
