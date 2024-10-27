@@ -15,6 +15,18 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+if not GOOGLE_CLIENT_ID:
+    raise ValueError(
+        'GOOGLE_CLIENT_ID is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+SOCIALACCOUNT_LOGIN_ON_GET=True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SESSION_COOKIE_AGE = 604800  # One week
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +59,8 @@ INSTALLED_APPS = [
   "django_browser_reload",
   "allauth",
   "allauth.account",
+  "allauth.socialaccount",
+  "allauth.socialaccount.providers.google",
   "user",
 ]
 
@@ -75,6 +89,7 @@ TEMPLATES = [
         "django.template.context_processors.request",
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
+        'user.context_processor.google_settings',
       ],
     },
   },
@@ -168,3 +183,5 @@ AUTHENTICATION_BACKENDS = [
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+#client_id= 856988897287-8g4dgtaftd88oha5b673n1aoaat1lvtn.apps.googleusercontent.com
+#client_secret= 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

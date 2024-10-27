@@ -33,4 +33,5 @@ urlpatterns = [
   path("resetpassword/", account_passwordreset, name="account_passwordreset"),
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
+  path('accounts/', include('allauth.socialaccount.urls')),
 ]

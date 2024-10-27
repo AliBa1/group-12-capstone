@@ -1,7 +1,7 @@
 {% if messages %}
-<div class="max-w-2xl mx-auto px-4 mt-5">
+
     {% for message in messages %}
-        <div class="text-white px-6 py-4 border-0 rounded-xl relative mb-4 
+        <div class="mx-auto text-white px-6 py-4 border-0 rounded-xl relative mb-4 
             {% if message.tags == 'error' %}
                 bg-red-500
             {% elif message.tags == 'success' %}
@@ -20,7 +20,7 @@
             </button>
         </div>
     {% endfor %}
-</div>
+
 {% endif %}
 
 <script>
