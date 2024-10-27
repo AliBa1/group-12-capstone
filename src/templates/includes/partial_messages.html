@@ -1,0 +1,34 @@
+{% if messages %}
+
+    {% for message in messages %}
+        <div class="mx-auto text-white px-6 py-4 border-0 rounded-xl relative mb-4 
+            {% if message.tags == 'error' %}
+                bg-red-500
+            {% elif message.tags == 'success' %}
+                bg-green-500
+            {% else %}
+                bg-blue-500
+            {% endif %}">
+            <span class="text-xl inline-block mr-5 align-middle">
+                <i class="fas fa-bell"></i>
+            </span>
+            <span class="inline-block align-middle mr-8">
+                <b class="capitalize">{% if message.tags == 'error' %}{% elif message.tags == 'success' %}{% else %}Info!{% endif %}</b> {{ message }}
+            </span>
+            <button class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onclick="closeAlert(event)">
+                <span>×</span>
+            </button>
+        </div>
+    {% endfor %}
+
+{% endif %}
+
+<script>
+  function closeAlert(event){
+    let element = event.target;
+    while(element.nodeName !== "BUTTON"){
+      element = element.parentNode;
+    }
+    element.parentNode.parentNode.removeChild(element.parentNode);
+  }
+</script>
