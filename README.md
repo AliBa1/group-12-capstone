@@ -25,11 +25,12 @@ DB_PORT = 5432
 
 ### Run Project (in CLI)
 
+- Create virtual envirnoment (follow steps above if not created)
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
 - Install dependencies: `pip install -r requirements.txt`
-- Enter project directory: `cd sre`
-- Run server `python manage.py runserver` and follow instructions on terminal
-- (optional) To use tailwind with hot reloading run `python manage.py tailwind start` in a seperate terminal
+- Enter project directory: `cd src`
+- Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
+- (optional) To use tailwind with hot reloading run<br /> Linux/Mac:  `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
 ### Run Project (in Docker)
 
@@ -39,7 +40,7 @@ _STILL NOT FULLY SET UP YET_
 
 Recommended to use GitHub Desktop <br/>
 
-- Create branches for each feature or section of work being done (ex: auth-ui)
+- Create branches for each feature or section of work being done (ex: yourname-auth-ui)
 - Create branch from main
 - Commit often
 - Send a pull request when branch work is complete
@@ -47,12 +48,12 @@ Recommended to use GitHub Desktop <br/>
 ### Make changes to database model
 
 1. change models in models.py
-2. run `python manage.py makemigrations` to create migrations
-3. run `python manage.py migrate` to apply changes in the db
+2. run `python manage.py makemigrations` (use py instead of python on Windows) to create migrations
+3. run `python manage.py migrate` (use py instead of python on Windows) to apply changes in the db
 
 ### Access admin page
 
-If you dont have an admin account create one with `python manage.py createsuperuser` <br />
+If you dont have an admin account create one with `python manage.py createsuperuser` (use py instead of python on Windows) <br />
 You dont need an email when you make it, just leave it blank and hit enter <br />
 To access admin page go to `http://127.0.0.1:8000/admin` while the project is running
 

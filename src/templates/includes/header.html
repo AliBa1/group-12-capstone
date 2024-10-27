@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="/static/stylesheets/navbar.css">
+
+<div class="navbar bg-transparent text-white fixed">
+  <div class="navbar-start mx-4">
+    <a class="nav-link text-xl" href="/">Embarkr</a>
+  </div>
+  <div class="navbar-end mx-4">
+    {% if request.user.is_authenticated %}
+      <a class="nav-link px-6 mr-5" href="{% url 'explore' %}">Home</a>
+      <div class="dropdown dropdown-bottom">
+        <button type="button" class="inline-flex w-full justify-center gap-x-1.5 rounded-md  px-3 py-2 text-sm text-gray-900 hover:bg-gray-50" id="menu-button" aria-expanded="true" aria-haspopup="true">
+          {{ request.user.username }}
+          <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+            <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <li><a href="{% url 'account_settings' %}">Manage Account</a></li>
+          <li><a href="{% url 'logout' %}">Log Out</a></li>
+        </ul>
+      </div>
+    {% else %}
+      <a class="nav-link mr-5" href="{% url 'register' %}">Register</a>
+      <a class="nav-link " href="{% url 'login' %}">Login</a>
+    {% endif %}
+  </div>
+</div>

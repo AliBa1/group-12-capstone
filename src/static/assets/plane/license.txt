@@ -1,0 +1,8 @@
+Model Information:
+* title:	Low Poly Airplane
+* source:	https://sketchfab.com/3d-models/low-poly-airplane-08d851cb976742d8bc5eb9424b9cd2fb
+* author:	Kerem Biçer (https://sketchfab.com/mr.harvester81)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

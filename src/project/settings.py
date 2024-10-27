@@ -15,6 +15,18 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+if not GOOGLE_CLIENT_ID:
+    raise ValueError(
+        'GOOGLE_CLIENT_ID is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+SOCIALACCOUNT_LOGIN_ON_GET=True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SESSION_COOKIE_AGE = 604800  # One week
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,7 +56,12 @@ INSTALLED_APPS = [
   "django.contrib.staticfiles",
   "tailwind",
   "theme",
-  'django_browser_reload'
+  "django_browser_reload",
+  "allauth",
+  "allauth.account",
+  "allauth.socialaccount",
+  "allauth.socialaccount.providers.google",
+  "user",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +73,7 @@ MIDDLEWARE = [
   "django.contrib.messages.middleware.MessageMiddleware",
   "django.middleware.clickjacking.XFrameOptionsMiddleware",
   "django_browser_reload.middleware.BrowserReloadMiddleware",
+  "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -63,7 +81,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
   {
     "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [],
+    "DIRS": [BASE_DIR / "templates"],
     "APP_DIRS": True,
     "OPTIONS": {
       "context_processors": [
@@ -71,6 +89,7 @@ TEMPLATES = [
         "django.template.context_processors.request",
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
+        'user.context_processor.google_settings',
       ],
     },
   },
@@ -139,8 +158,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
-
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -149,5 +170,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #  Django-Tailwind config
 TAILWIND_APP_NAME = "theme"
 INTERNAL_IPS = [
-    "127.0.0.1",
+  "127.0.0.1",
 ]
+
+LOGIN_URL = 'login'  # or whatever your login URL name is
+LOGIN_REDIRECT_URL = 'explore'  # where to redirect after successful login
+
+AUTHENTICATION_BACKENDS = [
+  # Needed to login by username in Django admin, regardless of `allauth`
+  "django.contrib.auth.backends.ModelBackend",
+  # `allauth` specific authentication methods, such as login by email
+  "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+#client_id= 856988897287-8g4dgtaftd88oha5b673n1aoaat1lvtn.apps.googleusercontent.com
+#client_secret= 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
