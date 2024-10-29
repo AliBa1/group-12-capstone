@@ -30,16 +30,23 @@ DB_PORT = 5432
 - Install dependencies: `pip install -r requirements.txt`
 - Enter project directory: `cd src`
 - Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
-- (optional) To use tailwind with hot reloading run<br /> Linux/Mac:  `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
+- (optional) To use tailwind with hot reloading run<br /> Linux/Mac: `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
 ### Run Project (in Docker)
 
 _STILL NOT FULLY SET UP YET_
 
 ### Run Tests
+
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
 - Enter project directory: `cd src`
 - To run all tests use<br /> Linux/Mac: `python manage.py test`<br /> Windows:`py manage.py test`
+
+### Make new app (if needed)
+
+- Make a new app to seperate concerns for each part (user, ml, app, etc.)
+- To make app: `python manage.py startapp [app_name_here]`
+- If other people need to work in it submit a pull request as soon as possible
 
 ### GitHub
 
@@ -48,12 +55,12 @@ Recommended to use GitHub Desktop <br/>
 - Create branches for each feature or section of work being done (ex: yourname-auth-ui)
 - Create branch from main if not dependent on any other branches
 - Commit often
-- Send a pull request when branch work is complete
+- Send a pull request when branch work is complete (get confirmation from team member beforehand just to be safe)
 
 ### Make changes to database model
 
 1. change models in models.py
-2. To create migrations run <br /> Linux/Mac: `python manage.py makemigrations` <br /> Windows: `py manage.py makemigrations`<br /> 
+2. To create migrations run <br /> Linux/Mac: `python manage.py makemigrations` <br /> Windows: `py manage.py makemigrations`<br />
 3. To apply changes in the db run <br />Linux/Mac: `python manage.py migrate` <br /> Windows: `py manage.py migrate`<br />
 
 ### Access admin page
