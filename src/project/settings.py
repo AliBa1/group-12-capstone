@@ -182,6 +182,3 @@ AUTHENTICATION_BACKENDS = [
   # `allauth` specific authentication methods, such as login by email
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
-#client_id= 856988897287-8g4dgtaftd88oha5b673n1aoaat1lvtn.apps.googleusercontent.com
-#client_secret= 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
