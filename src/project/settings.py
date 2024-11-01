@@ -21,6 +21,13 @@ if not GOOGLE_CLIENT_ID:
         'GOOGLE_CLIENT_ID is missing.' 
         'Have you put it in a file at .env ?'
     )
+
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY')
+if not CHATGPT_API_KEY:
+    raise ValueError(
+        'CHATGPT_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
@@ -182,6 +189,3 @@ AUTHENTICATION_BACKENDS = [
   # `allauth` specific authentication methods, such as login by email
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
-#client_id= 856988897287-8g4dgtaftd88oha5b673n1aoaat1lvtn.apps.googleusercontent.com
-#client_secret= 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

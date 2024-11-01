@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from user.views import register_user,account_delete ,login_user, logout_user, manage_account, account_emailchange,account_passwordreset
-from app.views import display_home, explore_page
+from app.views import display_home, explore_page, chatbot_response
 
 urlpatterns = [
   path("admin/", admin.site.urls),
@@ -34,4 +34,6 @@ urlpatterns = [
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
   path('accounts/', include('allauth.socialaccount.urls')),
+  path('admin/', admin.site.urls),
+  path('api/chatbot/', chatbot_response, name="chatbot_response")
 ]
