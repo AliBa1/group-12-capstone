@@ -3,23 +3,23 @@
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul class="menu bg-base-200 w-1/6">
       <li class="menu-title">Conversations</li>
-      <li><a class="active">Item 1</a></li>
-      <li><a>Item 2</a></li>
-      <li><a>Item 3</a></li>
+      {% for c in conversations %}
+      <li>
+        <a
+          class="{% if active_conversation_id == c.id %}active{% endif %}"
+          href="?conversation_id={{ c.id }}"
+          hx-get="{% url 'fetch_conversation' c.id %}"
+          hx-target="#chat"
+          hx-swap="innerHTML"
+          >{{ c.title }}</a
+        >
+      </li>
+      {% endfor %}
     </ul>
 
     <div class="w-5/6 bg-slate-500 flex flex-col items-center pb-4">
       <div class="w-1/2 flex flex-col h-full justify-end">
-        <div class="chat chat-end">
-          <div class="chat-bubble">
-            What is the weather like in LA this weekend
-          </div>
-        </div>
-        <div class="chat chat-start">
-          <div class="chat-bubble">
-            On average there will be a high of 75 and a low of 40
-          </div>
-        </div>
+        <div id="chat"></div>
 
         <div class="flex items-center justify-around mt-2">
           <input
@@ -45,22 +45,6 @@
             </svg>
           </button>
         </div>
-
-        {% comment %}
-        <form class="max-w-sm mx-auto flex flex-col justify-center pt-20">
-          <label
-            for="message"
-            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-            >Ask our Model</label
-          >
-          <textarea
-            id="message"
-            rows="4"
-            class="block p-2.5 w-full text-md text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Enter a prompt"
-          ></textarea>
-        </form>
-        {% endcomment %}
       </div>
     </div>
   </div>

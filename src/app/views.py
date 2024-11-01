@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Conversation, Message
+from app.models import Conversation, Message
+
 
 def display_home(request):
   return render(request, "home.html")
@@ -8,15 +9,11 @@ def display_home(request):
 
 @login_required
 def explore_page(request):
-  # if request.method == "POST":
-    # prompt = request.POST.get("message")
-    # conversation title
-    # c_title = request.POST.get("c-title")
+  conversations = Conversation.objects.all()
+  active_id = request.GET.get("conversation_id")
+  return render(request, "explore.html", {"conversations": conversations, "active_id": active_id})
 
-    # message = Message.objects.create(is_from_user=True, text=prompt, )
-    
-  return render(request, "explore.html")
 
-def conversations_page(request):
-
-  return render(request, "conversations.html")
+def conversation_chat(request, conversation_id):
+  messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
+  return render(request, "partials/chat.html", {"messages": messages})
