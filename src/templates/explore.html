@@ -2,15 +2,23 @@
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul class="menu bg-base-200 w-1/6">
+      <label
+        class="btn btn-wide self-center text-white bg-blue-500 hover:bg-blue-600"
+        for="new-conversation"
+      >
+        Start New Conversation
+    </label>
       <li class="menu-title">Conversations</li>
       {% for c in conversations %}
       <li>
         <a
+          id="conversation"
           class="{% if active_conversation_id == c.id %}active{% endif %}"
           href="?conversation_id={{ c.id }}"
           hx-get="{% url 'fetch_conversation' c.id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
+          hx-on="htmx:afterSwap: this.classList.add('active');"
           >{{ c.title }}</a
         >
       </li>
@@ -48,5 +56,55 @@
       </div>
     </div>
   </div>
+
+  {% comment %}
+  <div id="modal" class="modal fade">
+    <div id="new-conversation" hx-target="#new_conversation.html"></div>
+  </div>
+  {% endcomment %}
+
+  <input type="checkbox" id="new-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold pb-4">Start a New Conversation</h3>
+      <form
+        id="new-conversation-form"
+        method="POST"
+        action="{% url 'new_conversation' %}"
+      >
+        {% csrf_token %}
+        <div class="form-control">
+          <label for="conversation-title">Title</label>
+          <input
+            type="text"
+            id="conversation-title"
+            name="title"
+            class="input input-bordered"
+            required
+          />
+        </div>
+        <div class="modal-action">
+          <label for="new-conversation" class="btn text-white bg-red-400 hover:bg-red-500"
+            >Cancel</label
+          >
+          <button type="submit" class="btn text-white bg-green-400 hover:bg-green-500">
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const links = document.querySelectorAll("#conversation");
+
+    links.forEach((link) => {
+      link.addEventListener("click", () => {
+        links.forEach((l) => l.classList.remove("active"));
+        link.classList.add("active");
+      });
+    });
+  });
+</script>
 {%endblock%}

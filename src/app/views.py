@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
 
@@ -9,7 +9,7 @@ def display_home(request):
 
 @login_required
 def explore_page(request):
-  conversations = Conversation.objects.all()
+  conversations = Conversation.objects.all().order_by('-created_at')
   active_id = request.GET.get("conversation_id")
   return render(request, "explore.html", {"conversations": conversations, "active_id": active_id})
 
@@ -17,3 +17,10 @@ def explore_page(request):
 def conversation_chat(request, conversation_id):
   messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
   return render(request, "partials/chat.html", {"messages": messages})
+
+
+def new_conversation(request):
+  if request.method == "POST":
+    title = request.POST.get("title")
+    Conversation.objects.create(title=title)
+  return redirect("explore")
