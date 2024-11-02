@@ -4,7 +4,7 @@
     <ul class="menu bg-base-200 w-1/6 flex-nowrap overflow-y-scroll overflow-x-hidden">
     {% comment %} <ul class="menu bg-base-200 w-1/6 flex-nowrap"> {% endcomment %}
       <label
-        class="btn btn-wide self-center text-white bg-blue-500 hover:bg-blue-600"
+        class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg self-center text-white text-sm bg-blue-500 hover:bg-blue-600"
         for="new-conversation"
       >
         Start New Conversation
@@ -28,6 +28,7 @@
               tabindex="0"
               role="button"
               class="btn bg-transparent border-none"
+              onclick="event.stopPropagation()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -45,10 +46,10 @@
             </div>
             <ul
               tabindex="0"
-              class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow overflow-visible"
+              class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible"
             >
-              <li><a>Rename</a></li>
-              <li><a class="text-red-500">Delete</a></li>
+              <li><a class="px-4">Rename</a></li>
+              <li><a class="text-red-500 px-4">Delete</a></li>
             </ul>
           </div>
         </div>
