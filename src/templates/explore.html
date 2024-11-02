@@ -48,7 +48,7 @@
               tabindex="0"
               class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible"
             >
-              <li><a class="px-4">Rename</a></li>
+              <li><a class="px-4" href="#" onclick="openRenameModal({{ c.id }}, '{{ c.title }}')">Rename</a></li>
               <li><a class="text-red-500 px-4">Delete</a></li>
             </ul>
           </div>
@@ -143,6 +143,48 @@
       </form>
     </div>
   </div>
+
+
+  <input type="checkbox" id="rename-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold pb-4">Rename Your Conversation</h3>
+      <form
+        id="rename-conversation-form"
+        method="POST"
+        action=""
+        hx-target="#messages-container"
+      >
+        {% csrf_token %}
+        <div class="form-control">
+          <label for="conversation-rename">Title</label>
+          <input
+            type="text"
+            id="conversation-rename"
+            name="new-title"
+            class="input input-bordered"
+            value=
+            required
+          />
+        </div>
+        <div class="modal-action">
+          <label
+            for="rename-conversation"
+            class="btn text-white bg-red-400 hover:bg-red-500"
+            >Cancel</label
+          >
+          <button
+            type="submit"
+            class="btn text-white bg-blue-400 hover:bg-blue-500"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
 </body>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -155,5 +197,12 @@
       });
     });
   });
+
+  function openRenameModal(conversationId, currentTitle) {
+    document.querySelector('#rename-conversation-form').action = `/rename_conversation/${conversationId}/`;
+    document.querySelector('#conversation-rename').value = currentTitle;
+    document.querySelector('#conversation-rename').focus();
+    document.querySelector('#rename-conversation').checked = true;
+  }
 </script>
 {%endblock%}

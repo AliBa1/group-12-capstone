@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from user.views import register_user,account_delete ,login_user, logout_user, manage_account, account_emailchange,account_passwordreset
-from app.views import display_home, explore_page, conversation_chat, new_conversation
+from app.views import display_home, explore_page, conversation_chat, new_conversation, rename_conversation
 
 urlpatterns = [
   path("admin/", admin.site.urls),
@@ -30,6 +30,7 @@ urlpatterns = [
   path("explore/", explore_page, name="explore"),
   path('fetch_conversation/<int:conversation_id>/', conversation_chat, name='fetch_conversation'),
   path("new_conversation/", new_conversation, name="new_conversation"),
+  path('rename_conversation/<int:conversation_id>/', rename_conversation, name='rename_conversation'),
   path("account/", manage_account, name="account_settings"),
   path("emailchange/", account_emailchange, name="account_emailchange"),
   path("resetpassword/", account_passwordreset, name="account_passwordreset"),

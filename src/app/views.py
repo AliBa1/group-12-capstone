@@ -26,12 +26,28 @@ def conversation_chat(request, conversation_id):
 def new_conversation(request):
   if request.method == "POST":
     title = request.POST.get("title")
-
+    title = title.strip()
     if Conversation.objects.filter(title=title).exists():
       messages.error(request, "A conversation with this name already exists")
       return redirect("explore")
 
     user = User.objects.get(id=request.user.id)
     Conversation.objects.create(title=title, user=user)
+
+  return redirect("explore")
+
+
+@login_required
+def rename_conversation(request, conversation_id):
+  if request.method == "POST":
+    conversation = Conversation.objects.get(id=conversation_id)
+    new_title = request.POST.get("new-title")
+
+    if Conversation.objects.filter(title=new_title).exists():
+      messages.error(request, "A conversation with this name already exists")
+      return redirect("explore")
+
+    conversation.title = new_title
+    conversation.save()
 
   return redirect("explore")
