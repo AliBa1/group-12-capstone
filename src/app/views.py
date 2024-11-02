@@ -51,3 +51,11 @@ def rename_conversation(request, conversation_id):
     conversation.save()
 
   return redirect("explore")
+
+
+@login_required
+def delete_conversation(request, conversation_id):
+  if request.method == "POST":
+    conversation = Conversation.objects.get(id=conversation_id)
+    conversation.delete()
+  return redirect("explore")

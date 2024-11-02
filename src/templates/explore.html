@@ -49,7 +49,7 @@
               class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible"
             >
               <li><a class="px-4" href="#" onclick="openRenameModal({{ c.id }}, '{{ c.title }}')">Rename</a></li>
-              <li><a class="text-red-500 px-4">Delete</a></li>
+              <li><a class="text-red-500 px-4" href="#" onclick="openDeleteModal({{ c.id }}, '{{ c.title }}')">Delete</a></li>
             </ul>
           </div>
         </div>
@@ -130,12 +130,12 @@
         <div class="modal-action">
           <label
             for="new-conversation"
-            class="btn text-white bg-red-400 hover:bg-red-500"
+            class="btn text-white bg-red-500 hover:bg-red-600"
             >Cancel</label
           >
           <button
             type="submit"
-            class="btn text-white bg-green-400 hover:bg-green-500"
+            class="btn text-white bg-green-500 hover:bg-green-600"
           >
             Create
           </button>
@@ -163,21 +163,50 @@
             id="conversation-rename"
             name="new-title"
             class="input input-bordered"
-            value=
             required
           />
         </div>
         <div class="modal-action">
           <label
             for="rename-conversation"
-            class="btn text-white bg-red-400 hover:bg-red-500"
+            class="btn text-white bg-red-500 hover:bg-red-600"
             >Cancel</label
           >
           <button
             type="submit"
-            class="btn text-white bg-blue-400 hover:bg-blue-500"
+            class="btn text-white bg-blue-500 hover:bg-blue-600"
           >
             Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <input type="checkbox" id="delete-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 id="delete-conversation-title" class="text-lg font-bold pb-4">Delete Conversation?</h3>
+      <form
+        id="delete-conversation-form"
+        method="POST"
+        action=""
+        hx-target="#messages-container"
+      >
+        {% csrf_token %}
+        <p for="conversation-delete">The conversation and all messages associated with it will be permanatly deleted</p>
+        <div class="modal-action">
+          <label
+            for="delete-conversation"
+            class="btn text-white"
+            >Cancel</label
+          >
+          <button
+            type="submit"
+            class="btn text-white bg-red-500 hover:bg-red-600"
+          >
+            Delete
           </button>
         </div>
       </form>
@@ -203,6 +232,12 @@
     document.querySelector('#conversation-rename').value = currentTitle;
     document.querySelector('#conversation-rename').focus();
     document.querySelector('#rename-conversation').checked = true;
+  }
+
+  function openDeleteModal(conversationId,conversationTitle) {
+    document.querySelector('#delete-conversation-form').action = `/delete_conversation/${conversationId}/`;
+    document.querySelector('#delete-conversation-title').innerText = `Delete Conversation: ${conversationTitle}`;
+    document.querySelector('#delete-conversation').checked = true;
   }
 </script>
 {%endblock%}
