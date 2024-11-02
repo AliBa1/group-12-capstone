@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
+from django.contrib import messages
 
 
 def display_home(request):
@@ -9,7 +10,7 @@ def display_home(request):
 
 @login_required
 def explore_page(request):
-  conversations = Conversation.objects.all().order_by('-created_at')
+  conversations = Conversation.objects.all().order_by("-created_at")
   active_id = request.GET.get("conversation_id")
   return render(request, "explore.html", {"conversations": conversations, "active_id": active_id})
 
@@ -22,5 +23,9 @@ def conversation_chat(request, conversation_id):
 def new_conversation(request):
   if request.method == "POST":
     title = request.POST.get("title")
-    Conversation.objects.create(title=title)
+
+    if Conversation.objects.filter(title=title).exists():
+      messages.error(request, "A conversation with this name already exists")
+      return redirect("explore")
+
   return redirect("explore")
