@@ -23,27 +23,32 @@ def fetch_conversation(request, conversation_id):
   )
 
 
+def is_title_valid(request, title):
+  if request.method == "POST":
+    if len(title) < 1:
+      messages.error(request, "The title can not be empty")
+      return False
+
+    if len(title) > 59:
+      messages.error(request, "The title is too long (max characters: 60)")
+      return False
+
+    if Conversation.objects.filter(title=title).exists():
+      messages.error(request, "A conversation with this title already exists")
+      return False
+  return True
+
+
 @login_required
 def new_conversation(request):
   if request.method == "POST":
     title = request.POST.get("title")
     title = title.strip()
 
-    if len(title) < 1:
-      messages.error(request, "The title can not be empty")
-      return redirect("explore")
+    is_valid = is_title_valid(request, title)
 
-
-    if len(title) > 59:
-      messages.error(request, "The title is too long (max characters: 60)")
-      return redirect("explore")
-
-    if Conversation.objects.filter(title=title).exists():
-      messages.error(request, "A conversation with this title already exists")
-      return redirect("explore")
-
-    Conversation.objects.create(title=title, user=request.user)
-    return redirect("explore")
+    if is_valid:
+      Conversation.objects.create(title=title, user=request.user)
 
   return redirect("explore")
 
@@ -54,12 +59,11 @@ def rename_conversation(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
     new_title = request.POST.get("new-title")
 
-    if Conversation.objects.filter(title=new_title).exists():
-      messages.error(request, "A conversation with this title already exists")
-      return redirect("explore")
+    is_valid = is_title_valid(request, new_title)
 
-    conversation.title = new_title
-    conversation.save()
+    if is_valid:
+      conversation.title = new_title
+      conversation.save()
 
   return redirect("explore")
 
