@@ -19,6 +19,7 @@ class ConversationTests(TestCase):
     self.assertEqual(response.status_code, 302)
 
   def test_fetch_conversation(self):
+    Message.objects.create(is_from_user=False, text="Test bot response", conversation=self.c1)
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("fetch_conversation", args=[self.c1.id])
     response = self.client.get(url)
@@ -26,10 +27,12 @@ class ConversationTests(TestCase):
     self.assertEqual(response.status_code, 200)
     self.assertTemplateUsed(response, "partials/chat.html")
     self.assertIn("messages", response.context)
-    self.assertEqual(len(response.context["messages"]), 1)
+    self.assertEqual(len(Message.objects.all()), 2)
+    self.assertEqual(len(response.context["messages"]), 2)
     self.assertEqual(response.context["messages"][0].is_from_user, True)
     self.assertEqual(response.context["messages"][0].text, "Hello Embarkr")
     self.assertEqual(response.context["messages"][0].conversation, self.c1)
+    self.assertLess(response.context["messages"][0].timestamp, response.context["messages"][1].timestamp)
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertFalse(response.context["bot_typing"])
 
@@ -102,7 +105,7 @@ class ConversationTests(TestCase):
     self.assertEqual(len(Conversation.objects.all()), 1)
 
   def test_rename_conversation_title_exists(self):
-    self.c2 = Conversation.objects.create(title="Test C2", user=self.user)
+    Conversation.objects.create(title="Test C2", user=self.user)
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("rename_conversation", args=[self.c1.id])
     response = self.client.post(url, {"new-title": "Test C2"})
@@ -116,10 +119,10 @@ class ConversationTests(TestCase):
     self.assertEqual(len(Conversation.objects.filter(title="Test C2", user=self.user)), 1)
 
   def test_delete_conversation(self):
-    self.c2 = Conversation.objects.create(title="Test C2", user=self.user)
+    test_conversation = Conversation.objects.create(title="Test C2", user=self.user)
     self.assertTrue(Conversation.objects.filter(title="Test C2", user=self.user).exists())
     self.client.login(username="t@t.com", password="asdfghjkl")
-    url = reverse("delete_conversation", args=[self.c2.id])
+    url = reverse("delete_conversation", args=[test_conversation.id])
     response = self.client.post(url)
 
     self.assertEqual(response.status_code, 302)
@@ -148,7 +151,6 @@ class ConversationTests(TestCase):
     self.assertTemplateUsed(response, "partials/chat.html")
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
-    # self.assertEqual("A conversation with this title already exists", str(messages[0]))
     self.assertTrue(Message.objects.filter(text="User sent this prompt").exists())
     self.assertTrue(Message.objects.get(text="User sent this prompt").is_from_user)
     self.assertEqual(Message.objects.get(text="User sent this prompt").conversation, self.c1)
@@ -159,4 +161,14 @@ class ConversationTests(TestCase):
     self.assertEqual(Message.objects.get(text="I have received your message").conversation, self.c1)
     self.assertEqual(len(Message.objects.filter(text="I have received your message")), 1)
 
-    self.assertEqual(len(Message.objects.all()), 3)
+    # before bot response
+    self.assertEqual(len(response.context[0]["messages"]), 2)
+    self.assertLess(response.context[0]["messages"][0].timestamp, response.context[0]["messages"][1].timestamp)
+    self.assertEqual(response.context[0]["conversation_id"], self.c1.id)
+    self.assertTrue(response.context[0]["bot_typing"])
+
+    # after bot response
+    self.assertEqual(len(response.context[1]["messages"]), 3)
+    self.assertLess(response.context[1]["messages"][1].timestamp, response.context[1]["messages"][2].timestamp)
+    self.assertEqual(response.context[1]["conversation_id"], self.c1.id)
+    self.assertFalse(response.context[1]["bot_typing"])
