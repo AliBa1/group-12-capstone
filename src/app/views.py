@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
 from user.models import User
 from django.contrib import messages
+from django.urls import reverse
+from django.http import HttpResponse
 
 
 def display_home(request):
@@ -18,7 +20,7 @@ def explore_page(request):
 
 
 @login_required
-def conversation_chat(request, conversation_id):
+def fetch_conversation(request, conversation_id):
   messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
   return render(request, "partials/chat.html", {"messages": messages})
 
@@ -33,13 +35,13 @@ def new_conversation(request):
       messages.error(request, "The title is too long (max characters: 60")
       return redirect("explore")
 
-
     if Conversation.objects.filter(title=title).exists():
       messages.error(request, "A conversation with this name already exists")
       return redirect("explore")
 
     # user = User.objects.get(id=request.user.id)
-    Conversation.objects.create(title=title, user=request.user)
+    conversation = Conversation.objects.create(title=title, user=request.user)
+    return redirect(reverse("explore") + f"?conversation_id={conversation.id}")
 
   return redirect("explore")
 
@@ -77,6 +79,8 @@ def send_prompt(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
     Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
-    # messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-    # return render(request, "partials/chat.html", {"messages": messages})
-  return redirect("explore")
+    messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+    return render(request, "partials/chat.html", {"messages": messages})
+
+  return redirect(reverse("explore") + f"?conversation_id={conversation.id}")
+  # return redirect("explore")

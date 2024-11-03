@@ -16,7 +16,7 @@
         <div
           id="conversation"
           data-id="{{ c.id }}"
-          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors {% if active_id == c.id|escapejs %}active{% endif %}"
           hx-get="{% url 'fetch_conversation' c.id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
@@ -80,12 +80,16 @@
         <form
           id="send-prompt-form"
           method="POST"
+          hx-post="{% url 'send_prompt' active_id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
           class="flex items-center justify-around mt-2"
+          hx-on="htmx:afterSwap: this.querySelector(#prompt).value=''"
+          hx-on="htmx:click: this.setAttribute('hx-post', '/send_prompt/' + this.getAttribute('data-id') + '/');"
         >
           {% csrf_token %}
           <input
+            id="prompt"
             name="prompt"
             type="text"
             placeholder="Ask me anything"
@@ -240,6 +244,12 @@
 </body>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+     const activeId = "{{ active_id|default:'' }}";
+     if (activeId) {
+       htmx.ajax('GET', `/fetch_conversation/${activeId}/`, { target: "#chat", swap: "innerHTML" });
+     }
+
+
     const links = document.querySelectorAll("#conversation");
     const sendPromptForm = document.querySelector("#send-prompt-form");
 
@@ -247,9 +257,9 @@
       link.addEventListener("click", () => {
         links.forEach((l) => l.classList.remove("active"));
         link.classList.add("active");
-        const conversationId = link.getAttribute("data-id");
-        sendPromptForm.action = `/send_prompt/${conversationId}/`;
-        // sendPromptForm.setAttribute('hx-get', `/fetch_conversation/${conversationId}/`);
+        // const conversationId = link.getAttribute("data-id");
+        // sendPromptForm.setAttribute('hx-post', `/send_prompt/${conversationId}/`);
+        // sendPromptForm.action = `/send_pr/ompt/${conversationId}/`;
       });
     });
   });
