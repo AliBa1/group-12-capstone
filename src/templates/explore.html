@@ -1,8 +1,9 @@
 {% extends 'layouts/mainpage.html' %} {% block content %}
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
-    <ul class="menu bg-base-200 w-1/6 flex-nowrap overflow-y-scroll overflow-x-hidden">
-    {% comment %} <ul class="menu bg-base-200 w-1/6 flex-nowrap"> {% endcomment %}
+    <ul
+      class="menu bg-base-200 w-1/6 flex-nowrap overflow-y-scroll overflow-x-hidden"
+    >
       <label
         class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg self-center text-white text-sm bg-blue-500 hover:bg-blue-600"
         for="new-conversation"
@@ -14,8 +15,8 @@
       <li class="list-none w-full">
         <div
           id="conversation"
+          data-id="{{ c.id }}"
           class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
-          onclick="?conversation_id={{ c.id }}"
           hx-get="{% url 'fetch_conversation' c.id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
@@ -48,8 +49,22 @@
               tabindex="0"
               class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible"
             >
-              <li><a class="px-4" href="#" onclick="openRenameModal({{ c.id }}, '{{ c.title }}')">Rename</a></li>
-              <li><a class="text-red-500 px-4" href="#" onclick="openDeleteModal({{ c.id }}, '{{ c.title }}')">Delete</a></li>
+              <li>
+                <a
+                  class="px-4"
+                  href="#"
+                  onclick="openRenameModal({{ c.id }}, '{{ c.title|escapejs }}')"
+                  >Rename</a
+                >
+              </li>
+              <li>
+                <a
+                  class="text-red-500 px-4"
+                  href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')"
+                  >Delete</a
+                >
+              </li>
             </ul>
           </div>
         </div>
@@ -58,18 +73,26 @@
       {% endfor %}
     </ul>
 
-    <div class="w-5/6 bg-slate-500 flex flex-col items-center pb-4">
+    <div class="w-5/6 bg-gray-600 flex flex-col items-center pb-4">
       <div class="w-1/2 flex flex-col h-full justify-end">
         <div id="chat"></div>
 
-        <div class="flex items-center justify-around mt-2">
+        <form
+          id="send-prompt-form"
+          method="POST"
+          hx-target="#chat"
+          hx-swap="innerHTML"
+          class="flex items-center justify-around mt-2"
+        >
+          {% csrf_token %}
           <input
-            id="prompt"
+            name="prompt"
             type="text"
             placeholder="Ask me anything"
-            class="input input-bordered w-11/12"
+            class="input input-bordered w-11/12 mr-2"
+            required
           />
-          <button class="btn btn-circle">
+          <button type="submit" class="btn btn-circle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-6 w-6"
@@ -85,7 +108,7 @@
               />
             </svg>
           </button>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -144,7 +167,6 @@
     </div>
   </div>
 
-
   <input type="checkbox" id="rename-conversation" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box">
@@ -183,11 +205,15 @@
     </div>
   </div>
 
-
   <input type="checkbox" id="delete-conversation" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box">
-      <h3 id="delete-conversation-title" class="text-lg font-bold pb-4">Delete Conversation?</h3>
+      <h3
+        id="delete-conversation-title"
+        class="text-lg font-bold pb-4 truncate"
+      >
+        Delete Conversation?
+      </h3>
       <form
         id="delete-conversation-form"
         method="POST"
@@ -195,13 +221,12 @@
         hx-target="#messages-container"
       >
         {% csrf_token %}
-        <p for="conversation-delete">The conversation and all messages associated with it will be permanatly deleted</p>
+        <p for="conversation-delete">
+          The conversation and all messages associated with it will be
+          permanatly deleted
+        </p>
         <div class="modal-action">
-          <label
-            for="delete-conversation"
-            class="btn text-white"
-            >Cancel</label
-          >
+          <label for="delete-conversation" class="btn text-white">Cancel</label>
           <button
             type="submit"
             class="btn text-white bg-red-500 hover:bg-red-600"
@@ -212,32 +237,46 @@
       </form>
     </div>
   </div>
-
-
 </body>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const links = document.querySelectorAll("#conversation");
+    const sendPromptForm = document.querySelector("#send-prompt-form");
 
     links.forEach((link) => {
       link.addEventListener("click", () => {
         links.forEach((l) => l.classList.remove("active"));
         link.classList.add("active");
+        const conversationId = link.getAttribute("data-id");
+        sendPromptForm.action = `/send_prompt/${conversationId}/`;
+        // sendPromptForm.setAttribute('hx-get', `/fetch_conversation/${conversationId}/`);
       });
     });
   });
 
   function openRenameModal(conversationId, currentTitle) {
-    document.querySelector('#rename-conversation-form').action = `/rename_conversation/${conversationId}/`;
-    document.querySelector('#conversation-rename').value = currentTitle;
-    document.querySelector('#conversation-rename').focus();
-    document.querySelector('#rename-conversation').checked = true;
+    document.querySelector(
+      "#rename-conversation-form"
+    ).action = `/rename_conversation/${conversationId}/`;
+    document.querySelector("#conversation-rename").value = currentTitle;
+    document.querySelector("#conversation-rename").focus();
+    document.querySelector("#rename-conversation").checked = true;
   }
 
-  function openDeleteModal(conversationId,conversationTitle) {
-    document.querySelector('#delete-conversation-form').action = `/delete_conversation/${conversationId}/`;
-    document.querySelector('#delete-conversation-title').innerText = `Delete Conversation: ${conversationTitle}`;
-    document.querySelector('#delete-conversation').checked = true;
+  function openDeleteModal(conversationId, conversationTitle) {
+    document.querySelector(
+      "#delete-conversation-form"
+    ).action = `/delete_conversation/${conversationId}/`;
+    document.querySelector(
+      "#delete-conversation-title"
+    ).innerText = `Delete Conversation: ${conversationTitle}`;
+    document.querySelector("#delete-conversation").checked = true;
   }
+
+  {% comment %} function sendPrompt(conversationId) {
+    document.querySelector(
+      "#send-prompt-form"
+    ).action = `/send_prompt/${conversationId}/`;
+  } {% endcomment %}
 </script>
 {%endblock%}
