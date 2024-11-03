@@ -2,13 +2,13 @@
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul
-      class="menu bg-base-200 w-1/6 flex-nowrap overflow-y-scroll overflow-x-hidden"
+      class="menu bg-base-200 w-1/3 lg:w-1/6 flex-nowrap overflow-y-scroll overflow-x-hidden"
     >
       <label
-        class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg self-center text-white text-sm bg-blue-500 hover:bg-blue-600"
+        class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center text-white bg-blue-500 hover:bg-blue-600"
         for="new-conversation"
       >
-        Start New Conversation
+        New Conversation
       </label>
       <li class="menu-title">Conversations</li>
       {% for c in conversations %}
@@ -73,19 +73,19 @@
       {% endfor %}
     </ul>
 
-    <div class="w-5/6 bg-gray-600 flex flex-col items-center py-4">
-      <div id="chat" class="w-1/2 flex flex-col h-full justify-end"></div>
+    <div class="w-2/3 lg:w-5/6 bg-gray-600 flex flex-col items-center py-4">
+      <div id="chat" class="w-full md:w-1/2 px-2 md:px-0 flex flex-col h-full justify-end"></div>
     </div>
   </div>
 
   <div id="messages-container">
-    {% if messages %}
+    {% comment %} {% if messages %}
     <div>
       {% for message in messages %}
       <p>{{ message }}</p>
       {% endfor %}
     </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
   </div>
 
   <input type="checkbox" id="new-conversation" class="modal-toggle" />
