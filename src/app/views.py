@@ -29,12 +29,17 @@ def new_conversation(request):
     title = request.POST.get("title")
     title = title.strip()
 
+    if len(title) < 1:
+      messages.error(request, "The title can not be empty")
+      return redirect("explore")
+
+
     if len(title) > 59:
-      messages.error(request, "The title is too long (max characters: 60")
+      messages.error(request, "The title is too long (max characters: 60)")
       return redirect("explore")
 
     if Conversation.objects.filter(title=title).exists():
-      messages.error(request, "A conversation with this name already exists")
+      messages.error(request, "A conversation with this title already exists")
       return redirect("explore")
 
     Conversation.objects.create(title=title, user=request.user)
@@ -50,7 +55,7 @@ def rename_conversation(request, conversation_id):
     new_title = request.POST.get("new-title")
 
     if Conversation.objects.filter(title=new_title).exists():
-      messages.error(request, "A conversation with this name already exists")
+      messages.error(request, "A conversation with this title already exists")
       return redirect("explore")
 
     conversation.title = new_title
