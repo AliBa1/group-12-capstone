@@ -141,6 +141,7 @@ class ConversationTests(TestCase):
     self.assertEqual(response.status_code, 404)
     self.assertEqual(len(Conversation.objects.all()), 1)
 
+# UPDATE THIS ONCE CHATGPT WORKS
   def test_send_prompt(self):
     self.assertEqual(len(Message.objects.all()), 1)
     self.client.login(username="t@t.com", password="asdfghjkl")
