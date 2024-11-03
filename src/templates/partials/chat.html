@@ -5,6 +5,13 @@
   <div class="chat-bubble">{{ message.text }}</div>
 </div>
 {% endfor %}
+{% if bot_typing %}
+<div class="chat chat-start">
+  <div class="chat-bubble">
+    <span class="loading loading-dots loading-sm"></span>
+  </div>
+</div>
+{% endif %}
 <form
   id="send-prompt-form"
   method="POST"

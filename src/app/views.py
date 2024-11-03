@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
 from django.contrib import messages
+import time
 
 
 def display_home(request):
@@ -17,7 +18,9 @@ def explore_page(request):
 @login_required
 def fetch_conversation(request, conversation_id):
   messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
-  return render(request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id})
+  return render(
+    request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": False}
+  )
 
 
 @login_required
@@ -71,7 +74,30 @@ def send_prompt(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
     Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
+    # render prompt
     messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-    return render(request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id})
+    render(
+      request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": True}
+    )
+
+    # model sends a response from this function
+    send_response(request, conversation, prompt)
+
+    # get all messages to render
+    messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+    return render(
+      request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": False}
+    )
 
   return redirect("explore")
+
+
+@login_required
+def send_response(request, conversation, prompt):
+  if request.method == "POST":
+    prompt = prompt
+    # pass through model here
+    response = "I have received your message"
+    Message.objects.create(is_from_user=False, text=response, conversation=conversation)
+    return
+  return
