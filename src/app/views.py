@@ -16,9 +16,9 @@ def explore_page(request):
 
 @login_required
 def fetch_conversation(request, conversation_id):
-  messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
+  chat_messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
   return render(
-    request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": False}
+    request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False}
   )
 
 
@@ -83,18 +83,20 @@ def send_prompt(request, conversation_id):
     Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
     # render prompt
-    messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+    chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
     render(
-      request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": True}
+      request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": True}
     )
 
     # model sends a response from this function
     send_response(request, conversation, prompt)
 
     # get all messages to render
-    messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+    chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
     return render(
-      request, "partials/chat.html", {"messages": messages, "conversation_id": conversation_id, "bot_typing": False}
+      request,
+      "partials/chat.html",
+      {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False},
     )
 
   return redirect("explore")

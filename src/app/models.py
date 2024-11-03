@@ -13,7 +13,7 @@ class Conversation(models.Model):
 class Message(models.Model):
   timestamp = models.DateTimeField(auto_now_add=True)
   is_from_user = models.BooleanField(default=False)
-  text = models.TextField()
+  text = models.TextField(max_length=2500)
   conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
   # map = models.
   # api_data = models.

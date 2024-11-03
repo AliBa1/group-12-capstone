@@ -26,13 +26,13 @@ class ConversationTests(TestCase):
 
     self.assertEqual(response.status_code, 200)
     self.assertTemplateUsed(response, "partials/chat.html")
-    self.assertIn("messages", response.context)
+    self.assertIn("chat_messages", response.context)
     self.assertEqual(len(Message.objects.all()), 2)
-    self.assertEqual(len(response.context["messages"]), 2)
-    self.assertEqual(response.context["messages"][0].is_from_user, True)
-    self.assertEqual(response.context["messages"][0].text, "Hello Embarkr")
-    self.assertEqual(response.context["messages"][0].conversation, self.c1)
-    self.assertLess(response.context["messages"][0].timestamp, response.context["messages"][1].timestamp)
+    self.assertEqual(len(response.context["chat_messages"]), 2)
+    self.assertEqual(response.context["chat_messages"][0].is_from_user, True)
+    self.assertEqual(response.context["chat_messages"][0].text, "Hello Embarkr")
+    self.assertEqual(response.context["chat_messages"][0].conversation, self.c1)
+    self.assertLess(response.context["chat_messages"][0].timestamp, response.context["chat_messages"][1].timestamp)
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertFalse(response.context["bot_typing"])
 
@@ -162,13 +162,13 @@ class ConversationTests(TestCase):
     self.assertEqual(len(Message.objects.filter(text="I have received your message")), 1)
 
     # before bot response
-    self.assertEqual(len(response.context[0]["messages"]), 2)
-    self.assertLess(response.context[0]["messages"][0].timestamp, response.context[0]["messages"][1].timestamp)
+    self.assertEqual(len(response.context[0]["chat_messages"]), 2)
+    self.assertLess(response.context[0]["chat_messages"][0].timestamp, response.context[0]["chat_messages"][1].timestamp)
     self.assertEqual(response.context[0]["conversation_id"], self.c1.id)
     self.assertTrue(response.context[0]["bot_typing"])
 
     # after bot response
-    self.assertEqual(len(response.context[1]["messages"]), 3)
-    self.assertLess(response.context[1]["messages"][1].timestamp, response.context[1]["messages"][2].timestamp)
+    self.assertEqual(len(response.context[1]["chat_messages"]), 3)
+    self.assertLess(response.context[1]["chat_messages"][1].timestamp, response.context[1]["chat_messages"][2].timestamp)
     self.assertEqual(response.context[1]["conversation_id"], self.c1.id)
     self.assertFalse(response.context[1]["bot_typing"])

@@ -1,16 +1,18 @@
-{% for message in messages %}
-<div
-  class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}"
->
-  <div class="chat-bubble">{{ message.text }}</div>
-</div>
-{% endfor %} {% if bot_typing %}
-<div class="chat chat-start">
-  <div class="chat-bubble">
-    <span class="loading loading-dots loading-sm"></span>
+<div id="chat-messages" class="overflow-y-scroll max-h-full">
+  {% for message in chat_messages %}
+  <div
+    class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}"
+  >
+    <div class="chat-bubble">{{ message.text }}</div>
   </div>
+  {% endfor %} {% if bot_typing %}
+  <div class="chat chat-start">
+    <div class="chat-bubble">
+      <span class="loading loading-dots loading-sm"></span>
+    </div>
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 <form
   id="send-prompt-form"
   method="POST"
@@ -27,6 +29,7 @@
     type="text"
     placeholder="Ask me anything"
     class="input input-bordered w-11/12 mr-2"
+    maxlength="2000"
     required
   />
   <button type="submit" class="btn btn-circle">
@@ -46,3 +49,17 @@
     </svg>
   </button>
 </form>
+<script>
+  function scrollToBottom() {
+    const container = document.getElementById("chat-messages");
+    container.scrollTop = container.scrollHeight;
+  }
+
+  document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target.id === "chat") {
+      scrollToBottom();
+    }
+  });
+</script>
