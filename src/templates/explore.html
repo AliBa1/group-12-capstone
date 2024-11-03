@@ -16,7 +16,7 @@
         <div
           id="conversation"
           data-id="{{ c.id }}"
-          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors {% if active_id == c.id|escapejs %}active{% endif %}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
           hx-get="{% url 'fetch_conversation' c.id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
@@ -76,43 +76,6 @@
     <div class="w-5/6 bg-gray-600 flex flex-col items-center pb-4">
       <div class="w-1/2 flex flex-col h-full justify-end">
         <div id="chat"></div>
-
-        <form
-          id="send-prompt-form"
-          method="POST"
-          hx-post="{% url 'send_prompt' active_id %}"
-          hx-target="#chat"
-          hx-swap="innerHTML"
-          class="flex items-center justify-around mt-2"
-          hx-on="htmx:afterSwap: this.querySelector(#prompt).value=''"
-          hx-on="htmx:click: this.setAttribute('hx-post', '/send_prompt/' + this.getAttribute('data-id') + '/');"
-        >
-          {% csrf_token %}
-          <input
-            id="prompt"
-            name="prompt"
-            type="text"
-            placeholder="Ask me anything"
-            class="input input-bordered w-11/12 mr-2"
-            required
-          />
-          <button type="submit" class="btn btn-circle">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 2.206l-6.235 7.528-.765-.645 7.521-9 7.479 9-.764.646-6.236-7.53v21.884h-1v-21.883z"
-              />
-            </svg>
-          </button>
-        </form>
       </div>
     </div>
   </div>
@@ -126,12 +89,6 @@
     </div>
     {% endif %}
   </div>
-
-  {% comment %}
-  <div id="modal" class="modal fade">
-    <div id="new-conversation" hx-target="#new_conversation.html"></div>
-  </div>
-  {% endcomment %}
 
   <input type="checkbox" id="new-conversation" class="modal-toggle" />
   <div class="modal">
@@ -244,22 +201,13 @@
 </body>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-     const activeId = "{{ active_id|default:'' }}";
-     if (activeId) {
-       htmx.ajax('GET', `/fetch_conversation/${activeId}/`, { target: "#chat", swap: "innerHTML" });
-     }
-
-
     const links = document.querySelectorAll("#conversation");
-    const sendPromptForm = document.querySelector("#send-prompt-form");
 
     links.forEach((link) => {
       link.addEventListener("click", () => {
         links.forEach((l) => l.classList.remove("active"));
         link.classList.add("active");
-        // const conversationId = link.getAttribute("data-id");
-        // sendPromptForm.setAttribute('hx-post', `/send_prompt/${conversationId}/`);
-        // sendPromptForm.action = `/send_pr/ompt/${conversationId}/`;
+        const conversationId = link.getAttribute("data-id");
       });
     });
   });
@@ -282,11 +230,5 @@
     ).innerText = `Delete Conversation: ${conversationTitle}`;
     document.querySelector("#delete-conversation").checked = true;
   }
-
-  {% comment %} function sendPrompt(conversationId) {
-    document.querySelector(
-      "#send-prompt-form"
-    ).action = `/send_prompt/${conversationId}/`;
-  } {% endcomment %}
 </script>
 {%endblock%}

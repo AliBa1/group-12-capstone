@@ -5,13 +5,18 @@
   <div class="chat-bubble">{{ message.text }}</div>
 </div>
 {% endfor %}
-{% comment %} <form
+<form
   id="send-prompt-form"
   method="POST"
+  hx-post="{% url 'send_prompt' conversation_id %}"
+  hx-target="#chat"
+  hx-swap="innerHTML"
   class="flex items-center justify-around mt-2"
+  hx-on::after-request="this.querySelector(#prompt).value=''"
 >
   {% csrf_token %}
   <input
+    id="prompt"
     name="prompt"
     type="text"
     placeholder="Ask me anything"
@@ -35,10 +40,3 @@
     </svg>
   </button>
 </form>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const sendPromptForm = document.querySelector("#send-prompt-form");
-    const conversationId = link.getAttribute("data-id");
-    sendPromptForm.action = `/send_prompt/${conversationId}/`;
-  });
-</script> {% endcomment %}
