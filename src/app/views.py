@@ -109,32 +109,38 @@ def send_prompt(request, conversation_id):
 @login_required
 def send_response(request, conversation, prompt):
   if request.method == "POST":
-    prompt = prompt
     # pass through model here
-    response = "I have received your message"
-    Message.objects.create(is_from_user=False, text=response, conversation=conversation)
+    response = chatbot_response(request, prompt)
+    if isinstance(response, JsonResponse):
+      Message.objects.create(is_from_user=False, text="An error occured getting response from ChatGPT", conversation=conversation)
+    else:
+      Message.objects.create(is_from_user=False, text=response, conversation=conversation)
+
+    # response = "I have received your message"
+    # Message.objects.create(is_from_user=False, text=response, conversation=conversation)
     return
   return
 
 
-def chatbot_response(request):
+def chatbot_response(request, prompt):
   if request.method == 'POST':
     try:
       client = OpenAI(api_key=settings.CHATGPT_API_KEY)
-      data = json.loads(request.body)
-      user_message = data.get('message')
-      if not isinstance(user_message, str):
+      # data = json.loads(request.body)
+      # user_message = data.get('message')
+      if not isinstance(prompt, str):
         return JsonResponse({'error': 'Invalid message format'}, status=400)
 
       completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
           {"role": "system", "content": "You are a helpful travel assistant. Help people looking to vacation/relocate find a destination."},
-          {"role": "user", "content": user_message}
+          {"role": "user", "content": prompt}
         ]
       )
       chatbot_message = completion.choices[0].message.content
-      return JsonResponse({'response': chatbot_message})
+      # return JsonResponse({'response': chatbot_message})
+      return chatbot_message
     except Exception as e:
       print("Error:", e)
       return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
