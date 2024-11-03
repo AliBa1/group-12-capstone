@@ -34,6 +34,7 @@ from app.views import (
   rename_conversation,
   delete_conversation,
   send_prompt,
+  chatbot_response
 )
 
 urlpatterns = [
@@ -54,5 +55,6 @@ urlpatterns = [
   path("resetpassword/", account_passwordreset, name="account_passwordreset"),
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
-  path("accounts/", include("allauth.socialaccount.urls")),
+  path('accounts/', include('allauth.socialaccount.urls')),
+  path('api/chatbot/', chatbot_response, name="chatbot_response")
 ]
