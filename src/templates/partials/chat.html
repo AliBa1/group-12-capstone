@@ -1,0 +1,84 @@
+<div id="chat-messages" class="overflow-y-scroll max-h-full">
+  {% for message in chat_messages %}
+  <div
+    class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}"
+  >
+    <div class="chat-bubble">{{ message.text }}</div>
+  </div>
+  {% endfor %} {% if bot_typing %}
+  <div class="chat chat-start">
+    <div class="chat-bubble">
+      <span class="loading loading-dots loading-sm"></span>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<form
+  id="send-prompt-form"
+  method="POST"
+  hx-post="{% url 'send_prompt' conversation_id %}"
+  hx-target="#chat"
+  hx-swap="innerHTML"
+  class="flex items-center justify-around mt-2"
+>
+  {% csrf_token %}
+  <input
+    id="prompt"
+    name="prompt"
+    type="text"
+    placeholder="Ask me anything"
+    class="input input-bordered w-11/12 mr-2"
+    maxlength="2000"
+    required
+  />
+  <button type="submit" class="btn btn-circle">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M11 2.206l-6.235 7.528-.765-.645 7.521-9 7.479 9-.764.646-6.236-7.53v21.884h-1v-21.883z"
+      />
+    </svg>
+  </button>
+</form>
+<script>
+  function scrollToBottom() {
+    const container = document.getElementById("chat-messages");
+    container.scrollTop = container.scrollHeight;
+  }
+
+  document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target.id === "chat") {
+      scrollToBottom();
+    }
+  });
+
+  function afterSendPrompt() {
+    const conversationId = "{{ conversation_id }}";
+    const prompt = "{{ prompt }}";
+
+    htmx.ajax("POST", `/send_response/${conversationId}/${prompt}`, {
+      target: "#chat",
+      swap: "innerHTML",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+          .value,
+      },
+    });
+  }
+
+  document
+    .querySelector("#send-prompt-form")
+    .addEventListener("htmx:afterRequest", () => {
+      afterSendPrompt();
+    });
+</script>
