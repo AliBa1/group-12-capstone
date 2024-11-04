@@ -5,7 +5,6 @@ from django.contrib import messages
 from django.http import JsonResponse
 from openai import OpenAI
 from django.conf import settings
-import json
 
 
 def display_home(request):
