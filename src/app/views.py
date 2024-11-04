@@ -22,7 +22,7 @@ def explore_page(request):
 def fetch_conversation(request, conversation_id):
   chat_messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
   return render(
-    request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False}
+    request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False, "prompt": None}
   )
 
 
@@ -86,42 +86,43 @@ def send_prompt(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
     Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
-    # render prompt
-    chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-    render(
-      request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": True}
-    )
-
-    # model sends a response from this function
-    send_response(request, conversation, prompt)
-
-    # get all messages to render
     chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
     return render(
-      request,
-      "partials/chat.html",
-      {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False},
+      request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": True, "prompt": prompt}
     )
 
   return redirect("explore")
 
 
 @login_required
-def send_response(request, conversation, prompt):
+def send_response(request, conversation_id, prompt):
   if request.method == "POST":
-    # pass through model here
-    response = chatbot_response(request, prompt)
-    if isinstance(response, JsonResponse):
-      Message.objects.create(is_from_user=False, text="An error occured getting response from ChatGPT", conversation=conversation)
-    else:
-      Message.objects.create(is_from_user=False, text=response, conversation=conversation)
+    try:
+      conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    # response = "I have received your message"
-    # Message.objects.create(is_from_user=False, text=response, conversation=conversation)
-    return
-  return
+      response = chatbot_response(request, prompt)
+      # keep below to test without using chatbot
+      # response = "Test response"
+
+      if isinstance(response, JsonResponse):
+        Message.objects.create(is_from_user=False, text="An error occurred processing your request. Please refresh and try again.", conversation=conversation)
+      else:
+        Message.objects.create(is_from_user=False, text=response, conversation=conversation)
+
+      chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+      return render(
+        request,
+        "partials/chat.html",
+        {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False, "prompt": None},
+      )
+    except Exception as e:
+      print("Error:", e)
+      return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
+  return redirect("explore")
 
 
+
+@login_required
 def chatbot_response(request, prompt):
   if request.method == 'POST':
     try:

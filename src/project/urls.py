@@ -34,6 +34,7 @@ from app.views import (
   rename_conversation,
   delete_conversation,
   send_prompt,
+  send_response,
   chatbot_response
 )
 
@@ -48,6 +49,7 @@ urlpatterns = [
   path("fetch_conversation/<int:conversation_id>/", fetch_conversation, name="fetch_conversation"),
   path("new_conversation/", new_conversation, name="new_conversation"),
   path("send_prompt/<int:conversation_id>/", send_prompt, name="send_prompt"),
+  path("send_response/<int:conversation_id>/<str:prompt>", send_response, name="send_response"),
   path("rename_conversation/<int:conversation_id>/", rename_conversation, name="rename_conversation"),
   path("delete_conversation/<int:conversation_id>/", delete_conversation, name="delete_conversation"),
   path("account/", manage_account, name="account_settings"),

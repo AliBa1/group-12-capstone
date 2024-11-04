@@ -20,7 +20,6 @@
   hx-target="#chat"
   hx-swap="innerHTML"
   class="flex items-center justify-around mt-2"
-  hx-on::after-request="this.querySelector(#prompt).value=''"
 >
   {% csrf_token %}
   <input
@@ -62,4 +61,24 @@
       scrollToBottom();
     }
   });
+
+  function afterSendPrompt() {
+    const conversationId = "{{ conversation_id }}";
+    const prompt = "{{ prompt }}";
+
+    htmx.ajax("POST", `/send_response/${conversationId}/${prompt}`, {
+      target: "#chat",
+      swap: "innerHTML",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+          .value,
+      },
+    });
+  }
+
+  document
+    .querySelector("#send-prompt-form")
+    .addEventListener("htmx:afterRequest", () => {
+      afterSendPrompt();
+    });
 </script>

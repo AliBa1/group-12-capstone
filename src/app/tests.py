@@ -35,6 +35,7 @@ class ConversationTests(TestCase):
     self.assertLess(response.context["chat_messages"][0].timestamp, response.context["chat_messages"][1].timestamp)
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertFalse(response.context["bot_typing"])
+    self.assertEqual(response.context["prompt"], None)
 
   def test_new_conversation(self):
     self.client.login(username="t@t.com", password="asdfghjkl")
@@ -141,7 +142,6 @@ class ConversationTests(TestCase):
     self.assertEqual(response.status_code, 404)
     self.assertEqual(len(Conversation.objects.all()), 1)
 
-# UPDATE THIS ONCE CHATGPT WORKS
   def test_send_prompt(self):
     self.assertEqual(len(Message.objects.all()), 1)
     self.client.login(username="t@t.com", password="asdfghjkl")
@@ -152,24 +152,36 @@ class ConversationTests(TestCase):
     self.assertTemplateUsed(response, "partials/chat.html")
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
+
     self.assertTrue(Message.objects.filter(text="User sent this prompt").exists())
     self.assertTrue(Message.objects.get(text="User sent this prompt").is_from_user)
     self.assertEqual(Message.objects.get(text="User sent this prompt").conversation, self.c1)
     self.assertEqual(len(Message.objects.filter(text="User sent this prompt")), 1)
 
-    self.assertTrue(Message.objects.filter(text="I have received your message").exists())
-    self.assertFalse(Message.objects.get(text="I have received your message").is_from_user)
-    self.assertEqual(Message.objects.get(text="I have received your message").conversation, self.c1)
-    self.assertEqual(len(Message.objects.filter(text="I have received your message")), 1)
+    self.assertEqual(len(response.context["chat_messages"]), 2)
+    self.assertLess(response.context["chat_messages"][0].timestamp, response.context["chat_messages"][1].timestamp)
+    self.assertEqual(response.context["conversation_id"], self.c1.id)
+    self.assertTrue(response.context["bot_typing"])
+    self.assertEqual(response.context["prompt"], "User sent this prompt")
 
-    # before bot response
-    self.assertEqual(len(response.context[0]["chat_messages"]), 2)
-    self.assertLess(response.context[0]["chat_messages"][0].timestamp, response.context[0]["chat_messages"][1].timestamp)
-    self.assertEqual(response.context[0]["conversation_id"], self.c1.id)
-    self.assertTrue(response.context[0]["bot_typing"])
+  def test_send_response(self):
+    test_message = Message.objects.create(is_from_user=True, text="User sent this prompt", conversation=self.c1)
+    self.assertEqual(len(Message.objects.all()), 2)
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("send_response", args=[self.c1.id, test_message.text])
+    response = self.client.post(url)
 
-    # after bot response
-    self.assertEqual(len(response.context[1]["chat_messages"]), 3)
-    self.assertLess(response.context[1]["chat_messages"][1].timestamp, response.context[1]["chat_messages"][2].timestamp)
-    self.assertEqual(response.context[1]["conversation_id"], self.c1.id)
-    self.assertFalse(response.context[1]["bot_typing"])
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/chat.html")
+    messages = list(get_messages(response.wsgi_request))
+    self.assertEqual(len(messages), 0)
+
+    self.assertEqual(len(Message.objects.all()), 3)
+    self.assertTrue(Message.objects.filter(is_from_user=False).exists())
+    self.assertEqual(len(Message.objects.filter(is_from_user=False)), 1)
+
+    self.assertEqual(len(response.context["chat_messages"]), 3)
+    self.assertLess(response.context["chat_messages"][1].timestamp, response.context["chat_messages"][2].timestamp)
+    self.assertEqual(response.context["conversation_id"], self.c1.id)
+    self.assertFalse(response.context["bot_typing"])
+    self.assertEqual(response.context["prompt"], None)
