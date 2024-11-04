@@ -22,10 +22,10 @@ if not GOOGLE_CLIENT_ID:
         'Have you put it in a file at .env ?'
     )
 
-CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY')
-if not CHATGPT_API_KEY:
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
     raise ValueError(
-        'CHATGPT_API_KEY is missing.' 
+        'OPENAI_API_KEY is missing.' 
         'Have you put it in a file at .env ?'
     )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'

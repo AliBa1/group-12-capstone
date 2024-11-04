@@ -125,7 +125,7 @@ def send_response(request, conversation, prompt):
 def chatbot_response(request, prompt):
   if request.method == 'POST':
     try:
-      client = OpenAI(api_key=settings.CHATGPT_API_KEY)
+      client = OpenAI(api_key=settings.OPENAI_API_KEY)
       # data = json.loads(request.body)
       # user_message = data.get('message')
       if not isinstance(prompt, str):
