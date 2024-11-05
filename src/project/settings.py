@@ -21,6 +21,13 @@ if not GOOGLE_CLIENT_ID:
         'GOOGLE_CLIENT_ID is missing.' 
         'Have you put it in a file at .env ?'
     )
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    raise ValueError(
+        'OPENAI_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
