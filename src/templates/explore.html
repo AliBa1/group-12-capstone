@@ -20,7 +20,7 @@
           hx-get="{% url 'fetch_conversation' c.id %}"
           hx-target="#chat"
           hx-swap="innerHTML"
-          hx-on="htmx:afterSwap: this.classList.add('active');"
+          hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); this.classList.add('active');"
         >
           <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
 
@@ -74,9 +74,14 @@
     </ul>
 
     <div class="w-2/3 lg:w-5/6 bg-gray-600 flex flex-col items-center py-4">
+      <div id="no-active" class="px-2 text-white font-bold text-xl">
+        Select a conversation to begin
+      </div>
+
       <div
         id="chat"
         class="w-full md:w-1/2 px-2 md:px-0 flex flex-col h-full justify-end"
+        hx-on::after-swap="document.querySelector('#no-active').classList.add('hidden')"
       ></div>
     </div>
   </div>
@@ -201,18 +206,6 @@
   </div>
 </body>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const links = document.querySelectorAll("#conversation");
-
-    links.forEach((link) => {
-      link.addEventListener("click", () => {
-        links.forEach((l) => l.classList.remove("active"));
-        link.classList.add("active");
-        const conversationId = link.getAttribute("data-id");
-      });
-    });
-  });
-
   function openRenameModal(conversationId, currentTitle) {
     document.querySelector(
       "#rename-conversation-form"
