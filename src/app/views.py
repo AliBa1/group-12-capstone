@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
-from django.contrib import messages
 from django.http import JsonResponse
 from openai import OpenAI
 from django.conf import settings
-from app.constants import cities, premade_moving, premade_travel
+from app.constants import cities
 from app.utils import choose_premade_prompts, is_title_valid
 
 

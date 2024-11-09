@@ -179,7 +179,7 @@ class ConversationTests(TestCase):
     self.assertEqual(len(Message.objects.all()), 1)
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("send_prompt", args=[self.c1.id])
-    response = self.client.post(url, {"pre-made-prompt": "Schools"})
+    response = self.client.post(url, {"premade-prompt": "Schools"})
     city = self.c1.city
 
     self.assertEqual(response.status_code, 200)
