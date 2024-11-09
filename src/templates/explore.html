@@ -117,6 +117,31 @@
             required
           />
         </div>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="city">City</label>
+          <select id="city" name="city" class="select select-bordered" required>
+            <option value="" disabled selected>Pick one</option>
+            {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="reason">Reason</label>
+          <select
+            id="reason"
+            name="reason"
+            class="select select-bordered"
+            required
+          >
+            <option value="" disabled selected>Pick one</option>
+            <option value="Travel">Travel</option>
+            <option value="Moving">Moving</option>
+          </select>
+        </label>
+
         <div class="modal-action">
           <label
             for="new-conversation"

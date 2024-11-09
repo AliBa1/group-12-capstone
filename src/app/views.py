@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from openai import OpenAI
 from django.conf import settings
+from app.constants import cities, premade_moving, premade_travel
 
 
 def display_home(request):
@@ -14,14 +15,31 @@ def display_home(request):
 @login_required
 def explore_page(request):
   conversations = Conversation.objects.filter(user=request.user.id).order_by("-created_at")
-  return render(request, "explore.html", {"conversations": conversations})
+  return render(request, "explore.html", {"conversations": conversations, "cities": cities})
+
+
+def choose_premade_prompts(conversation):
+  if conversation.reason == "Travel":
+    return premade_travel
+  else:
+    return premade_moving
 
 
 @login_required
 def fetch_conversation(request, conversation_id):
   chat_messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
+  conversation = get_object_or_404(Conversation, id=conversation_id)
+
   return render(
-    request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False, "prompt": None}
+    request,
+    "partials/chat.html",
+    {
+      "chat_messages": chat_messages,
+      "conversation_id": conversation_id,
+      "bot_typing": False,
+      "prompt": None,
+      "premade_prompts": choose_premade_prompts(conversation),
+    },
   )
 
 
@@ -46,11 +64,14 @@ def new_conversation(request):
   if request.method == "POST":
     title = request.POST.get("title")
     title = title.strip()
+    city = request.POST.get("city")
+    reason = request.POST.get("reason")
 
     is_valid = is_title_valid(request, title)
 
     if is_valid:
-      Conversation.objects.create(title=title, user=request.user)
+      # Conversation.objects.create(title=title, user=request.user)
+      Conversation.objects.create(title=title, city=city, reason=reason, user=request.user)
 
   return redirect("explore")
 
@@ -83,18 +104,27 @@ def send_prompt(request, conversation_id):
   if request.method == "POST":
     prompt = request.POST.get("prompt")
     premade_prompt = request.POST.get("pre-made-prompt")
+    if premade_prompt:
+      premade_prompt = premade_prompt.lower()
     conversation = get_object_or_404(Conversation, id=conversation_id)
 
     if premade_prompt:
-      city = "Los Angeles, CA"
-      prompt = "I want to learn more about " + premade_prompt.lower() + " in " + city
+      prompt = "I want to learn more about " + premade_prompt + " in " + conversation.city
       Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
     else:
       Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
     chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
     return render(
-      request, "partials/chat.html", {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": True, "prompt": prompt}
+      request,
+      "partials/chat.html",
+      {
+        "chat_messages": chat_messages,
+        "conversation_id": conversation_id,
+        "bot_typing": True,
+        "prompt": prompt,
+        "premade_prompts": choose_premade_prompts(conversation),
+      },
     )
 
   return redirect("explore")
@@ -111,7 +141,11 @@ def send_response(request, conversation_id, prompt):
       response = "Test response"
 
       if isinstance(response, JsonResponse):
-        Message.objects.create(is_from_user=False, text="An error occurred processing your request. Please refresh and try again.", conversation=conversation)
+        Message.objects.create(
+          is_from_user=False,
+          text="An error occurred processing your request. Please refresh and try again.",
+          conversation=conversation,
+        )
       else:
         Message.objects.create(is_from_user=False, text=response, conversation=conversation)
 
@@ -119,35 +153,43 @@ def send_response(request, conversation_id, prompt):
       return render(
         request,
         "partials/chat.html",
-        {"chat_messages": chat_messages, "conversation_id": conversation_id, "bot_typing": False, "prompt": None},
+        {
+          "chat_messages": chat_messages,
+          "conversation_id": conversation_id,
+          "bot_typing": False,
+          "prompt": None,
+          "premade_prompts": choose_premade_prompts(conversation),
+        },
       )
     except Exception as e:
       print("Error:", e)
-      return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
+      return JsonResponse({"error": "An error occurred processing your request."}, status=500)
   return redirect("explore")
-
 
 
 @login_required
 def chatbot_response(request, prompt):
-  if request.method == 'POST':
+  if request.method == "POST":
     try:
       client = OpenAI(api_key=settings.OPENAI_API_KEY)
       # data = json.loads(request.body)
       # user_message = data.get('message')
       if not isinstance(prompt, str):
-        return JsonResponse({'error': 'Invalid message format'}, status=400)
+        return JsonResponse({"error": "Invalid message format"}, status=400)
 
       completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-          {"role": "system", "content": "You are a helpful travel assistant. Help people looking to vacation/relocate find a destination."},
-          {"role": "user", "content": prompt}
-        ]
+          {
+            "role": "system",
+            "content": "You are a helpful travel assistant. Help people looking to vacation/relocate find a destination.",
+          },
+          {"role": "user", "content": prompt},
+        ],
       )
       chatbot_message = completion.choices[0].message.content
       # return JsonResponse({'response': chatbot_message})
       return chatbot_message
     except Exception as e:
       print("Error:", e)
-      return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
+      return JsonResponse({"error": "An error occurred processing your request."}, status=500)

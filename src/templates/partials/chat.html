@@ -22,35 +22,18 @@
   class="flex items-center justify-around mt-2"
 >
   {% csrf_token %}
-  {% comment %} <input
-    id="prompt"
-    name="prompt"
-    type="text"
-    placeholder="Ask me anything"
-    class="input input-bordered w-11/12 mr-2"
-    maxlength="2000"
-    required
-  /> {% endcomment %}
-
-  {% comment %} <div class="dropdown dropdown-top w-11/12 mr-2">
-    <div id="prompt-selector" tabindex="0" role="button" class="btn w-full">Click to select a prompt</div>
-    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] min-w-52 p-2 shadow">
-      <li><a href="#" hx-trigger="click" hx-target="#prompt-selector" hx-swap="textContent" hx-on:click:"console.log('gogogog')">Item 1</a></li>
-      <li><a href="#" hx-trigger="click" hx-target="#prompt-selector" hx-swap="textContent">Item 2</a></li>
-    </ul>
-  </div> {% endcomment %}
-
   <div class="flex flex-col w-11/12 mr-2">
     <div class="flex flex-wrap gap-2 mb-1">
-      {% comment %} change optiions based on purpose of conversation {% endcomment %}
-      <button name="pre-made-prompt" value="Schools" type="submit" class="btn btn-xs">Schools</button>
-      <button name="pre-made-prompt" value="Saftey" type="submit" class="btn btn-xs">Saftey</button>
-      <button name="pre-made-prompt" value="Healthcare" type="submit" class="btn btn-xs">Healthcare</button>
-      <button name="pre-made-prompt" value="Employment" type="submit" class="btn btn-xs">Employment</button>
-      <button name="pre-made-prompt" value="Housing" type="submit" class="btn btn-xs">Housing</button>
-      <button name="pre-made-prompt" value="Diversity" type="submit" class="btn btn-xs">Diversity</button>
-      <button name="pre-made-prompt" value="Traffic" type="submit" class="btn btn-xs">Traffic</button>
-      <button name="pre-made-prompt" value="Weather" type="submit" class="btn btn-xs">Weather</button>
+      {% for prompt in premade_prompts %}
+      <button
+        name="pre-made-prompt"
+        value="{{ prompt }}"
+        type="submit"
+        class="btn btn-xs"
+      >
+        {{ prompt }}
+      </button>
+      {% endfor %}
     </div>
     <input
       id="prompt"
@@ -62,7 +45,11 @@
     />
   </div>
 
-  <button type="submit" class="btn btn-circle self-end" onclick="if (!document.querySelector('#prompt').value) {event.preventDefault(); alert('Can not send an empty prompt');}">
+  <button
+    type="submit"
+    class="btn btn-circle self-end"
+    onclick="if (!document.querySelector('#prompt').value) {event.preventDefault(); alert('Can not send an empty prompt');}"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="h-6 w-6"
