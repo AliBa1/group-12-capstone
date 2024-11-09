@@ -1,10 +1,12 @@
 from django.db import models
-from user.models import User
+from django.contrib.auth.models import User
 
 
 # Create your models here.
 class Conversation(models.Model):
   title = models.CharField(max_length=60, unique=True)
+  city = models.CharField(max_length=255)
+  reason = models.CharField(max_length=60)
   created_at = models.DateTimeField(auto_now_add=True)
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   # folder = models.
