@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+  dependencies = [
+    ("app", "0006_conversation_city_conversation_reason"),
+  ]
 
-    dependencies = [
-        ("app", "0006_conversation_city_conversation_reason"),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name="conversation",
-            name="city",
-            field=models.CharField(max_length=255),
-        ),
-        migrations.AlterField(
-            model_name="conversation",
-            name="reason",
-            field=models.CharField(max_length=60),
-        ),
-    ]
+  operations = [
+    migrations.AlterField(
+      model_name="conversation",
+      name="city",
+      field=models.CharField(max_length=255),
+    ),
+    migrations.AlterField(
+      model_name="conversation",
+      name="reason",
+      field=models.CharField(max_length=60),
+    ),
+  ]
