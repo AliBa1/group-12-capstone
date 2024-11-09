@@ -104,23 +104,23 @@ class ConversationTests(TestCase):
     self.assertEqual("A conversation with this title already exists", str(messages[0]))
     self.assertEqual(len(Conversation.objects.filter(title="Test C1", city="Miami, FL", reason="Moving", user=self.user)), 1)
 
-  def test_rename_conversation(self):
+  def test_edit_conversation(self):
     self.client.login(username="t@t.com", password="asdfghjkl")
-    url = reverse("rename_conversation", args=[self.c1.id])
-    response = self.client.post(url, {"new-title": "Renamed Test C1"})
+    url = reverse("edit_conversation", args=[self.c1.id])
+    response = self.client.post(url, {"updated-title": "Renamed Test C1", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
-    self.assertTrue(Conversation.objects.filter(title="Renamed Test C1", user=self.user).exists())
+    self.assertTrue(Conversation.objects.filter(title="Renamed Test C1", city="Reno, NV", reason="Moving", user=self.user).exists())
     self.assertEqual(len(Conversation.objects.all()), 1)
 
-  def test_rename_conversation_title_exists(self):
+  def test_edit_conversation_title_exists(self):
     Conversation.objects.create(title="Test C2", user=self.user)
     self.client.login(username="t@t.com", password="asdfghjkl")
-    url = reverse("rename_conversation", args=[self.c1.id])
-    response = self.client.post(url, {"new-title": "Test C2"})
+    url = reverse("edit_conversation", args=[self.c1.id])
+    response = self.client.post(url, {"updated-title": "Test C2", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))

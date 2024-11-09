@@ -77,15 +77,19 @@ def new_conversation(request):
 
 
 @login_required
-def rename_conversation(request, conversation_id):
+def edit_conversation(request, conversation_id):
   if request.method == "POST":
     conversation = get_object_or_404(Conversation, id=conversation_id)
-    new_title = request.POST.get("new-title")
+    new_title = request.POST.get("updated-title")
+    new_city = request.POST.get("updated-city")
+    new_reason = request.POST.get("updated-reason")
 
     is_valid = is_title_valid(request, new_title)
 
     if is_valid:
       conversation.title = new_title
+      conversation.city = new_city
+      conversation.reason = new_reason
       conversation.save()
 
   return redirect("explore")
@@ -107,11 +111,15 @@ def send_prompt(request, conversation_id):
     if premade_prompt:
       premade_prompt = premade_prompt.lower()
     conversation = get_object_or_404(Conversation, id=conversation_id)
+    city = conversation.city
+    reason = conversation.reason
 
     if premade_prompt:
-      prompt = "I want to learn more about " + premade_prompt + " in " + conversation.city
+      # use vars premade_prompt, city, and reason to enter into model however you please
+      prompt = "I want to learn more about " + premade_prompt + " in " + city
       Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
     else:
+      # use vars prompt, city, and reason to enter into model however you please
       Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
     chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")

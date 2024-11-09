@@ -53,8 +53,8 @@
                 <a
                   class="px-4"
                   href="#"
-                  onclick="openRenameModal({{ c.id }}, '{{ c.title|escapejs }}')"
-                  >Rename</a
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')"
+                  >Edit</a
                 >
               </li>
               <li>
@@ -159,30 +159,60 @@
     </div>
   </div>
 
-  <input type="checkbox" id="rename-conversation" class="modal-toggle" />
+  <input type="checkbox" id="edit-conversation" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box">
-      <h3 class="text-lg font-bold pb-4">Rename Your Conversation</h3>
+      <h3 class="text-lg font-bold pb-4">Edit Your Conversation</h3>
       <form
-        id="rename-conversation-form"
+        id="edit-conversation-form"
         method="POST"
         action=""
         hx-target="#messages-container"
       >
         {% csrf_token %}
         <div class="form-control">
-          <label for="conversation-rename">Title</label>
+          <label for="updated-title">Title</label>
           <input
             type="text"
-            id="conversation-rename"
-            name="new-title"
+            id="updated-title"
+            name="updated-title"
             class="input input-bordered"
             required
           />
         </div>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="updated-city">City</label>
+          <select
+            id="updated-city"
+            name="updated-city"
+            class="select select-bordered"
+            required
+          >
+            <option value="" disabled selected>Pick one</option>
+            {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="updated-reason">Reason</label>
+          <select
+            id="updated-reason"
+            name="updated-reason"
+            class="select select-bordered"
+            required
+          >
+            <option value="" disabled selected>Pick one</option>
+            <option value="Travel">Travel</option>
+            <option value="Moving">Moving</option>
+          </select>
+        </label>
+
         <div class="modal-action">
           <label
-            for="rename-conversation"
+            for="edit-conversation"
             class="btn text-white bg-red-500 hover:bg-red-600"
             >Cancel</label
           >
@@ -232,13 +262,20 @@
 </body>
 <script>
   // hx-on::before-on-load="console.log('hrhr'); if (new_c_id != null) {document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); document.querySelector('[data-id=new_c_id]').classList.add('active');}"
-  function openRenameModal(conversationId, currentTitle) {
+  function openEditModal(
+    conversationId,
+    currentTitle,
+    currentCity,
+    currentReason
+  ) {
     document.querySelector(
-      "#rename-conversation-form"
-    ).action = `/rename_conversation/${conversationId}/`;
-    document.querySelector("#conversation-rename").value = currentTitle;
-    document.querySelector("#conversation-rename").focus();
-    document.querySelector("#rename-conversation").checked = true;
+      "#edit-conversation-form"
+    ).action = `/edit_conversation/${conversationId}/`;
+    document.querySelector("#updated-title").value = currentTitle;
+    document.querySelector("#updated-city").value = currentCity;
+    document.querySelector("#updated-reason").value = currentReason;
+    // document.querySelector("#updated-title").focus();
+    document.querySelector("#edit-conversation").checked = true;
   }
 
   function openDeleteModal(conversationId, conversationTitle) {
