@@ -7,7 +7,6 @@ from django.conf import settings
 from app.constants import cities
 from app.utils import choose_premade_prompts, is_title_valid
 
-
 def display_home(request):
   return render(request, "home.html")
 
@@ -156,18 +155,50 @@ def send_response(request, conversation_id, prompt):
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
   return redirect("explore")
 
-
 @login_required
 def chatbot_response(request, prompt):
   if request.method == "POST":
     try:
       client = OpenAI(api_key=settings.OPENAI_API_KEY)
-      # data = json.loads(request.body)
-      # user_message = data.get('message')
+      thread = client.beta.threads.create()
+      client.beta.threads.messages.create(
+        thread_id = thread.id,
+        role = "user",
+        content = prompt
+      )
+      run = client.beta.threads.runs.create_and_poll(
+        thread_id = thread.id,
+        assistant_id = "asst_oiJLKxsdKui3utTSaBFGuwST",
+        instructions = "Please assist the user with travel and relocation inquiries"
+      )
+      if run.status == 'completed':
+        messages = client.beta.threads.messages.list(thread_id = thread.id)
+        assistant_message = ""
+        for message in messages:
+          if message.role == "assistant":
+            for content_block in message.content:
+              if content_block.type == "text":
+                assistant_message = content_block.text.value
+            break
+        return assistant_message if assistant_message else JsonResponse(
+          {'error': 'No assistant response found.'}, status=500
+        )
+      else:
+        return JsonResponse({'error': f'Run status: {run.status}'}, status = 500)
+    except Exception as e:
+      print("Error:", e)
+      return JsonResponse({'error': 'An error occured processing your request'}, status = 500)
+
+
+'''
+@login_required
+def chatbot_response(request, prompt):
+  if request.method == 'POST':
+    try:
       if not isinstance(prompt, str):
         return JsonResponse({"error": "Invalid message format"}, status=400)
 
-      completion = client.chat.completions.create(
+      completion = .chat.completions.create(
         model="gpt-4o-mini",
         messages=[
           {
@@ -182,4 +213,5 @@ def chatbot_response(request, prompt):
       return chatbot_message
     except Exception as e:
       print("Error:", e)
-      return JsonResponse({"error": "An error occurred processing your request."}, status=500)
+      return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
+      '''
