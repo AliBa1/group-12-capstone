@@ -10,7 +10,7 @@
       >
         New Conversation
       </label>
-      <li class="menu-title">Conversations</li>
+      <li class="menu-title mt-2">Conversations</li>
       {% for c in conversations %}
       <li class="list-none w-full">
         <div
@@ -80,7 +80,7 @@
 
       <div
         id="chat"
-        class="w-full md:w-1/2 px-2 md:px-0 flex flex-col h-full justify-end"
+        class="w-full px-4 flex flex-col h-full justify-end"
         hx-on::after-swap="document.querySelector('#no-active').classList.add('hidden')"
       ></div>
     </div>

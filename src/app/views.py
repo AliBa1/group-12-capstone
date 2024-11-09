@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from openai import OpenAI
 from django.conf import settings
 from app.constants import cities, premade_moving, premade_travel
+from app.utils import choose_premade_prompts, is_title_valid
 
 
 def display_home(request):
@@ -16,13 +17,6 @@ def display_home(request):
 def explore_page(request):
   conversations = Conversation.objects.filter(user=request.user.id).order_by("-created_at")
   return render(request, "explore.html", {"conversations": conversations, "cities": cities})
-
-
-def choose_premade_prompts(conversation):
-  if conversation.reason == "Travel":
-    return premade_travel
-  else:
-    return premade_moving
 
 
 @login_required
@@ -39,24 +33,10 @@ def fetch_conversation(request, conversation_id):
       "bot_typing": False,
       "prompt": None,
       "premade_prompts": choose_premade_prompts(conversation),
+      "city": conversation.city,
+      "reason": conversation.reason,
     },
   )
-
-
-def is_title_valid(request, title):
-  if request.method == "POST":
-    if len(title) < 1:
-      messages.error(request, "The title can not be empty")
-      return False
-
-    if len(title) > 59:
-      messages.error(request, "The title is too long (max characters: 60)")
-      return False
-
-    if Conversation.objects.filter(title=title).exists():
-      messages.error(request, "A conversation with this title already exists")
-      return False
-  return True
 
 
 @login_required
@@ -70,7 +50,6 @@ def new_conversation(request):
     is_valid = is_title_valid(request, title)
 
     if is_valid:
-      # Conversation.objects.create(title=title, user=request.user)
       Conversation.objects.create(title=title, city=city, reason=reason, user=request.user)
 
   return redirect("explore")
@@ -107,7 +86,7 @@ def delete_conversation(request, conversation_id):
 def send_prompt(request, conversation_id):
   if request.method == "POST":
     prompt = request.POST.get("prompt")
-    premade_prompt = request.POST.get("pre-made-prompt")
+    premade_prompt = request.POST.get("premade-prompt")
     if premade_prompt:
       premade_prompt = premade_prompt.lower()
     conversation = get_object_or_404(Conversation, id=conversation_id)
@@ -132,6 +111,8 @@ def send_prompt(request, conversation_id):
         "bot_typing": True,
         "prompt": prompt,
         "premade_prompts": choose_premade_prompts(conversation),
+        "city": conversation.city,
+        "reason": conversation.reason,
       },
     )
 
@@ -167,6 +148,8 @@ def send_response(request, conversation_id, prompt):
           "bot_typing": False,
           "prompt": None,
           "premade_prompts": choose_premade_prompts(conversation),
+          "city": conversation.city,
+          "reason": conversation.reason,
         },
       )
     except Exception as e:

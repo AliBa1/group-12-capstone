@@ -26,7 +26,7 @@
     <div class="flex flex-wrap gap-2 mb-1">
       {% for prompt in premade_prompts %}
       <button
-        name="pre-made-prompt"
+        name="premade-prompt"
         value="{{ prompt }}"
         type="submit"
         class="btn btn-xs"
@@ -39,7 +39,7 @@
       id="prompt"
       name="prompt"
       type="text"
-      placeholder="Ask me anything"
+      placeholder="Ask me about {{reason|lower}} to {{city}}"
       class="input input-bordered w-full"
       maxlength="2000"
     />
