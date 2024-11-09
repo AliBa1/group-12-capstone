@@ -82,8 +82,15 @@ def delete_conversation(request, conversation_id):
 def send_prompt(request, conversation_id):
   if request.method == "POST":
     prompt = request.POST.get("prompt")
+    premade_prompt = request.POST.get("pre-made-prompt")
     conversation = get_object_or_404(Conversation, id=conversation_id)
-    Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
+
+    if premade_prompt:
+      city = "Los Angeles, CA"
+      prompt = "I want to learn more about " + premade_prompt.lower() + " in " + city
+      Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
+    else:
+      Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
     chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
     return render(
@@ -99,9 +106,9 @@ def send_response(request, conversation_id, prompt):
     try:
       conversation = get_object_or_404(Conversation, id=conversation_id)
 
-      response = chatbot_response(request, prompt)
+      # response = chatbot_response(request, prompt)
       # keep below to test without using chatbot
-      # response = "Test response"
+      response = "Test response"
 
       if isinstance(response, JsonResponse):
         Message.objects.create(is_from_user=False, text="An error occurred processing your request. Please refresh and try again.", conversation=conversation)

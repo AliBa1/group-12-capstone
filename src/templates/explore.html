@@ -206,6 +206,7 @@
   </div>
 </body>
 <script>
+  // hx-on::before-on-load="console.log('hrhr'); if (new_c_id != null) {document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); document.querySelector('[data-id=new_c_id]').classList.add('active');}"
   function openRenameModal(conversationId, currentTitle) {
     document.querySelector(
       "#rename-conversation-form"

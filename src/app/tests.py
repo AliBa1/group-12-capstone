@@ -163,6 +163,28 @@ class ConversationTests(TestCase):
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertTrue(response.context["bot_typing"])
     self.assertEqual(response.context["prompt"], "User sent this prompt")
+  
+  def test_send_premade_prompt(self):
+    self.assertEqual(len(Message.objects.all()), 1)
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("send_prompt", args=[self.c1.id])
+    response = self.client.post(url, {"pre-made-prompt": "Schools"})
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/chat.html")
+    messages = list(get_messages(response.wsgi_request))
+    self.assertEqual(len(messages), 0)
+
+    self.assertTrue(Message.objects.filter(text="I want to learn more about schools in Los Angeles, CA").exists())
+    self.assertTrue(Message.objects.get(text="I want to learn more about schools in Los Angeles, CA").is_from_user)
+    self.assertEqual(Message.objects.get(text="I want to learn more about schools in Los Angeles, CA").conversation, self.c1)
+    self.assertEqual(len(Message.objects.filter(text="I want to learn more about schools in Los Angeles, CA")), 1)
+
+    self.assertEqual(len(response.context["chat_messages"]), 2)
+    self.assertLess(response.context["chat_messages"][0].timestamp, response.context["chat_messages"][1].timestamp)
+    self.assertEqual(response.context["conversation_id"], self.c1.id)
+    self.assertTrue(response.context["bot_typing"])
+    self.assertEqual(response.context["prompt"], "I want to learn more about schools in Los Angeles, CA")
 
   def test_send_response(self):
     test_message = Message.objects.create(is_from_user=True, text="User sent this prompt", conversation=self.c1)
