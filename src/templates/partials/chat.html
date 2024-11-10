@@ -22,16 +22,35 @@
   class="flex items-center justify-around mt-2"
 >
   {% csrf_token %}
-  <input
-    id="prompt"
-    name="prompt"
-    type="text"
-    placeholder="Ask me anything"
-    class="input input-bordered w-11/12 mr-2"
-    maxlength="2000"
-    required
-  />
-  <button type="submit" class="btn btn-circle">
+  <div class="flex flex-col w-11/12 mr-2">
+    <div class="flex flex-wrap gap-2 mb-1">
+      {% for prompt in premade_prompts %}
+      <button
+        id="premade-prompt"
+        name="premade-prompt"
+        value="{{ prompt }}"
+        type="submit"
+        class="btn btn-xs"
+      >
+        {{ prompt }}
+      </button>
+      {% endfor %}
+    </div>
+    <input
+      id="prompt"
+      name="prompt"
+      type="text"
+      placeholder="Ask me about {{reason|lower}} to {{city}}"
+      class="input input-bordered w-full"
+      maxlength="2000"
+    />
+  </div>
+
+  <button
+    type="submit"
+    class="btn btn-circle self-end"
+    onclick="if (!document.querySelector('#prompt').value) {event.preventDefault(); alert('Cannot send an empty prompt');}"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="h-6 w-6"
@@ -54,11 +73,25 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  document.addEventListener("DOMContentLoaded", scrollToBottom);
+  document
+    .querySelector("#send-prompt-form")
+    .addEventListener("keydown", (e) => {
+      const promptInput = document.querySelector("#prompt");
+
+      if (e.key === "Enter" && e.target === promptInput) {
+        e.preventDefault();
+        if (promptInput.value.trim()) {
+          htmx.trigger(e.target.closest("form"), "submit");
+        } else {
+          alert("Cannot send an empty prompt");
+        }
+      }
+    });
 
   document.body.addEventListener("htmx:afterSwap", (event) => {
     if (event.detail.target.id === "chat") {
       scrollToBottom();
+      document.querySelector("#prompt").focus();
     }
   });
 
