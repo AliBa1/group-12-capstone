@@ -26,6 +26,7 @@
     <div class="flex flex-wrap gap-2 mb-1">
       {% for prompt in premade_prompts %}
       <button
+        id="premade-prompt"
         name="premade-prompt"
         value="{{ prompt }}"
         type="submit"
@@ -48,7 +49,7 @@
   <button
     type="submit"
     class="btn btn-circle self-end"
-    onclick="if (!document.querySelector('#prompt').value) {event.preventDefault(); alert('Can not send an empty prompt');}"
+    onclick="if (!document.querySelector('#prompt').value) {event.preventDefault(); alert('Cannot send an empty prompt');}"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -72,11 +73,25 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  document.addEventListener("DOMContentLoaded", scrollToBottom);
+  document
+    .querySelector("#send-prompt-form")
+    .addEventListener("keydown", (e) => {
+      const promptInput = document.querySelector("#prompt");
+
+      if (e.key === "Enter" && e.target === promptInput) {
+        e.preventDefault();
+        if (promptInput.value.trim()) {
+          htmx.trigger(e.target.closest("form"), "submit");
+        } else {
+          alert("Cannot send an empty prompt");
+        }
+      }
+    });
 
   document.body.addEventListener("htmx:afterSwap", (event) => {
     if (event.detail.target.id === "chat") {
       scrollToBottom();
+      document.querySelector("#prompt").focus();
     }
   });
 
