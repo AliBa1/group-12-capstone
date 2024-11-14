@@ -12,8 +12,9 @@
           {% for hotel in message.additional_data.hotels %}
             <div class="card lg:card-side bg-base-100 shadow-xl">
               <figure>
-                <img  
-                src="https://unsplash.com/photos/white-concrete-high-rise-buildings-near-body-of-water-during-daytime-k1OlQaEK2qI"
+                <img
+                class="h-full w-full bg-cover bg-center bg-no-repeat"  
+                src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
                 alt="{{ hotel.title }}"
                 onerror="this.src='/static/images/genhotel.jpg'" />
               </figure>

@@ -31,6 +31,9 @@ class Hotel(models.Model):
     longitude = models.FloatField()
     country_code = models.CharField(max_length=2, null=True, blank=True)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, null=True, related_name='hotels')
+    google_place_id = models.CharField(max_length=255, null=True, blank=True)
+    google_address = models.TextField(null=True, blank=True)
+    photo_references = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.iata_code if self.iata_code else ''}"

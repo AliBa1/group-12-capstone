@@ -4,6 +4,9 @@ import openai
 import json
 from .base import SearchStrategy
 from ..models import Hotel
+import requests
+import time
+import googlemaps
 
 class HotelSearchStrategy(SearchStrategy):
     KEYWORDS = ['hotels', 'place to stay', 'accommodation', 'resort', 'motel']
@@ -13,13 +16,12 @@ class HotelSearchStrategy(SearchStrategy):
             client_id=settings.AMADEUS_API_KEY,
             client_secret=settings.AMADEUS_API_SECRET
         )
-        self.google_api_key = settings.GOOGLE_PLACES_API_KEY
+        self.gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
 
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
 
     def process_query(self, prompt, city=None, reason=None):
-
         if city:
             location_info = self._get_city_code(city)
         else:
@@ -32,15 +34,17 @@ class HotelSearchStrategy(SearchStrategy):
         if not hotels_data:
             return None
 
-        self._store_hotels(hotels_data)
-        formatted_data = self._format_hotel_response(hotels_data)
+        enhanced_hotels = self.hotel_details(hotels_data)
         
+        self._store_hotels(enhanced_hotels)
+        formatted_data = self._format_hotel_response(enhanced_hotels)
 
         return {
-            'text': f"I found {len(hotels_data)} hotels in {location_info['city']}. Here they are:",
+            'text': f"I found {len(enhanced_hotels)} hotels in {location_info['city']}. Here they are:",
             'data': formatted_data
         }
 
+#this one passes the pre selected city from the user
     def _get_city_code(self, city):
         try:
             response = openai.chat.completions.create(
@@ -57,7 +61,8 @@ class HotelSearchStrategy(SearchStrategy):
         except Exception as e:
             print(f"Error in get_city_code: {e}")
             return None
-    
+
+#if the user switches city during prompt, i use this one
     def _query_location_info(self, query):
         try:
             response = openai.chat.completions.create(
@@ -75,6 +80,44 @@ class HotelSearchStrategy(SearchStrategy):
             print(f"Error in query_location_info: {e}")
             return None
 
+    def _get_place_details(self, hotel):
+        try:
+            places_result = self.gmaps.places(
+                query=f"{hotel['name']} hotel",
+                location=(hotel['geoCode']['latitude'], hotel['geoCode']['longitude'])
+            )
+
+            if places_result['status'] != 'OK' or not places_result['results']:
+                return hotel
+
+            place = places_result['results'][0]
+            hotel['google_place_id'] = place.get('place_id')
+            hotel['google_address'] = place.get('formatted_address')
+
+            details_result = self.gmaps.place(
+                place_id=hotel['google_place_id'],
+                fields=['photo']
+            )
+
+            if 'result' in details_result and 'photos' in details_result['result']:
+                photos = details_result['result']['photos'][:3]
+                photo_references = [photo['photo_reference'] for photo in photos]
+                hotel['photo_references'] = photo_references
+
+            time.sleep(0.2)
+            return hotel
+
+        except Exception as e:
+            print(f"Error getting place details for {hotel.get('name')}: {e}")
+            return hotel
+        
+    def hotel_details(self, hotels_data):
+        enhanced_hotels = []
+        for hotel in hotels_data:
+            enhanced_hotel = self._get_place_details(hotel)
+            enhanced_hotels.append(enhanced_hotel)
+        return enhanced_hotels
+
     def _search_hotels(self, city_code, limit=5):
         try:
             hotel_response = self.amadeus.reference_data.locations.hotels.by_city.get(
@@ -89,15 +132,18 @@ class HotelSearchStrategy(SearchStrategy):
         for hotel_data in hotels_data:
             try:
                 Hotel.objects.update_or_create(
-                      hotel_id=hotel_data['hotelId'],  # Use as unique identifier
+                    hotel_id=hotel_data['hotelId'],
                     defaults={
                         'name': hotel_data['name'],
-                        'chain_code': hotel_data['chainCode'],
-                        'iata_code': hotel_data['iataCode'],
-                        'dupe_id': hotel_data['dupeId'],
+                        'chain_code': hotel_data.get('chainCode'),
+                        'iata_code': hotel_data.get('iataCode'),
+                        'dupe_id': hotel_data.get('dupeId'),
                         'latitude': float(hotel_data['geoCode']['latitude']),
                         'longitude': float(hotel_data['geoCode']['longitude']),
-                        'country_code': hotel_data['address']['countryCode']
+                        'country_code': hotel_data['address']['countryCode'],
+                        'google_place_id': hotel_data.get('google_place_id'),
+                        'google_address': hotel_data.get('google_address'),
+                        'photo_references': hotel_data.get('photo_references', []) 
                     }
                 )
             except Exception as e:
@@ -105,28 +151,30 @@ class HotelSearchStrategy(SearchStrategy):
                 continue
 
     def _format_hotel_response(self, hotels_data):
-        """
-        Format hotel data for card display
-        """
         formatted_hotels = []
         
         for hotel in hotels_data:
-            # Format the hotel data for display
+            photo_references = hotel.get('photo_references', [])
+            if not photo_references:
+                photo_references = [None, None, None]  
+                
             formatted_hotel = {
                 'title': hotel['name'],
-                'description': f"Located in {hotel['iataCode']}, {hotel['address']['countryCode']}",
+                'description': hotel.get('google_address', f"Located in {hotel['iataCode']}, {hotel['address']['countryCode']}"),
                 'location': f"{hotel['iataCode']}, {hotel['address']['countryCode']}",
-                'image': 'https://unsplash.com/photos/white-concrete-high-rise-buildings-near-body-of-water-during-daytime-k1OlQaEK2qI',
+                'images': [ref for ref in photo_references if ref], 
                 'details': {
                     'name': hotel['name'],
                     'id': hotel['hotelId'],
-                    'chain_code': hotel['chainCode'],
-                    'iata_code': hotel['iataCode'],
-                    'dupe_id': hotel['dupeId'],
+                    'chain_code': hotel.get('chainCode'),
+                    'iata_code': hotel.get('iataCode'),
+                    'dupe_id': hotel.get('dupeId'),
                     'location': {
                         'lat': hotel['geoCode']['latitude'],
                         'lng': hotel['geoCode']['longitude']
-                    }
+                    },
+                    'google_place_id': hotel.get('google_place_id'),
+                    'google_address': hotel.get('google_address')
                 }
             }
             formatted_hotels.append(formatted_hotel)
@@ -136,4 +184,3 @@ class HotelSearchStrategy(SearchStrategy):
             'total_results': len(formatted_hotels),
             'type': 'hotel_search'
         }
-        

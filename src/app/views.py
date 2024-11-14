@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from app.models import Conversation, Message
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.views.decorators.http import require_http_methods
 from openai import OpenAI
 from django.conf import settings
 from app.constants import cities
+from django.views.decorators.cache import cache_page
+import requests
+import googlemaps
 from app.utils import choose_premade_prompts, is_title_valid
 from .services.travel_service_factory import TravelServiceFactory
 from .services.hotel_service import HotelSearchStrategy
@@ -139,14 +143,12 @@ def send_response(request, conversation_id, prompt):
                 )
             else:
                 response_text = response.get('response', 'No response generated')
-                # Create the message with the text response
                 message = Message.objects.create(
                     is_from_user=False, 
                     text=response_text, 
                     conversation=conversation
                 )
                 
-                # If there's additional data, store it with the message
                 if 'data' in response:
                     message.additional_data = response['data']
                     message.save()
@@ -211,17 +213,13 @@ def chatbot_response(request, prompt):
 
                 strategy_response = strategy.process_query(prompt, city=city)
                 if strategy_response:
-                    # Handle the dictionary response from strategy
                     if isinstance(strategy_response, dict):
-                        # Combine the assistant's message with the strategy's text response
                         assistant_message = f"{assistant_message} {strategy_response.get('text', '')}"
-                        # Return both the message and any additional data
                         return {
                             'response': assistant_message,
                             'data': strategy_response.get('data')
                         }
                     else:
-                        # For backward compatibility, handle if strategy returns just a string
                         assistant_message = f"{assistant_message} {strategy_response}"
 
             return {'response': assistant_message}
@@ -230,8 +228,33 @@ def chatbot_response(request, prompt):
             print(f"Error in chatbot_response: {str(e)}")
             return JsonResponse({'error': f"Error: {str(e)}"}, status=500)
 
+@require_http_methods(["GET"])
+@cache_page(60 * 60 * 24)  # cache for 24 hours
+def proxy_hotel_photo(request, photo_reference):
+    if not photo_reference:
+        return HttpResponseNotFound("No photo reference provided")
 
-
+    try:
+        gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
+        base_url = "https://maps.googleapis.com/maps/api/place/photo"
+        params = {
+            'maxwidth': 400,
+            'photoreference': photo_reference,
+            'key': settings.GOOGLE_PLACES_API_KEY
+        }
+        
+        response = requests.get(base_url, params=params, stream=True)
+        
+        if response.status_code == 200:
+            return HttpResponse(
+                response.content,
+                content_type=response.headers.get('Content-Type', 'image/jpeg')
+            )
+        return HttpResponseNotFound("Photo not found")
+        
+    except Exception as e:
+        print(f"Error proxying photo: {str(e)}")
+        return HttpResponseNotFound("Error retrieving photo")
 """
 @login_required
 def chatbot_response(request, prompt):
