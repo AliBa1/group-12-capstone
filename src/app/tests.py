@@ -8,7 +8,7 @@ from django.contrib.messages import get_messages
 class ConversationTests(TestCase):
   def setUp(self):
     self.user = User.objects.create_user(username="t@t.com", email="t@t.com", password="asdfghjkl")
-    self.c1 = Conversation.objects.create(title="Test C1", user=self.user)
+    self.c1 = Conversation.objects.create(title="Test C1", city="Miami, FL", reason="Moving", user=self.user)
     self.m1 = Message.objects.create(is_from_user=True, text="Hello Embarkr", conversation=self.c1)
     self.client = Client()
 
@@ -41,23 +41,27 @@ class ConversationTests(TestCase):
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("new_conversation")
     # space is to test if it's being trimed
-    response = self.client.post(url, {"title": "Testing New Conversation "})
+    response = self.client.post(url, {"title": "Testing New Conversation ", "city": "Miami, FL", "reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
-    self.assertTrue(Conversation.objects.filter(title="Testing New Conversation", user=self.user).exists())
+    self.assertTrue(
+      Conversation.objects.filter(
+        title="Testing New Conversation", city="Miami, FL", reason="Moving", user=self.user
+      ).exists()
+    )
 
   def test_new_conversation_title_empty(self):
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("new_conversation")
-    response = self.client.post(url, {"title": ""})
+    response = self.client.post(url, {"title": "", "city": "Miami, FL", "reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))
     messages = list(get_messages(response.wsgi_request))
-    self.assertFalse(Conversation.objects.filter(title="", user=self.user).exists())
+    self.assertFalse(Conversation.objects.filter(title="", city="Miami, FL", reason="Moving", user=self.user).exists())
     self.assertGreater(len(messages), 0)
     self.assertEqual("The title can not be empty", str(messages[0]))
 
@@ -65,7 +69,12 @@ class ConversationTests(TestCase):
     self.client.login(username="t@t.com", password="asdfghjkl")
     url = reverse("new_conversation")
     response = self.client.post(
-      url, {"title": "Testing New Conversation but Very Very Long so That There is a Limit on the size of Titles"}
+      url,
+      {
+        "title": "Testing New Conversation but Very Very Long so That There is a Limit on the size of Titles",
+        "city": "Miami, FL",
+        "reason": "Moving",
+      },
     )
 
     self.assertEqual(response.status_code, 302)
@@ -73,6 +82,8 @@ class ConversationTests(TestCase):
     self.assertFalse(
       Conversation.objects.filter(
         title="Testing New Conversation but Very Very Long so That There is a Limit on the size of Titles",
+        city="Miami, FL",
+        reason="Moving",
         user=self.user,
       ).exists()
     )
@@ -82,7 +93,7 @@ class ConversationTests(TestCase):
 
   def test_new_conversation_title_exists(self):
     self.client.login(username="t@t.com", password="asdfghjkl")
-    self.assertTrue(Conversation.objects.filter(title="Test C1", user=self.user).exists())
+    self.assertTrue(Conversation.objects.filter(title="Test C1", city="Miami, FL", reason="Moving", user=self.user).exists())
     url = reverse("new_conversation")
     response = self.client.post(url, {"title": "Test C1"})
 
@@ -91,25 +102,25 @@ class ConversationTests(TestCase):
     messages = list(get_messages(response.wsgi_request))
     self.assertGreater(len(messages), 0)
     self.assertEqual("A conversation with this title already exists", str(messages[0]))
-    self.assertEqual(len(Conversation.objects.filter(title="Test C1", user=self.user)), 1)
+    self.assertEqual(len(Conversation.objects.filter(title="Test C1", city="Miami, FL", reason="Moving", user=self.user)), 1)
 
-  def test_rename_conversation(self):
+  def test_edit_conversation(self):
     self.client.login(username="t@t.com", password="asdfghjkl")
-    url = reverse("rename_conversation", args=[self.c1.id])
-    response = self.client.post(url, {"new-title": "Renamed Test C1"})
+    url = reverse("edit_conversation", args=[self.c1.id])
+    response = self.client.post(url, {"updated-title": "Renamed Test C1", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
-    self.assertTrue(Conversation.objects.filter(title="Renamed Test C1", user=self.user).exists())
+    self.assertTrue(Conversation.objects.filter(title="Renamed Test C1", city="Reno, NV", reason="Moving", user=self.user).exists())
     self.assertEqual(len(Conversation.objects.all()), 1)
 
-  def test_rename_conversation_title_exists(self):
+  def test_edit_conversation_title_exists(self):
     Conversation.objects.create(title="Test C2", user=self.user)
     self.client.login(username="t@t.com", password="asdfghjkl")
-    url = reverse("rename_conversation", args=[self.c1.id])
-    response = self.client.post(url, {"new-title": "Test C2"})
+    url = reverse("edit_conversation", args=[self.c1.id])
+    response = self.client.post(url, {"updated-title": "Test C2", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
     self.assertRedirects(response, reverse("explore"))
@@ -163,6 +174,31 @@ class ConversationTests(TestCase):
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertTrue(response.context["bot_typing"])
     self.assertEqual(response.context["prompt"], "User sent this prompt")
+
+  def test_send_premade_prompt(self):
+    self.assertEqual(len(Message.objects.all()), 1)
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("send_prompt", args=[self.c1.id])
+    response = self.client.post(url, {"premade-prompt": "Schools"})
+    city = self.c1.city
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/chat.html")
+    messages = list(get_messages(response.wsgi_request))
+    self.assertEqual(len(messages), 0)
+
+    self.assertTrue(Message.objects.filter(text="I want to learn more about schools in " + city).exists())
+    self.assertTrue(Message.objects.get(text="I want to learn more about schools in " + city).is_from_user)
+    self.assertEqual(
+      Message.objects.get(text="I want to learn more about schools in " + city).conversation, self.c1
+    )
+    self.assertEqual(len(Message.objects.filter(text="I want to learn more about schools in " + city)), 1)
+
+    self.assertEqual(len(response.context["chat_messages"]), 2)
+    self.assertLess(response.context["chat_messages"][0].timestamp, response.context["chat_messages"][1].timestamp)
+    self.assertEqual(response.context["conversation_id"], self.c1.id)
+    self.assertTrue(response.context["bot_typing"])
+    self.assertEqual(response.context["prompt"], "I want to learn more about schools in " + city)
 
   def test_send_response(self):
     test_message = Message.objects.create(is_from_user=True, text="User sent this prompt", conversation=self.c1)

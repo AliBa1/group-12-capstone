@@ -31,11 +31,12 @@ from app.views import (
   explore_page,
   fetch_conversation,
   new_conversation,
-  rename_conversation,
+  edit_conversation,
   delete_conversation,
   send_prompt,
   send_response,
-  chatbot_response
+  chatbot_response,
+  proxy_hotel_photo
 )
 
 urlpatterns = [
@@ -50,7 +51,7 @@ urlpatterns = [
   path("new_conversation/", new_conversation, name="new_conversation"),
   path("send_prompt/<int:conversation_id>/", send_prompt, name="send_prompt"),
   path("send_response/<int:conversation_id>/<str:prompt>", send_response, name="send_response"),
-  path("rename_conversation/<int:conversation_id>/", rename_conversation, name="rename_conversation"),
+  path("edit_conversation/<int:conversation_id>/", edit_conversation, name="edit_conversation"),
   path("delete_conversation/<int:conversation_id>/", delete_conversation, name="delete_conversation"),
   path("account/", manage_account, name="account_settings"),
   path("emailchange/", account_emailchange, name="account_emailchange"),
@@ -58,5 +59,6 @@ urlpatterns = [
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
   path('accounts/', include('allauth.socialaccount.urls')),
-  path('api/chatbot/', chatbot_response, name="chatbot_response")
+  path('api/chatbot/', chatbot_response, name="chatbot_response"),
+  path('hotel-photo/<str:photo_reference>/', proxy_hotel_photo, name='proxy_hotel_photo'),
 ]

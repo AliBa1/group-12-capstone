@@ -22,10 +22,31 @@ if not GOOGLE_CLIENT_ID:
         'Have you put it in a file at .env ?'
     )
 
+GOOGLE_PLACES_API_KEY = os.getenv('GOOGLE_PLACES_API_KEY')
+if not GOOGLE_PLACES_API_KEY:
+    raise ValueError(
+        'GOOGLE_PLACES_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 if not OPENAI_API_KEY:
     raise ValueError(
         'OPENAI_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
+AMADEUS_API_KEY = os.getenv('AMADEUS_API_KEY')
+if not AMADEUS_API_KEY:
+    raise ValueError(
+        'AMADEUS_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
+AMADEUS_API_SECRET = os.getenv('AMADEUS_API_SECRET')
+if not AMADEUS_API_SECRET:
+    raise ValueError(
+        'AMADEUS_API_SECRET is missing.' 
         'Have you put it in a file at .env ?'
     )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'

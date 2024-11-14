@@ -2,7 +2,7 @@
 // The following code snippets were adapted from:
 // - [threejs-earth](https://github.com/bobbyroe/threejs-earth.git) 
 // by [Bobby Roe].
-//this is to add the glow to the globe.
+//this is to add the glow to the globe (blue thing around it).
 
 import * as THREE from "three";
 
