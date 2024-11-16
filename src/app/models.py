@@ -37,3 +37,6 @@ class Hotel(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.iata_code if self.iata_code else ''}"
+
+# class Flight(models.Model):
+   

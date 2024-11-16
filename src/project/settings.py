@@ -49,6 +49,12 @@ if not AMADEUS_API_SECRET:
         'AMADEUS_API_SECRET is missing.' 
         'Have you put it in a file at .env ?'
     )
+AVIATIONSTACK_API_KEY = os.getenv('AVIATIONSTACK_API_KEY')
+if not AVIATIONSTACK_API_KEY:
+    raise ValueError(
+        'AVIATIONSTACK_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
@@ -151,6 +157,12 @@ DATABASES = {
   }
 }
 
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379",
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -2,13 +2,13 @@
   {% for message in chat_messages %}
     <div class="flex flex-col gap-4 mb-4">
       <div class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}">
-        <div class="chat-bubble">
+        <div class="chat-bubble text-white">
           {{ message.text }}
         </div>
       </div>
 
       {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
           {% for hotel in message.additional_data.hotels %}
             <div class="card lg:card-side bg-base-100 shadow-xl">
               <figure>
@@ -32,6 +32,8 @@
           {% endfor %}
         </div>
       {% endif %}
+      <div>
+      </div>
     </div>
   {% endfor %}
   
@@ -42,6 +44,8 @@
       </div>
     </div>
   {% endif %}
+  <div id="map-center" data-center='{{ map_center|safe }}' class="hidden"></div>
+    <div id="locations" data-locations='{{ locations|safe }}' class="hidden"></div>
 </div>
 
 <form
@@ -150,4 +154,23 @@
     .addEventListener("htmx:afterRequest", () => {
       afterSendPrompt();
     });
+    document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target.id === "chat") {
+      scrollToBottom();
+      document.querySelector("#prompt").focus();
+      
+      const locationsElement = document.getElementById('locations');
+      const mapCenterElement = document.getElementById('map-center');
+      
+      if (locationsElement && mapCenterElement) {
+        const mapUpdateEvent = new CustomEvent('mapUpdate', {
+          detail: {
+            locations: JSON.parse(locationsElement.dataset.locations || '[]'),
+            center: JSON.parse(mapCenterElement.dataset.center || 'null')
+          }
+        });
+        window.parent.document.dispatchEvent(mapUpdateEvent);
+      }
+    }
+  });
 </script>

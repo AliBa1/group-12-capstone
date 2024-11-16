@@ -1,24 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from app.models import Conversation, Message
-from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
-from django.views.decorators.http import require_http_methods
+import json
+import requests
+import googlemaps
 from openai import OpenAI
 from django.conf import settings
 from app.constants import cities
+from app.models import Conversation, Message
 from django.views.decorators.cache import cache_page
-import requests
-import googlemaps
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.views.decorators.http import require_http_methods
 from app.utils import choose_premade_prompts, is_title_valid
 from .services.travel_service_factory import TravelServiceFactory
 from .services.hotel_service import HotelSearchStrategy
 from .services.flight_service import FlightSearchStrategy
-from .services.car_rental import CarRentalSearchStrategy
+from .services.car_rental_service import CarRentalSearchStrategy
+from .services.housing_service import HousingSearchStrategy
+from .services.apartments_service import ApartmentSearchStrategy
+
 
 travel_factory = TravelServiceFactory()
 travel_factory.register_strategy(HotelSearchStrategy())
 travel_factory.register_strategy(FlightSearchStrategy())
 travel_factory.register_strategy(CarRentalSearchStrategy())
+travel_factory.register_strategy(HousingSearchStrategy())
+travel_factory.register_strategy(ApartmentSearchStrategy())
 
 def display_home(request):
   return render(request, "home.html")
@@ -26,28 +32,96 @@ def display_home(request):
 
 @login_required
 def explore_page(request):
-  conversations = Conversation.objects.filter(user=request.user.id).order_by("-created_at")
-  return render(request, "explore.html", {"conversations": conversations, "cities": cities})
+    latest_conversation = (
+        Conversation.objects.filter(user=request.user.id)
+        .order_by("-created_at")
+        .first()
+    )
+    
+    locations = []
+    if latest_conversation:
+        latest_message = (
+            Message.objects.filter(conversation=latest_conversation)
+            .filter(is_from_user=False)
+            .order_by("-timestamp")
+            .first()
+        )
+        
+        if latest_message and latest_message.additional_data:
+            try:
+                data = latest_message.additional_data
+                if 'hotels' in data:
+                    locations = [
+                        {
+                            'lat': hotel['details']['location']['lat'],
+                            'lng': hotel['details']['location']['lng']
+                        }
+                        for hotel in data['hotels']
+                        if 'details' in hotel and 'location' in hotel['details']
+                    ]
+            except Exception as e:
+                print(f"Error extracting locations: {e}")
+    
+    if not locations:
+        locations = [
+            { 'lat': -33.8688, 'lng': 151.2093 },
+        ]
+
+    conversations = Conversation.objects.filter(user=request.user.id).order_by("-created_at")
+    return render(
+        request, 
+        "explore.html", 
+        {
+            "conversations": conversations,
+            "cities": cities,
+            'locations': json.dumps(locations),
+            'google_maps_api_key': settings.GOOGLE_PLACES_API_KEY
+        }
+    )
 
 
 @login_required
 def fetch_conversation(request, conversation_id):
-  chat_messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
-  conversation = get_object_or_404(Conversation, id=conversation_id)
+    chat_messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
+    conversation = get_object_or_404(Conversation, id=conversation_id)
 
-  return render(
-    request,
-    "partials/chat.html",
-    {
-      "chat_messages": chat_messages,
-      "conversation_id": conversation_id,
-      "bot_typing": False,
-      "prompt": None,
-      "premade_prompts": choose_premade_prompts(conversation),
-      "city": conversation.city,
-      "reason": conversation.reason,
-    },
-  )
+    locations = []
+    latest_hotel_message = (
+        Message.objects.filter(
+            conversation=conversation,
+            is_from_user=False,
+            additional_data__isnull=False,
+        )
+        .order_by("-timestamp")
+        .first()
+    )
+    
+    if latest_hotel_message and latest_hotel_message.additional_data:
+        data = latest_hotel_message.additional_data
+        if 'hotels' in data:
+            locations = [
+                {
+                    'lat': hotel['details']['location']['lat'],
+                    'lng': hotel['details']['location']['lng']
+                }
+                for hotel in data['hotels']
+                if 'details' in hotel and 'location' in hotel['details']
+            ]
+    return render(
+        request,
+        "partials/chat.html",
+        {
+        "chat_messages": chat_messages,
+        "conversation_id": conversation_id,
+        "bot_typing": False,
+        "prompt": None,
+        "premade_prompts": choose_premade_prompts(conversation),
+        "city": conversation.city,
+        "reason": conversation.reason,
+        "locations": json.dumps(locations),
+        # "map_center": json.dumps(map_center) if map_center else None,
+        },
+    )
 
 
 @login_required
@@ -152,6 +226,20 @@ def send_response(request, conversation_id, prompt):
                 if 'data' in response:
                     message.additional_data = response['data']
                     message.save()
+                locations = []
+                if 'data' in response:
+                    message.additional_data = response['data']
+                    message.save()
+                    
+                    if 'hotels' in response['data']:
+                        locations = [
+                            {
+                                'lat': hotel['details']['location']['lat'],
+                                'lng': hotel['details']['location']['lng']
+                            }
+                            for hotel in response['data']['hotels']
+                            if 'details' in hotel and 'location' in hotel['details']
+                        ]                    
 
             chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
             return render(
@@ -165,6 +253,7 @@ def send_response(request, conversation_id, prompt):
                     "premade_prompts": choose_premade_prompts(conversation),
                     "city": conversation.city,
                     "reason": conversation.reason,
+                     "locations": json.dumps(locations),
                 },
             )
         except Exception as e:
@@ -255,6 +344,9 @@ def proxy_hotel_photo(request, photo_reference):
     except Exception as e:
         print(f"Error proxying photo: {str(e)}")
         return HttpResponseNotFound("Error retrieving photo")
+
+
+
 """
 @login_required
 def chatbot_response(request, prompt):
