@@ -22,10 +22,37 @@ if not GOOGLE_CLIENT_ID:
         'Have you put it in a file at .env ?'
     )
 
+GOOGLE_PLACES_API_KEY = os.getenv('GOOGLE_PLACES_API_KEY')
+if not GOOGLE_PLACES_API_KEY:
+    raise ValueError(
+        'GOOGLE_PLACES_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 if not OPENAI_API_KEY:
     raise ValueError(
         'OPENAI_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
+AMADEUS_API_KEY = os.getenv('AMADEUS_API_KEY')
+if not AMADEUS_API_KEY:
+    raise ValueError(
+        'AMADEUS_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+
+AMADEUS_API_SECRET = os.getenv('AMADEUS_API_SECRET')
+if not AMADEUS_API_SECRET:
+    raise ValueError(
+        'AMADEUS_API_SECRET is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+AVIATIONSTACK_API_KEY = os.getenv('AVIATIONSTACK_API_KEY')
+if not AVIATIONSTACK_API_KEY:
+    raise ValueError(
+        'AVIATIONSTACK_API_KEY is missing.' 
         'Have you put it in a file at .env ?'
     )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
@@ -130,6 +157,12 @@ DATABASES = {
   }
 }
 
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379",
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

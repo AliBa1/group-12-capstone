@@ -35,7 +35,8 @@ from app.views import (
   delete_conversation,
   send_prompt,
   send_response,
-  chatbot_response
+  chatbot_response,
+  proxy_hotel_photo
 )
 
 urlpatterns = [
@@ -58,5 +59,6 @@ urlpatterns = [
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
   path('accounts/', include('allauth.socialaccount.urls')),
-  path('api/chatbot/', chatbot_response, name="chatbot_response")
+  path('api/chatbot/', chatbot_response, name="chatbot_response"),
+  path('hotel-photo/<str:photo_reference>/', proxy_hotel_photo, name='proxy_hotel_photo'),
 ]
