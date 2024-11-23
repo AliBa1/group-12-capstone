@@ -36,7 +36,8 @@ from app.views import (
   send_prompt,
   send_response,
   chatbot_response,
-  proxy_hotel_photo
+  proxy_hotel_photo,
+  new_explore_page
 )
 
 urlpatterns = [
@@ -61,4 +62,5 @@ urlpatterns = [
   path('accounts/', include('allauth.socialaccount.urls')),
   path('api/chatbot/', chatbot_response, name="chatbot_response"),
   path('hotel-photo/<str:photo_reference>/', proxy_hotel_photo, name='proxy_hotel_photo'),
+  path("new-explore/", new_explore_page, name="new_explore")
 ]
