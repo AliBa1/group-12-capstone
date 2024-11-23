@@ -14,7 +14,7 @@
                 Welcome to Embarkr! <br> Where we save you time and reduce stress. <br>
                 Embark to a new journey.
             </p>
-            <a href="{%if request.user.is_authenticated%} {%url 'explore'%} {%else%} {%url 'register'%} {%endif%}"
+            <a href="{%if request.user.is_authenticated%} {%url 'chatbot'%} {%else%} {%url 'register'%} {%endif%}"
                 class="mt-8 inline-block bg-white text-gray-900 text-lg font-semibold py-2 px-6 border border-white hover:bg-gray-200">
                 {%if request.user.is_authenticated%}
                 Explore &rarr;

@@ -32,7 +32,7 @@ def display_home(request):
 
 
 @login_required
-def explore_page(request):
+def chatbot_page(request):
   latest_conversation = Conversation.objects.filter(user=request.user.id).order_by("-created_at").first()
 
   locations = []
@@ -61,7 +61,7 @@ def explore_page(request):
   conversations = Conversation.objects.filter(user=request.user.id).order_by("-created_at")
   return render(
     request,
-    "explore.html",
+    "chatbot.html",
     {
       "conversations": conversations,
       "cities": cities,
@@ -125,7 +125,7 @@ def new_conversation(request):
     if is_valid:
       Conversation.objects.create(title=title, city=city, reason=reason, user=request.user)
 
-  return redirect("explore")
+  return redirect("chatbot")
 
 
 @login_required
@@ -144,7 +144,7 @@ def edit_conversation(request, conversation_id):
       conversation.reason = new_reason
       conversation.save()
 
-  return redirect("explore")
+  return redirect("chatbot")
 
 
 @login_required
@@ -152,7 +152,7 @@ def delete_conversation(request, conversation_id):
   if request.method == "POST":
     conversation = get_object_or_404(Conversation, id=conversation_id)
     conversation.delete()
-  return redirect("explore")
+  return redirect("chatbot")
 
 
 @login_required
@@ -183,7 +183,7 @@ def send_prompt(request, conversation_id):
       },
     )
 
-  return redirect("explore")
+  return redirect("chatbot")
 
 
 @login_required
@@ -241,7 +241,7 @@ def send_response(request, conversation_id, prompt):
       print("Error:", e)
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
 
-  return redirect("explore")
+  return redirect("chatbot")
 
 
 # colter's functions below
@@ -346,3 +346,13 @@ def chatbot_response(request, prompt):
 
 # @login_required
 # def new_explore_page(request):
+#     return render(
+#         request,
+#         "explore.html",
+#         {
+#         "conversations": conversations,
+#         "cities": cities,
+#         "locations": json.dumps(locations),
+#         "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
+#         },
+#     )

@@ -28,7 +28,7 @@ from user.views import (
 )
 from app.views import (
   display_home,
-  explore_page,
+  chatbot_page,
   fetch_conversation,
   new_conversation,
   edit_conversation,
@@ -37,7 +37,7 @@ from app.views import (
   send_response,
   chatbot_response,
   proxy_hotel_photo,
-  new_explore_page
+  # new_explore_page,
 )
 
 urlpatterns = [
@@ -47,7 +47,7 @@ urlpatterns = [
   path("register/", register_user, name="register"),
   path("login/", login_user, name="login"),
   path("logout/", logout_user, name="logout"),
-  path("explore/", explore_page, name="explore"),
+  path("chatbot/", chatbot_page, name="chatbot"),
   path("fetch_conversation/<int:conversation_id>/", fetch_conversation, name="fetch_conversation"),
   path("new_conversation/", new_conversation, name="new_conversation"),
   path("send_prompt/<int:conversation_id>/", send_prompt, name="send_prompt"),
@@ -59,8 +59,8 @@ urlpatterns = [
   path("resetpassword/", account_passwordreset, name="account_passwordreset"),
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
-  path('accounts/', include('allauth.socialaccount.urls')),
-  path('api/chatbot/', chatbot_response, name="chatbot_response"),
-  path('hotel-photo/<str:photo_reference>/', proxy_hotel_photo, name='proxy_hotel_photo'),
-  path("new-explore/", new_explore_page, name="new_explore")
+  path("accounts/", include("allauth.socialaccount.urls")),
+  path("api/chatbot/", chatbot_response, name="chatbot_response"),
+  path("hotel-photo/<str:photo_reference>/", proxy_hotel_photo, name="proxy_hotel_photo"),
+  # path("new-explore/", new_explore_page, name="new_explore")
 ]
