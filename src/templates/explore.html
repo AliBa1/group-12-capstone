@@ -1,0 +1,205 @@
+{% extends 'layouts/mainpage.html' %} {% block content %}
+<link rel="stylesheet" href="/static/stylesheets/map.css" />
+
+<body>
+  <div
+    class="w-full lg:w-1/2 px-3.5 mx-auto flex flex-col"
+    style="height: calc(100vh - 128px)"
+  >
+    <form class="flex space-x-8" method="POST">
+      {% csrf_token %}
+      <label class="form-control w-full">
+        <label class="label label-text text-lg" for="city">City</label>
+        <select
+          id="city"
+          name="city"
+          class="select select-bordered"
+          hx-post="{% url 'update_city_reason' %}"
+          hx-trigger="change"
+          hx-target="#search-box"
+          hx-swap="innerHTML"
+          required
+        >
+          <option value="" disabled selected>Pick one</option>
+          {% for city in cities %}
+          <option value="{{ city }}">{{ city }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="form-control w-full">
+        <label class="label label-text text-lg" for="reason">Reason</label>
+        <select
+          id="reason"
+          name="reason"
+          class="select select-bordered"
+          hx-post="{% url 'update_city_reason' %}"
+          hx-trigger="change"
+          hx-target="#search-box"
+          hx-swap="innerHTML"
+          required
+        >
+          <option value="" disabled selected>Pick one</option>
+          <option value="Travel">Travel</option>
+          <option value="Moving">Moving</option>
+        </select>
+      </label>
+    </form>
+
+    <div id="search-box" class="flex flex-col items-center">
+      <h3 class="text-center mt-4 font-bold text-xl">
+        Select values above to continue
+      </h3>
+    </div>
+
+    {% comment %} {% if city and reason %}
+    <div class="flex flex-col items-center">
+      <p>Select a topic to learn more about</p>
+      <div class="flex flex-wrap gap-2 mb-1">
+        {% for prompt in premade_prompts %}
+        <button
+          id="premade-prompt"
+          name="premade-prompt"
+          value="{{ prompt }}"
+          type="submit"
+          class="btn btn-xs"
+        >
+          {{ prompt }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <h3 class="text-center mt-4 font-bold text-xl">
+      Select values above to continue
+    </h3>
+    {% endif %} {% endcomment %}
+  </div>
+</body>
+<script>
+  // hx-on::before-on-load="console.log('hrhr'); if (new_c_id != null) {document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); document.querySelector('[data-id=new_c_id]').classList.add('active');}"
+
+  const mapLocations = JSON.parse("{{ locations|safe }}");
+  let map;
+  let markers = [];
+  let markerCluster;
+
+  function clearMarkers() {
+    markers.forEach((marker) => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function addMarkers(locations) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach((location) => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map,
+      });
+      markers.push(marker);
+
+      const content = `
+                <div style="padding: 10px;">
+                    <h3>Location Details</h3>
+                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${location.lng.toFixed(
+                      6
+                    )}</p>
+                </div>
+            `;
+
+      marker.addListener("click", () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15,
+      }),
+    });
+
+    if (markers.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach((marker) => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+
+      if (markers.length === 1) {
+        map.setZoom(14);
+      }
+    }
+  }
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: -33.8688, lng: 151.2093 },
+      zoom: 3,
+    });
+
+    const initialLocations = JSON.parse("{{ locations|safe }}");
+    if (initialLocations.length > 0) {
+      addMarkers(initialLocations);
+    }
+
+    document.addEventListener("mapUpdate", function (event) {
+      const { locations, center } = event.detail;
+
+      if (locations && locations.length > 0) {
+        addMarkers(locations);
+      }
+
+      if (center) {
+        map.setCenter(center);
+      }
+    });
+    const toggleButton = document.getElementById("toggleMap");
+    const mapDiv = document.getElementById("map");
+    const mapContainer = document.getElementById("map-container");
+
+    toggleButton.addEventListener("click", () => {
+      if (mapDiv.style.display === "none") {
+        mapDiv.style.display = "block";
+        mapContainer.style.width = "";
+        toggleButton.textContent = "Hide Map";
+        google.maps.event.trigger(map, "resize");
+      } else {
+        mapDiv.style.display = "none";
+        toggleButton.textContent = "Show Map";
+      }
+    });
+  }
+  {% comment %} const toggleConversation = document.getElementById("toggle-menu");
+  const conversationMenu = document.getElementById("conversation-menu");
+  toggleConversation.addEventListener("click", () => {
+    if (conversationMenu.style.display === "none") {
+      conversationMenu.style.display = "block";
+      toggleButton.textContent = "Hide Conversations";
+    } else {
+      conversationMenu.style.display = "none";
+      toggleButton.textContent = "Show Conversations";
+    }
+  }); {% endcomment %}
+</script>
+
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
+  async
+  defer
+></script>
+{%endblock%}

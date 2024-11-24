@@ -1,0 +1,65 @@
+{% if error %}
+<h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
+{% endif %} {% if loading %}
+<div class="flex flex-col items-center">
+  <h3 class="text-center text-lg">Your response is loading</h3>
+  <span class="loading loading-dots loading-sm"></span>
+</div>
+{% else %}
+<link rel="stylesheet" href="/static/stylesheets/map.css" />
+<div class="w-full overflow-y-scroll">
+  {% if text %}
+  <h3 class="text-center text-lg">{{ text }}</h3>
+  {% endif %} 
+  {% if additional_data and additional_data.type == 'hotel_search'%}
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+    {% for hotel in additional_data.hotels %}
+    <div class="card lg:card-side bg-base-100 shadow-xl">
+      <figure>
+        <img
+          class="h-full w-full bg-cover bg-center bg-no-repeat"
+          src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
+          alt="{{ hotel.title }}"
+          onerror="this.src='/static/images/genhotel.jpg'"
+        />
+      </figure>
+      <div class="card-body">
+        <h2 class="card-title">{{ hotel.title }}</h2>
+        <p>{{ hotel.description }}</p>
+        <div class="card-actions justify-end">
+          <button
+            class="btn btn-primary ml-2"
+            onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+
+  <div id="map-center" data-center="{{ map_center|safe }}" class="hidden"></div>
+  <div
+    id="locations"
+    data-locations="{{ locations|safe }}"
+    class="hidden"
+  ></div>
+{% endif %}
+<script>
+  const locationsElement = document.getElementById("locations");
+  const mapCenterElement = document.getElementById("map-center");
+
+  if (locationsElement && mapCenterElement) {
+    const mapUpdateEvent = new CustomEvent("mapUpdate", {
+      detail: {
+        locations: JSON.parse(locationsElement.dataset.locations || "[]"),
+        center: JSON.parse(mapCenterElement.dataset.center || "null"),
+      },
+    });
+    window.parent.document.dispatchEvent(mapUpdateEvent);
+  }
+</script>

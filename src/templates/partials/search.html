@@ -1,0 +1,84 @@
+{% comment %}
+<p class="text-center mt-4 font-bold text-xl">
+  Select a topic to learn more about
+</p>
+<div class="flex flex-wrap gap-2 mb-1">
+  {% for prompt in premade_prompts %}
+  <button
+    id="premade-prompt"
+    name="premade-prompt"
+    value="{{ prompt }}"
+    type="submit"
+    class="btn btn-xs"
+  >
+    {{ prompt }}
+  </button>
+  {% endfor %}
+</div>
+{% endcomment %}
+
+<form
+  id="send-search"
+  class="flex items-end w-full space-x-8"
+  method="POST"
+  hx-post="{% url 'send_search' city reason %}"
+  hx-target="#search-results"
+  hx-swap="innerHTML"
+>
+  {% csrf_token %}
+  <label class="form-control w-full">
+    <label class="label label-text text-lg" for="topic">Topic</label>
+    <select id="topic" name="topic" class="select select-bordered" required>
+      <option value="" disabled selected>Pick one</option>
+      {% for prompt in premade_prompts %}
+      <option value="{{ prompt }}">{{ prompt }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+    Search
+  </button>
+</form>
+
+<div id="search-results" class="flex flex-col mt-4"></div>
+
+<script>
+  function afterSendSearch() {
+    const city = "{{ city }}";
+    const reason = "{{ reason }}";
+    const topic = document.querySelector('#topic').value;
+
+    htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
+    // htmx.ajax("POST", `/search_response/${city}/${reason}`, {
+      target: "#search-results",
+      swap: "innerHTML",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+          .value,
+      },
+    });
+  }
+
+  document
+    .querySelector("#send-search")
+    .addEventListener("htmx:afterRequest", () => {
+      afterSendSearch();
+    });
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target.id === "chat") {
+      const locationsElement = document.getElementById("locations");
+      const mapCenterElement = document.getElementById("map-center");
+
+      if (locationsElement && mapCenterElement) {
+        const mapUpdateEvent = new CustomEvent("mapUpdate", {
+          detail: {
+            locations: JSON.parse(locationsElement.dataset.locations || "[]"),
+            center: JSON.parse(mapCenterElement.dataset.center || "null"),
+          },
+        });
+        window.parent.document.dispatchEvent(mapUpdateEvent);
+      }
+    }
+  });
+</script>

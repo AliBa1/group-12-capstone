@@ -19,7 +19,7 @@
         <div id="conversation" data-id="{{ c.id }}"
           class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
           hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
-                     this.classList.add('active');" hx-trigger="click, mapUpdate">
+                     this.classList.add('active');" hx=="click, mapUpdate">
           <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
 
           <div class="dropdown dropdown-bottom dropdown-end">
