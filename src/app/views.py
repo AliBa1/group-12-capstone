@@ -347,59 +347,13 @@ def chatbot_response(request, prompt):
 
 @login_required
 def explore_page(request):
-  #   locations = []
-  #   search_prompt = ""
-  #   if search_prompt and search_prompt.additional_data:
-  #     try:
-  #       data = search_prompt.additional_data
-  #       if "hotels" in data:
-  #         locations = [
-  #           {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-  #           for hotel in data["hotels"]
-  #           if "details" in hotel and "location" in hotel["details"]
-  #         ]
-  #     except Exception as e:
-  #       print(f"Error extracting locations: {e}")
-
-  #   if not locations:
-  #     locations = [
-  #       {"lat": -33.8688, "lng": 151.2093},
-  #     ]
   return render(
     request,
     "explore.html",
     {
       "cities": cities,
-      "show_search": False,
-      #   "locations": json.dumps(locations),
-      "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
     },
   )
-
-
-# def update_city_reason(request):
-#   city = request.POST.get("city")
-#   reason = request.POST.get("reason")
-#   temp_conversation = Conversation(city=city, reason=reason)
-#   print(city)
-#   print(reason)
-#   show_search = False
-#   if city and reason:
-#     show_search = True
-
-#   return render(
-#     request,
-#     "explore.html",
-#     {
-#       "cities": cities,
-#       # "show_search": show_search,
-#       "premade_prompts": choose_premade_prompts(temp_conversation),
-#       #   "locations": json.dumps(locations),
-#       "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
-#       "city": city,
-#       "reason": reason
-#     },
-#   )
 
 
 @login_required
@@ -414,9 +368,7 @@ def update_city_reason(request):
         request,
         "partials/search.html",
         {
-          "cities": cities,
           "premade_prompts": choose_premade_prompts(temp_conversation),
-          "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
           "city": city,
           "reason": reason,
         },
@@ -424,17 +376,8 @@ def update_city_reason(request):
 
 
 @login_required
-def send_search(request, city, reason):
+def send_search(request):
   if request.method == "POST":
-    # city = request.POST.get("city")
-    # reason = request.POST.get("reason")
-    # topic = request.POST.get("topic")
-    # print(city)
-    # print(reason)
-    # print(topic)
-
-    # search_response(request, city, reason, topic)
-
     return render(
       request,
       "partials/search_results.html",
@@ -449,9 +392,6 @@ def send_search(request, city, reason):
 def search_response(request, city, reason, topic):
   if request.method == "POST":
     try:
-      print(city)
-      print(reason)
-      print(topic)
       prompt = f"I want to learn more about {topic} in {city}"
       response = chatbot_response(request, prompt)
       # response = "Test Response"
@@ -473,14 +413,9 @@ def search_response(request, city, reason, topic):
           },
         )
       else:
-        # response_text = response.get("response", "No response generated")
-        # message = Message(is_from_user=False, text=response)
-        # message = SearchResult(text=response)
-
         locations = []
         if "data" in response:
           additional_data = response["data"]
-          # message.save()
 
           if "hotels" in response["data"]:
             locations = [
@@ -489,8 +424,11 @@ def search_response(request, city, reason, topic):
               if "details" in hotel and "location" in hotel["details"]
             ]
 
-        # chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-        print(additional_data)
+        if not locations:
+          locations = [
+            {"lat": -33.8688, "lng": 151.2093},
+          ]
+
         return render(
           request,
           "partials/search_results.html",

@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/static/stylesheets/map.css" />
 {% if error %}
 <h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
 {% endif %} {% if loading %}
@@ -6,12 +7,10 @@
   <span class="loading loading-dots loading-sm"></span>
 </div>
 {% else %}
-<link rel="stylesheet" href="/static/stylesheets/map.css" />
 <div class="w-full overflow-y-scroll">
   {% if text %}
   <h3 class="text-center text-lg">{{ text }}</h3>
-  {% endif %} 
-  {% if additional_data and additional_data.type == 'hotel_search'%}
+  {% endif %} {% if additional_data and additional_data.type == 'hotel_search'%}
   <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
     {% for hotel in additional_data.hotels %}
     <div class="card lg:card-side bg-base-100 shadow-xl">
@@ -41,15 +40,136 @@
   {% endif %}
 </div>
 
-
-  <div id="map-center" data-center="{{ map_center|safe }}" class="hidden"></div>
+<div id="map-container" class="relative transition-all duration-300">
+  <button
+    id="toggleMap"
+    class="absolute mt-10 top-4 left-4 z-10 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white"
+  >
+    Hide Map
+  </button>
+  <div id="map" class="h-full w-full">
+    {% comment %}
+    <div
+      id="map-center"
+      data-center="{{ map_center|safe }}"
+      class="hidden"
+    ></div>
+    {% endcomment %}
+  </div>
   <div
     id="locations"
     data-locations="{{ locations|safe }}"
     class="hidden"
   ></div>
+</div>
+
 {% endif %}
 <script>
+  const mapLocations = JSON.parse("{{ locations|safe }}");
+  let map;
+  let markers = [];
+  let markerCluster;
+
+  function clearMarkers() {
+    markers.forEach((marker) => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function addMarkers(locations) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach((location) => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map,
+      });
+      markers.push(marker);
+
+      const content = `
+                <div style="padding: 10px;">
+                    <h3>Location Details</h3>
+                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${location.lng.toFixed(
+                      6
+                    )}</p>
+                </div>
+            `;
+
+      marker.addListener("click", () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15,
+      }),
+    });
+
+    if (markers.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach((marker) => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+
+      if (markers.length === 1) {
+        map.setZoom(14);
+      }
+    }
+  }
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: -33.8688, lng: 151.2093 },
+      zoom: 3,
+    });
+
+    const initialLocations = JSON.parse("{{ locations|safe }}");
+    if (initialLocations.length > 0) {
+      addMarkers(initialLocations);
+    }
+
+    document.addEventListener("mapUpdate", function (event) {
+      const { locations, center } = event.detail;
+
+      if (locations && locations.length > 0) {
+        addMarkers(locations);
+      }
+
+      if (center) {
+        map.setCenter(center);
+      }
+    });
+    const toggleButton = document.getElementById("toggleMap");
+    const mapDiv = document.getElementById("map");
+    const mapContainer = document.getElementById("map-container");
+
+    toggleButton.addEventListener("click", () => {
+      if (mapDiv.style.display === "none") {
+        mapDiv.style.display = "block";
+        mapContainer.style.width = "";
+        toggleButton.textContent = "Hide Map";
+        google.maps.event.trigger(map, "resize");
+      } else {
+        mapDiv.style.display = "none";
+        toggleButton.textContent = "Show Map";
+      }
+    });
+  }
+
   const locationsElement = document.getElementById("locations");
   const mapCenterElement = document.getElementById("map-center");
 
@@ -63,3 +183,10 @@
     window.parent.document.dispatchEvent(mapUpdateEvent);
   }
 </script>
+
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
+  async
+  defer
+></script>
