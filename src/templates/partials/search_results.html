@@ -3,13 +3,13 @@
 <h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
 {% endif %} {% if loading %}
 <div class="flex flex-col items-center">
-  <h3 class="text-center text-lg">Your response is loading</h3>
-  <span class="loading loading-dots loading-sm"></span>
+  <h3 class="text-center my-4 text-xl">Your response is loading</h3>
+  <span class="loading loading-ball loading-lg"></span>
 </div>
 {% else %}
 <div class="w-full">
   {% if text %}
-  <h3 class="text-center text-lg">{{ text }}</h3>
+  <h3 class="text-center my-4 text-xl">{{ text }}</h3>
   {% endif %} {% if additional_data and additional_data.type == 'hotel_search'%}
   <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
     {% for hotel in additional_data.hotels %}
