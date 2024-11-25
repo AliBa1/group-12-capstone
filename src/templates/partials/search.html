@@ -1,22 +1,3 @@
-{% comment %}
-<p class="text-center mt-4 font-bold text-xl">
-  Select a topic to learn more about
-</p>
-<div class="flex flex-wrap gap-2 mb-1">
-  {% for prompt in premade_prompts %}
-  <button
-    id="premade-prompt"
-    name="premade-prompt"
-    value="{{ prompt }}"
-    type="submit"
-    class="btn btn-xs"
-  >
-    {{ prompt }}
-  </button>
-  {% endfor %}
-</div>
-{% endcomment %}
-
 <form
   id="send-search"
   class="flex items-end w-full space-x-8"
@@ -41,7 +22,7 @@
   </button>
 </form>
 
-<div id="search-results" class="flex flex-col mt-4"></div>
+<div id="search-results" class="flex flex-col w-full min-h-full mt-4 overflow-y-scroll"></div>
 
 <script>
   function afterSendSearch() {
@@ -65,20 +46,4 @@
     .addEventListener("htmx:afterRequest", () => {
       afterSendSearch();
     });
-  document.body.addEventListener("htmx:afterSwap", (event) => {
-    if (event.detail.target.id === "chat") {
-      const locationsElement = document.getElementById("locations");
-      const mapCenterElement = document.getElementById("map-center");
-
-      if (locationsElement && mapCenterElement) {
-        const mapUpdateEvent = new CustomEvent("mapUpdate", {
-          detail: {
-            locations: JSON.parse(locationsElement.dataset.locations || "[]"),
-            center: JSON.parse(mapCenterElement.dataset.center || "null"),
-          },
-        });
-        window.parent.document.dispatchEvent(mapUpdateEvent);
-      }
-    }
-  });
 </script>

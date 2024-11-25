@@ -7,7 +7,7 @@
   <span class="loading loading-dots loading-sm"></span>
 </div>
 {% else %}
-<div class="w-full overflow-y-scroll">
+<div class="w-full">
   {% if text %}
   <h3 class="text-center text-lg">{{ text }}</h3>
   {% endif %} {% if additional_data and additional_data.type == 'hotel_search'%}
@@ -40,10 +40,10 @@
   {% endif %}
 </div>
 
-<div id="map-container" class="relative transition-all duration-300">
+<div id="map-container" class="relative transition-all duration-300 border">
   <button
     id="toggleMap"
-    class="absolute mt-10 top-4 left-4 z-10 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white"
+    class="absolute z-10 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white"
   >
     Hide Map
   </button>
@@ -55,12 +55,12 @@
       class="hidden"
     ></div>
     {% endcomment %}
+    <div
+      id="locations"
+      data-locations="{{ locations|safe }}"
+      class="hidden"
+    ></div>
   </div>
-  <div
-    id="locations"
-    data-locations="{{ locations|safe }}"
-    class="hidden"
-  ></div>
 </div>
 
 {% endif %}
@@ -182,6 +182,23 @@
     });
     window.parent.document.dispatchEvent(mapUpdateEvent);
   }
+
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    //if (event.detail.target.id === "chat") {
+      const locationsElement = document.getElementById("locations");
+      //const mapCenterElement = document.getElementById("map-center");
+
+      if (locationsElement && mapCenterElement) {
+        const mapUpdateEvent = new CustomEvent("mapUpdate", {
+          detail: {
+            locations: JSON.parse(locationsElement.dataset.locations || "[]"),
+            center: JSON.parse(mapCenterElement.dataset.center || "null"),
+          },
+        });
+        window.parent.document.dispatchEvent(mapUpdateEvent);
+      }
+    //}
+  })
 </script>
 
 <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
