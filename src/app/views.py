@@ -274,7 +274,8 @@ def chatbot_response(request, prompt):
             run = client.beta.threads.runs.create_and_poll(
                 thread_id=thread.id,
                 assistant_id="asst_oiJLKxsdKui3utTSaBFGuwST",
-                instructions="Please assist the user with travel and relocation inquiries. When responding to travel and relocation queries, provide ONLY a brief, one-sentence welcome or introduction",
+                instructions="Please assist the user with travel and relocation inquiries. When responding to hotel, flights, apartments, and housing queries, provide ONLY a brief, one-sentence welcome or introduction." 
+                             "For other queries that have to do with visiting or moving to a city, respond normally no need to be brief. If the query has nothing to do with travel or relocation, respond saying Please ask about moving or traveling only.",
             )
 
             if run.status != "completed":
