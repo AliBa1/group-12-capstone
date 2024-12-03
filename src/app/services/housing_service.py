@@ -7,7 +7,7 @@ import openai
 """
 example request:
 url = "https://api.rentcast.io/v1/listings/sale?city=austin&state=tx&status=Active&limit=5"
-
+        https://api.rentcast.io/v1/listings/sale?city=Detroit,MI&status=Active&limit=5
 headers = {
     "accept": "application/json",
     "X-Api-Key": "8f2586c8082e4bb285f4f190aaf6f724"
@@ -107,7 +107,7 @@ class HousingSearchStrategy(SearchStrategy):
 
         formatted_data = self._format_house_response(houses_data)
 
-        response_text = f"I found {len(houses_data)} houses in the {location_info['city']} area"
+        response_text = f"I found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area"
 
         return {
             'text': response_text,
@@ -120,9 +120,9 @@ class HousingSearchStrategy(SearchStrategy):
                 model="gpt-4.0",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the city from this query, and if the city name is misspelled, correct it and use the proper city name: '{query}'. "
-                              f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\"}} "
-                              f"(replace Austin with the appropriate city name)"
+                    "content": f"Extract the city and state from this query, and if the city name is misspelled, correct it and use the proper city name: '{query}'. "
+                              f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\", \"state\": \"TX\"}} "
+                              f"(replace Austin and TX with the appropriate city and state)"
                 }]
             )
             content = response.choices[0].message.content
@@ -132,44 +132,35 @@ class HousingSearchStrategy(SearchStrategy):
             return None
 
     def _search_houses(self, city, limit=5):
+        # ex city: Detroit, MI
+        state = city.split(",")[-1].strip() 
         try:
-            url = f"{self.base_url}?city={city}&status=Active&limit={limit}"
+            url = f"{self.base_url}?city={city}&state={state}&status=Active&limit={limit}"
             headers = {
                 "accept": "application/json",
                 "X-API-KEY": self.api_key
             }
             response = requests.get(url, headers=headers)
             response.raise_for_status()
-            return response.json()
+            return response
         except Exception as e:
             print(f"Error in search_houses: {e}")
             return []
 
     def _format_house_response(self, houses_data):
-        formatted_houses = []
-
+        formatted_data = []
         for house in houses_data:
-            formatted_house = {
-                'title': house['address'],
-                'description': f"Price: ${house['price']}, Beds: {house['beds']}, Baths: {house['baths']}",
-                'location': house['address'],
-                'details': {
-                    'id': house['id'],
-                    'price': house['price'],
-                    'beds': house['beds'],
-                    'baths': house['baths'],
-                    'sqft': house['sqft'],
-                    'year_built': house['year_built'],
-                    'days_on_market': house['days_on_market'],
-                    'listing_date': house['listing_date'],
-                    'status': house['status'],
-                    'url': house['url']
-                }
-            }
-            formatted_houses.append(formatted_house)
-
-        return {
-            'houses': formatted_houses,
-            'total_results': len(formatted_houses),
-            'type': 'house_search'
-        }
+            formatted_data.append({
+                'id': house['id'],
+                'formattedAddress': house['formattedAddress'],
+                'propertyType': house['propertyType'],
+                'bedrooms': house['bedrooms'],
+                'bathrooms': house['bathrooms'],
+                'squareFootage': house['squareFootage'],
+                'price': house['price'],
+                'listedDate': house['listedDate'],
+                'daysOnMarket': house['daysOnMarket'],
+                'listingAgent': house['listingAgent'],
+                'listingOffice': house['listingOffice']
+            })
+        return formatted_data
