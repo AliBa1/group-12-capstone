@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.http import JsonResponse
 from openai import OpenAI
 from django.conf import settings
+import os
+import joblib
+import pandas as pd
 
 
 def display_home(request):
@@ -144,3 +147,62 @@ def chatbot_response(request, prompt):
     except Exception as e:
       print("Error:", e)
       return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
+    
+  def load_model_and_data():
+    try:
+      model_path = os.path.join(settings.ML_MODELS_DIR, 'random_forest_model.joblib')
+      encoder_path = os.path.join(settings.ML_MODELS_DIR, 'label_encoder.joblib')
+      data_path = os.path.join(settings.ML_MODELS_DIR, 'processed_metro_heat_index.csv')
+      
+      print(f"Loading model from: {model_path}")
+      
+      model = joblib.load(model_path)
+      label_encoder = joblib.load(encoder_path)
+      data = pd.read_csv(data_path)
+      
+      return model, data, label_encoder
+    
+    except Exception as e:
+      print(f"Error loading model files: {str(e)}")
+      raise
+
+  def predict_heat_index(request):
+    try:
+      location = request.GET.get('location', 'Houston, TX')
+      print(f"Predicting for location: {location}")
+
+      model, data, label_encoder = load_model_and_data()
+
+      state = location.split(", ")[-1].strip()
+
+      try:
+        state_encoded = label_encoder.transform([state])[0]
+      except ValueError:
+        return JsonResponse({
+          'error': f"State '{state}' not found in training data.",
+          'available_states': label_encoder.classes_.tolist()
+        }, status=400)
+
+      location_data = data[(data["RegionName"] == location) & (data["StateName"] == state_encoded)]
+
+      if location_data.empty:
+        return JsonResponse({
+          'error': f'Location not found: {location}',
+          'available_locations': data["RegionName"].unique().tolist()
+        }, status=404)
+      
+      features = location_data[["RegionID", "SizeRank", "StateName"]]
+      prediction = model.predict(features)[0]
+
+      return JsonResponse({
+        'location': location,
+        'predicted_heat_index': float(prediction),
+        'state': state
+      })
+
+    except Exception as e:
+      print(f"Prediction error: {str(e)}")
+      return JsonResponse({
+        'error': 'Failed to make prediction',
+        'details': str(e)
+      }, status=500)
