@@ -2,13 +2,34 @@
   {% for message in chat_messages %}
     <div class="flex flex-col gap-4 mb-4">
       <div class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}">
-        <div class="chat-bubble">
+        <div class="chat-bubble text-white">
           {{ message.text }}
         </div>
       </div>
+      
+      <!-- <pre>{{ flights|safe }}</pre> -->
+      {% if message.additional_data and message.additional_data.type == 'flight_search' and not message.is_from_user %}
+        <div class= "grid grid-cols-1 lg: grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+          {% for flight in message.additional_data.flights %}
+          <div class="card lg: card-side bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h2 class="card-title">{{ flight.iata }}</h2>
+              <p><strong>Airline:</strong>{{ flight.airline.name }}</p>
+              <p><strong>Flight Date:</strong>{{ flight.flight_date }}</p>
+              <p><strong>Departure Airport:</strong>{{ flight.departure.airport_name }}</p>
+              <p><strong>Terminal:</strong>{{ flight.departure.terminal }} | <strong>Gate:</strong> {{ flight.departure.gate }}</p>
+              <p><strong>Time:</strong>{{ flight.departure.time }}</p>
+              <p><strong>Arrival Airport:</strong>{{ flight.arrival.airport_name }}</p>
+              <p><strong>Terminal:</strong>{{ flight.arrival.terminal }} | <strong>Gate:</strong>{{ flight.arrival.gate }}</p>
+              <p><strong>Time:</strong>{{ flight.arrival.time }}</p>
+            </div> 
+          </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
       {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white conainer21">
           {% for hotel in message.additional_data.hotels %}
             <div class="card lg:card-side bg-base-100 shadow-xl">
               <figure>
@@ -21,9 +42,13 @@
               <div class="card-body">
                 <h2 class="card-title">{{ hotel.title }}</h2>
                 <p>{{ hotel.description }}</p>
+                <div class="extra-details hidden"> <!-- Changed from ID to class -->
+                  <p>{{hotel.details.chain_code}}</p>
+                  <p>{{hotel.details.dupe_id}}</p>
+                  <p>{{hotel.details.iata_code}}</p>
+                </div>
                 <div class="card-actions justify-end">
-                  <button class="btn btn-primary ml-2" 
-                          onclick="showHotelDetails('{{ hotel.details|escapejs }}')">
+                  <button class="btn btn-primary ml-2 toggle-details-btn"> <!-- Changed from ID to class -->
                     View Details
                   </button>
                 </div>
@@ -32,6 +57,8 @@
           {% endfor %}
         </div>
       {% endif %}
+      <div>
+      </div>
     </div>
   {% endfor %}
   
@@ -42,6 +69,8 @@
       </div>
     </div>
   {% endif %}
+  <div id="map-center" data-center='{{ map_center|safe }}' class="hidden"></div>
+    <div id="locations" data-locations='{{ locations|safe }}' class="hidden"></div>
 </div>
 
 <form
@@ -50,8 +79,8 @@
   hx-post="{% url 'send_prompt' conversation_id %}"
   hx-target="#chat"
   hx-swap="innerHTML"
-  class="flex items-center justify-around mt-2"
->
+  class="flex items-center justify-around mt-2">
+
   {% csrf_token %}
   <div class="flex flex-col w-11/12 mr-2">
     <div class="flex flex-wrap gap-2 mb-1">
@@ -150,4 +179,38 @@
     .addEventListener("htmx:afterRequest", () => {
       afterSendPrompt();
     });
+    document.body.addEventListener("htmx:afterSwap", (event) => {
+    if (event.detail.target.id === "chat") {
+      scrollToBottom();
+      document.querySelector("#prompt").focus();
+      
+      const locationsElement = document.getElementById('locations');
+      const mapCenterElement = document.getElementById('map-center');
+      
+      if (locationsElement && mapCenterElement) {
+        const mapUpdateEvent = new CustomEvent('mapUpdate', {
+          detail: {
+            locations: JSON.parse(locationsElement.dataset.locations || '[]'),
+            center: JSON.parse(mapCenterElement.dataset.center || 'null')
+          }
+        });
+        window.parent.document.dispatchEvent(mapUpdateEvent);
+      }
+    }
+  });
+  document.addEventListener('click', function(e) {
+    if (e.target.matches('.toggle-details-btn')) {
+      const card = e.target.closest('.card-body');
+      const details = card.querySelector('.extra-details');
+      const button = e.target;
+      
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        button.textContent = 'Hide Details';
+      } else {
+        details.classList.add('hidden');
+        button.textContent = 'View Details';
+      }
+    }
+  });
 </script>

@@ -1,0 +1,61 @@
+<form
+  id="send-search"
+  class="flex items-end w-full space-x-8"
+  method="POST"
+  hx-post="{% url 'send_search' %}"
+  hx-target="#search-results"
+  hx-swap="innerHTML"
+>
+  {% csrf_token %}
+  <label class="form-control w-full">
+    <label class="label label-text text-lg" for="topic">Topic</label>
+    <select id="topic" name="topic" class="select select-bordered" required>
+      <option value="" disabled selected>Pick one</option>
+      {% for prompt in premade_prompts %}
+      <option value="{{ prompt }}">{{ prompt }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+    Search
+  </button>
+</form>
+<p class="text-center mt-4 font-bold">
+  Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
+  <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
+</p>
+
+<div
+  id="search-results"
+  class="flex flex-col w-full min-h-full mt-4 overflow-y-scroll"
+></div>
+
+<script>
+  function afterSendSearch() {
+    const city = "{{ city }}";
+    const reason = "{{ reason }}";
+    const topic = document.querySelector("#topic").value;
+
+    htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
+      target: "#search-results",
+      swap: "innerHTML",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+      },
+    });
+  }
+
+  document
+    .querySelector("#send-search")
+    .addEventListener("htmx:afterRequest", () => {
+      afterSendSearch();
+    });
+
+  // Add this new event listener
+  document.body.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'search-results') {
+      reinitializeMap();
+    }
+  });
+</script>
