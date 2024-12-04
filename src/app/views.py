@@ -257,7 +257,7 @@ def send_response(request, conversation_id, prompt):
                 },
             )
         except Exception as e:
-            print("Error:", e)
+            print("Error with send_response:", e)
             return JsonResponse({"error": "An error occurred processing your request."}, status=500)
             
     return redirect("explore")

@@ -3,6 +3,7 @@ from django.conf import settings
 import requests
 import json
 import openai
+from ..models import Property
 
 """
 example request:
@@ -44,14 +45,17 @@ class HousingSearchStrategy(SearchStrategy):
             return None
 
         houses_data = self._search_houses(location_info['city'], location_info['state'])
-        if not houses_data:
-            return None
-        #print(houses_data.text)
-        #print('test')
-        formatted_data = self._format_house_response(houses_data)
+        print(houses_data.text)
+        print('test')
 
+        self._store_houses(houses_data)
+        formatted_data = self._format_house_response(houses_data)
+        print("Before accessing 'houses'")
+        print(formatted_data)  
+        print(formatted_data.get('houses'))
+        print("After accessing 'houses'")
         response_text = f"I found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area"
-        #print(f"Found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area")
+        print(f"Found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area")
         return {
             'text': response_text,
             'data': formatted_data
@@ -91,9 +95,34 @@ class HousingSearchStrategy(SearchStrategy):
             return response
         except Exception as e:
             print(f"Error in search_houses: {e}")
-            return []
+            return None
         
-    def _store_hotels(self, hotels):
+    def _store_houses(self, houses_data):
+        print("In _store_houses")
+        for house in houses_data:
+            try:
+                Property.objects.update_or_create(
+                    formatted_address=house['formattedAddress'],
+                    defaults={
+                        "propertyType": house['propertyType'],
+                        "bedrooms": house['bedrooms'],
+                        "bathrooms": house['bathrooms'],
+                        "squareFootage": house['squareFootage'],
+                        "lotSize": house['lotSize'],
+                        "yearBuilt": house['yearBuilt'],
+                        "price": house['price'],
+                        "listingType": house['listingType'],
+                        "daysOnMarket": house['daysOnMarket'],
+                        "mlsName": house['mlsName'],
+                        "mlsNumber": house['mlsNumber'],
+                        "listingAgent": house['listingAgent'],
+                        "listingOffice": house['listingOffice']
+                    }
+                )
+                print("Stored house")
+            except Exception as e:
+                print(f"Error in store_houses: {e}")
+                continue
         """
             exaplme response (json):
         [
@@ -121,7 +150,7 @@ class HousingSearchStrategy(SearchStrategy):
             "price": 899000,
             "listingType": "Standard",
             "listedDate": "2024-06-24T00:00:00.000Z",
-            "removedDate": null,
+            "removedDate": ,
             "createdDate": "2021-06-25T00:00:00.000Z",
             "lastSeenDate": "2024-09-30T13:11:47.157Z",
             "daysOnMarket": 99,
@@ -155,27 +184,29 @@ class HousingSearchStrategy(SearchStrategy):
             ...
         """
     def _format_house_response(self, houses_data):
+        print("In _format_house_response")
         formatted_data = []
         for house in houses_data:
             formatted_house = {
-                "address": house['formattedAddress'],
-                "propertyType": house['propertyType'],
-                "bedrooms": house['bedrooms'],
-                "bathrooms": house['bathrooms'],
-                "squareFootage": house['squareFootage'],
-                "lotSize": house['lotSize'],
-                "yearBuilt": house['yearBuilt'],
-                "price": house['price'],
-                "listingType": house['listingType'],
-                "daysOnMarket": house['daysOnMarket'],
-                "mlsName": house['mlsName'],
-                "mlsNumber": house['mlsNumber'],
-                "listingAgent": house['listingAgent'],
-                "listingOffice": house['listingOffice']
+                'formattedAddress': house['formattedAddress'],
+                'propertyType': house['propertyType'],
+                'bedrooms': house['bedrooms'],
+                'bathrooms': house['bathrooms'],
+                'squareFootage': house['squareFootage'],
+                'lotSize': house['lotSize'],
+                'yearBuilt': house['yearBuilt'],
+                'price': house['price'],
+                'listingType': house['listingType'],
+                'daysOnMarket': house['daysOnMarket'],
+                'mlsName': house['mlsName'],
+                'mlsNumber': house['mlsNumber'],
+                'listingAgent': house['listingAgent'],
+                'listingOffice': house['listingOffice']
             }
             formatted_data.append(formatted_house)
-            for formatted_house in formatted_data:
-                print('actual data')
-                print(formatted_data[formatted_house])
-                print('\n\n')
-        return formatted_data
+        print("formatted_data")
+        return {
+            'houses':formatted_data,
+            'total_results': len(formatted_data),
+            'type': 'house_search'
+        }
