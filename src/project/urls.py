@@ -36,7 +36,7 @@ from app.views import (
   send_prompt,
   send_response,
   chatbot_response,
-  proxy_hotel_photo
+  proxy_hotel_photo,
 )
 
 urlpatterns = [
