@@ -77,39 +77,55 @@ def fetch_conversation(request, conversation_id):
   conversation = get_object_or_404(Conversation, id=conversation_id)
 
   locations = []
+  flights = []
   latest_hotel_message = (
-    Message.objects.filter(
-      conversation=conversation,
-      is_from_user=False,
-      additional_data__isnull=False,
-    )
-    .order_by("-timestamp")
-    .first()
+      Message.objects.filter(
+          conversation=conversation,
+          is_from_user=False,
+          additional_data__isnull=False,
+      )
+      .order_by("-timestamp")
+      .first()
   )
 
   if latest_hotel_message and latest_hotel_message.additional_data:
-    data = latest_hotel_message.additional_data
-    if "hotels" in data:
-      locations = [
-        {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-        for hotel in data["hotels"]
-        if "details" in hotel and "location" in hotel["details"]
-      ]
+        try:
+            if isinstance(latest_hotel_message.additional_data, str):
+                data = json.loads(latest_hotel_message.additional_data)
+            else:
+                data = latest_hotel_message.additional_data
+
+            if 'hotels' in data:
+                locations = [
+                    {
+                        'lat': hotel['details']['location']['lat'],
+                        'lng': hotel['details']['location']['lng']
+                    }
+                    for hotel in data['hotels']
+                    if 'details' in hotel and 'location' in hotel['details']
+                ]
+            if 'flights' in data:
+                flights = data['flights']
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+        except Exception as e:
+            print(f"Error processing additional_data: {e}")
   return render(
-    request,
-    "partials/chat.html",
-    {
-      "chat_messages": chat_messages,
-      "conversation_id": conversation_id,
-      "bot_typing": False,
-      "prompt": None,
-      "premade_prompts": choose_premade_prompts(conversation),
-      "city": conversation.city,
-      "reason": conversation.reason,
-      "locations": json.dumps(locations),
-      # "map_center": json.dumps(map_center) if map_center else None,
-    },
-  )
+        request,
+        "partials/chat.html",
+        {
+        "chat_messages": chat_messages,
+        "conversation_id": conversation_id,
+        "bot_typing": False,
+        "prompt": None,
+        "premade_prompts": choose_premade_prompts(conversation),
+        "city": conversation.city,
+        "reason": conversation.reason,
+        "locations": json.dumps(locations),
+        "flights": flights,
+        # "map_center": json.dumps(map_center) if map_center else None,
+        },
+    )
 
 
 @login_required
@@ -188,60 +204,87 @@ def send_prompt(request, conversation_id):
 
 @login_required
 def send_response(request, conversation_id, prompt):
-  if request.method == "POST":
-    try:
-      conversation = get_object_or_404(Conversation, id=conversation_id)
+    if request.method == "POST":
+        try:
+            conversation = get_object_or_404(Conversation, id=conversation_id)
 
-      request.POST = request.POST.copy()
-      request.POST["conversation_id"] = conversation_id
+            request.POST = request.POST.copy()
+            request.POST["conversation_id"] = conversation_id
 
-      response = chatbot_response(request, prompt)
+            response = chatbot_response(request, prompt)
 
-      if isinstance(response, JsonResponse):
-        Message.objects.create(
-          is_from_user=False,
-          text="An error occurred processing your request. Please refresh and try again.",
-          conversation=conversation,
-        )
-      else:
-        response_text = response.get("response", "No response generated")
-        message = Message.objects.create(is_from_user=False, text=response_text, conversation=conversation)
+            if isinstance(response, JsonResponse):
+                Message.objects.create(
+                    is_from_user=False,
+                    text="An error occurred processing your request. Please refresh and try again.",
+                    conversation=conversation,
+                )
+            else:
+                response_text = response.get('response', 'No response generated')
+                message = Message.objects.create(
+                    is_from_user=False, 
+                    text=response_text, 
+                    conversation=conversation
+                )
+                
+                flights = []
+                locations = []
+                if 'data' in response:
+                    try:
+                        if isinstance(response['data'], str):
+                            parts = response['data'].split(',', 1)
+                            if len(parts) > 1:
+                                raw_json = parts[1].strip()
+                                raw_json = raw_json.replace("'", '"')
+                                data = json.loads(raw_json)
+                            else:
+                                raise ValueError("No dictionary part found in the data string")
+                        else:
+                            data = response['data']
 
-        if "data" in response:
-          message.additional_data = response["data"]
-          message.save()
-        locations = []
-        if "data" in response:
-          message.additional_data = response["data"]
-          message.save()
+                        message.additional_data = data
+                        message.save()
 
-          if "hotels" in response["data"]:
-            locations = [
-              {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-              for hotel in response["data"]["hotels"]
-              if "details" in hotel and "location" in hotel["details"]
-            ]
+                        if 'flights' in data:
+                            flights = data.get('flights', [])
+                            message.additional_data = {
+                                "flights": flights,
+                                "type": "flight_search"
+                            }
+                            message.save()
+                    except (json.JSONDecodeError, TypeError) as e:
+                        print(f"Error decoding response['data']: {e}")
+                    if 'hotels' in response['data']:
+                        locations = [
+                            {
+                                'lat': hotel['details']['location']['lat'],
+                                'lng': hotel['details']['location']['lng']
+                            }
+                            for hotel in response['data']['hotels']
+                            if 'details' in hotel and 'location' in hotel['details']
+                        ]                
 
-      chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-      return render(
-        request,
-        "partials/chat.html",
-        {
-          "chat_messages": chat_messages,
-          "conversation_id": conversation_id,
-          "bot_typing": False,
-          "prompt": None,
-          "premade_prompts": choose_premade_prompts(conversation),
-          "city": conversation.city,
-          "reason": conversation.reason,
-          "locations": json.dumps(locations),
-        },
-      )
-    except Exception as e:
-      print("Error:", e)
-      return JsonResponse({"error": "An error occurred processing your request."}, status=500)
-
-  return redirect("chatbot")
+            chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+            return render(
+                request,
+                "partials/chat.html",
+                {
+                    "chat_messages": chat_messages,
+                    "conversation_id": conversation_id,
+                    "bot_typing": False,
+                    "prompt": None,
+                    "premade_prompts": choose_premade_prompts(conversation),
+                    "city": conversation.city,
+                    "reason": conversation.reason,
+                    "locations": json.dumps(locations),
+                    "flights": flights,
+                },
+            )
+        except Exception as e:
+            print("Error in send_response:", e)
+            return JsonResponse({"error": "An error occurred processing your request."}, status=500)
+            
+    return redirect("chatbot")
 
 
 # colter's functions below
@@ -294,7 +337,6 @@ def chatbot_response(request, prompt):
     except Exception as e:
       print(f"Error in chatbot_response: {str(e)}")
       return JsonResponse({"error": f"Error: {str(e)}"}, status=500)
-
 
 @require_http_methods(["GET"])
 @cache_page(60 * 60 * 24)  # cache for 24 hours
