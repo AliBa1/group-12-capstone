@@ -1,5 +1,5 @@
 
-from app.constants import premade_moving, premade_travel
+from app.constants import premade_moving, premade_travel, topics_moving, topics_travel
 from django.contrib import messages
 from app.models import Conversation
 
@@ -9,6 +9,12 @@ def choose_premade_prompts(conversation):
     return premade_travel
   else:
     return premade_moving
+  
+def choose_topics(reason):
+  if reason == "Travel":
+    return topics_travel
+  else:
+    return topics_moving
 
 def is_title_valid(request, title):
   if request.method == "POST":

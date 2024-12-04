@@ -57,30 +57,15 @@ class ListingOffice(models.Model):
         return self.name
 
 class Property(models.Model):
-    id = models.CharField(max_length=255, primary_key=True)
     formatted_address = models.CharField(max_length=255)
-    address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255)
-    state = models.CharField(max_length=2)
-    zip_code = models.CharField(max_length=10)
-    county = models.CharField(max_length=255)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
     property_type = models.CharField(max_length=255)
     bedrooms = models.IntegerField()
     bathrooms = models.DecimalField(max_digits=3, decimal_places=1)
     square_footage = models.IntegerField()
     lot_size = models.IntegerField()
     year_built = models.IntegerField()
-    hoa_fee = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    status = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     listing_type = models.CharField(max_length=50)
-    listed_date = models.DateTimeField()
-    removed_date = models.DateTimeField(null=True, blank=True)
-    created_date = models.DateTimeField()
-    last_seen_date = models.DateTimeField()
     days_on_market = models.IntegerField()
     mls_name = models.CharField(max_length=255)
     mls_number = models.CharField(max_length=255)
@@ -102,4 +87,3 @@ class PropertyHistory(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.event}"
-   

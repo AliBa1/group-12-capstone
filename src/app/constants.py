@@ -1,30 +1,72 @@
 premade_moving = [
   "Diversity",
-  "Employment",
+  "Farmers Markets",
+  "Gas Stations",
   "Healthcare",
-  "Housing",
+  "Hospitials",
   "Public Transportation",
   "Safety",
-  "Schools",
-  "Things to do",
   "Traffic",
-  "Weather",
 ]
 
 premade_travel = [
   "Activities for Kids",
+  "Gas Stations",
+  "Grocery Stores",
+  "Hospitials",
+  "Museums",
+  "Nightlife",
+  "Safety",
+  "Stores",
+]
+
+topics_moving = [
+  "Employment",
+  "Housing",
+  "Schools",
+  "Things to do",
+  "Weather",
+]
+
+topics_travel = [
   "Attractions",
   "Events",
   "Flights",
   "Food and Restaurants",
   "Hotels",
-  "Museums",
-  "Nightlife",
-  "Safety",
-  "Stores",
   "Things to do",
   "Weather",
 ]
+
+# Tone down in the future to major only
+# topics_moving = [
+#   "Diversity",
+#   "Employment",
+#   "Healthcare",
+#   "Housing",
+#   "Public Transportation",
+#   "Safety",
+#   "Schools",
+#   "Things to do",
+#   "Traffic",
+#   "Weather",
+# ]
+
+# Tone down in the future to major only
+# topics_travel = [
+#   "Activities for Kids",
+#   "Attractions",
+#   "Events",
+#   "Flights",
+#   "Food and Restaurants",
+#   "Hotels",
+#   "Museums",
+#   "Nightlife",
+#   "Safety",
+#   "Stores",
+#   "Things to do",
+#   "Weather",
+# ]
 
 cities = [
   "Albuquerque, NM",

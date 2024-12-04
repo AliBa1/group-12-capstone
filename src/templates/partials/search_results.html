@@ -1,0 +1,222 @@
+<link rel="stylesheet" href="/static/stylesheets/map.css" />
+{% block content %}
+{% if error %}
+<h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
+{% endif %}
+
+{% if loading %}
+<div class="flex flex-col items-center">
+    <h3 class="text-center my-4 text-xl">Your response is loading</h3>
+    <span class="loading loading-ball loading-lg"></span>
+</div>
+{% else %}
+{% if text %}
+    <h3 class="text-center my-4 text-xl">{{ text }}</h3>
+{% endif %}
+
+<div class="container mx-auto px-4 pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6" style="height: calc(100vh - 16rem);">
+        {% if additional_data and additional_data.type == 'hotel_search' %}
+            <div class="overflow-y-auto h-full pr-2">
+                <div class="grid grid-cols-1 gap-8 text-white pb-6">
+                    {% for hotel in additional_data.hotels %}
+                        <div class="card bg-base-100 shadow-xl">
+                            <div class="flex flex-col lg:flex-row">
+                                <figure class="lg:w-1/3">
+                                    <img
+                                        class="h-64 lg:h-full w-full object-cover object-center"
+                                        src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
+                                        alt="{{ hotel.title }}"
+                                        onerror="this.src='/static/images/genhotel.jpg'"
+                                    />
+                                </figure>
+                                <div class="card-body lg:w-2/3">
+                                    <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+                                    <p class="text-base mb-6">{{ hotel.description }}</p>
+                                    <div class="card-actions justify-end mt-auto">
+                                        <button
+                                            class="btn btn-primary"
+                                            onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="h-full lg:sticky lg:top-4">
+          <div id="map" class="w-full h-full rounded-lg" data-locations='{{ locations_json|safe }}'></div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+      main {
+      min-height: 0 !important;
+      height: calc(100vh - var(--footer-height));
+      overflow-y: auto;
+  }
+
+
+  :root {
+      --footer-height: 4rem;
+  }
+
+</style>
+
+<script>
+let map = null;
+let markerCluster = null;
+let markers = [];
+let isInitializing = false;
+
+async function initMap() {
+    if (isInitializing) return;
+    isInitializing = true;
+
+    try {
+        await cleanupMap();
+        
+        const mapElement = document.getElementById("map");
+        if (!mapElement) {
+            isInitializing = false;
+            return;
+        }
+
+        const { Map } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+        
+        const locationsData = mapElement.dataset.locations || '[]';
+        let locations = [];
+        try {
+            locations = JSON.parse(locationsData);
+        } catch (e) {
+            console.warn('Failed to parse locations data, using default location');
+            locations = [];
+        }
+        
+        const initialCenter = locations.length > 0 
+            ? { lat: locations[0].lat, lng: locations[0].lng }
+            : { lat: 39.8283, lng: -98.5795 };
+
+
+        const mapOptions = {
+            center: initialCenter,
+            zoom: locations.length > 0 ? 15 : 4,
+            mapId: '8e0a97af9386fef',
+            useStaticMap: false, 
+            minZoom: 2,
+            maxZoom: 18,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        
+        map = new Map(mapElement, mapOptions);
+        
+        await new Promise(resolve => google.maps.event.addListenerOnce(map, 'idle', resolve));
+
+        markers = await Promise.all(locations.map(async position => {
+            const marker = new AdvancedMarkerElement({
+                position: {
+                    lat: position.lat,
+                    lng: position.lng
+                },
+                map: map
+            });
+            return marker;
+        }));
+
+        if (markers.length > 0) {
+            markerCluster = new markerClusterer.MarkerClusterer({
+                map,
+                markers,
+            });
+        }
+
+        if (locations.length > 1) {
+            const bounds = new google.maps.LatLngBounds();
+            locations.forEach(location => {
+                bounds.extend({ lat: location.lat, lng: location.lng });
+            });
+            map.fitBounds(bounds);
+            map.setZoom(map.getZoom() - 1);
+        }
+    } catch (error) {
+        console.error("Error initializing map:", error);
+    } finally {
+        isInitializing = false;
+    }
+}
+
+async function cleanupMap() {
+    return new Promise(resolve => {
+        if (markers && markers.length) {
+            markers.forEach(marker => {
+                if (marker) {
+                    marker.map = null;
+                }
+            });
+            markers = [];
+        }
+
+        if (markerCluster) {
+            markerCluster.clearMarkers();
+            markerCluster = null;
+        }
+
+        if (map) {
+            google.maps.event.clearInstanceListeners(map);
+            map = null;
+        }
+        setTimeout(resolve, 100);
+    });
+}
+
+async function reinitializeMap() {
+    await cleanupMap();
+    if (window.google && window.google.maps) {
+        await initMap();
+    } else {
+        loadMapScripts();
+    }
+}
+
+//since the chat's map is different and loads first, we have to clean up the scripts from that one first
+function loadMapScripts() {
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+        return;
+    }
+    
+    const markerClustererScript = document.createElement('script');
+    markerClustererScript.src = 'https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js';
+    markerClustererScript.async = true;
+    document.head.appendChild(markerClustererScript);
+
+    const mapsScript = document.createElement('script');
+    mapsScript.src = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly';
+    mapsScript.async = true;
+    mapsScript.defer = true;
+    document.head.appendChild(mapsScript);
+}
+
+if (!window.google || !window.google.maps) {
+    loadMapScripts();
+}
+
+let reinitTimeout;
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'search-results') {
+        clearTimeout(reinitTimeout);
+        reinitTimeout = setTimeout(() => {
+            reinitializeMap();
+        }, 100);
+    }
+});
+</script>
+{% endblock %}
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
