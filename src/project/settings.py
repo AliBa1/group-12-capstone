@@ -55,6 +55,12 @@ if not AVIATIONSTACK_API_KEY:
         'AVIATIONSTACK_API_KEY is missing.' 
         'Have you put it in a file at .env ?'
     )
+RENTCAST_API_KEY = os.getenv('RENTCAST_API_KEY')
+if not RENTCAST_API_KEY:
+    raise ValueError(
+        'RENTCAST_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 

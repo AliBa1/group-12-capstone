@@ -8,7 +8,7 @@
       </div>
 
       {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white conainer21">
           {% for hotel in message.additional_data.hotels %}
             <div class="card lg:card-side bg-base-100 shadow-xl">
               <figure>
@@ -21,9 +21,13 @@
               <div class="card-body">
                 <h2 class="card-title">{{ hotel.title }}</h2>
                 <p>{{ hotel.description }}</p>
+                <div class="extra-details hidden"> <!-- Changed from ID to class -->
+                  <p>{{hotel.details.chain_code}}</p>
+                  <p>{{hotel.details.dupe_id}}</p>
+                  <p>{{hotel.details.iata_code}}</p>
+                </div>
                 <div class="card-actions justify-end">
-                  <button class="btn btn-primary ml-2" 
-                          onclick="showHotelDetails('{{ hotel.details|escapejs }}')">
+                  <button class="btn btn-primary ml-2 toggle-details-btn"> <!-- Changed from ID to class -->
                     View Details
                   </button>
                 </div>
@@ -54,8 +58,8 @@
   hx-post="{% url 'send_prompt' conversation_id %}"
   hx-target="#chat"
   hx-swap="innerHTML"
-  class="flex items-center justify-around mt-2"
->
+  class="flex items-center justify-around mt-2">
+
   {% csrf_token %}
   <div class="flex flex-col w-11/12 mr-2">
     <div class="flex flex-wrap gap-2 mb-1">
@@ -170,6 +174,21 @@
           }
         });
         window.parent.document.dispatchEvent(mapUpdateEvent);
+      }
+    }
+  });
+  document.addEventListener('click', function(e) {
+    if (e.target.matches('.toggle-details-btn')) {
+      const card = e.target.closest('.card-body');
+      const details = card.querySelector('.extra-details');
+      const button = e.target;
+      
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        button.textContent = 'Hide Details';
+      } else {
+        details.classList.add('hidden');
+        button.textContent = 'View Details';
       }
     }
   });

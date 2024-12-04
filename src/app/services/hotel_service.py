@@ -71,7 +71,7 @@ class HotelSearchStrategy(SearchStrategy):
             print(f"Error in get_city_code: {e}")
             return None
 
-#if the user switches city during prompt, i use this one
+#if the user switches city during prompt, we use this one
     def _query_location_info(self, query):
         try:
             response = openai.chat.completions.create(
