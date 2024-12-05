@@ -26,6 +26,7 @@ DB_PORT = 5432
 ### Run Project (in CLI)
 
 - Create virtual envirnoment (follow steps above if not created)
+- _NEW_ Run redis in SEPERATE terminal (nake sure an instance of redis has been created) `docker start my-redis` (replace my-redis if under a different name)
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate` (to exit environment use `deactivate`)
 - Install dependencies: `pip install -r requirements.txt`
 - Enter project directory: `cd src`
@@ -77,3 +78,7 @@ To access admin page go to `http://127.0.0.1:8000/admin` while the project is ru
 
 - Use underscore to seperate words in variables (ex: blue_car)
 - Classes should be uppercase and follow camel case (ex: class Car)
+
+### Redis Setup
+
+- To create redis instance with the name my-redis (may replace with any name) use terminal to run `docker run --name my-redis -p 6379:6379 -d redis`
