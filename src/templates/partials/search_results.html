@@ -1,278 +1,302 @@
 <link rel="stylesheet" href="/static/stylesheets/map.css" />
-{% block content %}
+{% block content %} 
+
 {% if error %}
 <h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
 {% endif %}
 
 {% if loading %}
 <div class="flex flex-col items-center">
-    <h3 class="text-center my-4 text-xl">Your response is loading</h3>
-    <span class="loading loading-ball loading-lg"></span>
+  <h3 class="text-center my-4 text-xl">Your response is loading</h3>
+  <span class="loading loading-ball loading-lg"></span>
 </div>
 {% else %}
+
 {% if text %}
-    <h3 class="text-center my-4 text-xl">{{ text }}</h3>
+<h3 class="text-center my-4 text-xl">{{ text }}</h3>
 {% endif %}
 
 <div class="container mx-auto px-4 pb-8">
-    <div class="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6" style="height: calc(100vh - 16rem);">
-        {% if additional_data and additional_data.type == 'hotel_search' %}
-            <div class="overflow-y-auto h-full pr-2">
-                <div class="grid grid-cols-1 gap-8 text-white pb-6">
-                    {% for hotel in additional_data.hotels %}
-                        <div class="card bg-base-100 shadow-xl">
-                            <div class="flex flex-col lg:flex-row">
-                                <figure class="lg:w-1/3">
-                                    <img
-                                        class="h-64 lg:h-full w-full object-cover object-center"
-                                        src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
-                                        alt="{{ hotel.title }}"
-                                        onerror="this.src='/static/images/genhotel.jpg'"
-                                    />
-                                </figure>
-                                <div class="card-body lg:w-2/3">
-                                    <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
-                                    <p class="text-base mb-6">{{ hotel.description }}</p>
-                                    <div class="card-actions justify-end mt-auto">
-                                        <button
-                                            class="btn btn-primary"
-                                            onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
-                                        >
-                                            View Details
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+  <div
+    class="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6"
+    style="height: calc(100vh - 16rem)"
+  >
+    {% if additional_data and additional_data.type == 'hotel_search' %}
+    <div class="overflow-y-auto h-full pr-2">
+      <div class="grid grid-cols-1 gap-8 text-white pb-6">
+        {% for hotel in additional_data.hotels %}
+        <div class="card bg-base-100 shadow-xl">
+          <div class="flex flex-col lg:flex-row">
+            <figure class="lg:w-1/3">
+              <img
+                class="h-64 lg:h-full w-full object-cover object-center"
+                src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
+                alt="{{ hotel.title }}"
+                onerror="this.src='/static/images/genhotel.jpg'"
+              />
+            </figure>
+            <div class="card-body lg:w-2/3">
+              <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+              <p class="text-base mb-6">{{ hotel.description }}</p>
+              <div class="card-actions justify-end mt-auto">
+                <button
+                  class="btn btn-primary"
+                  onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
+                >
+                  View Details
+                </button>
+              </div>
             </div>
-        {% endif %}
-
-        {% if additional_data and additional_data.type == 'house_search' %}
-            <div class="overflow-y-auto h-full pr-2">
-                <div class="grid grid-cols-1 gap-8 text-white pb-6">
-                    {% for house in additional_data.houses %}
-                        <div class="card bg-base-100 shadow-xl">
-                            <div class="flex flex-col lg:flex-row">
-                                <figure class="lg:w-1/3">
-                                    <img
-                                        class="h-64 lg:h-full w-full object-cover object-center"
-                                        src="/static/images/genhotel.jpg"
-                                        alt="{{ hotel.title }}" 
-                                        onerror="this.src='/static/images/genhotel.jpg'"
-                                    />
-                                </figure>
-                                <div class="card-body lg:w-2/3">
-                                    <h2 class="card-title text-xl mb-4">{{ house.formattedAddress }}</h2>
-                                    <p class="text-base mb-6">Property type: {{ house.propertyType }}</p>
-                                    <p class="text-base mb-6">Price: ${{ house.price }}</p>
-                                    <div class="extra-details hidden">
-                                        <p>Number of bedrooms: {{house.bedrooms}}</p>
-                                        <p>Number of bathrooms: {{house.bathrooms}}</p>
-                                        <p>Square footage: {{house.squareFootage}}</p>
-                                        <p>Listing agent: {{house.listingAgent}}</p>
-                                        <p>Listing office: {{house.listingOffice}}</p>
-                                      </div>
-                                    <div class="card-actions justify-end mt-auto">
-                                        <button
-                                            class="btn btn-primary toggle-details-btn"
-                                        >
-                                            View Details
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="h-full lg:sticky lg:top-4">
-          <div id="map" class="w-full h-full rounded-lg" data-locations='{{ locations_json|safe }}'></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-</div>
-{% endif %}
+    {% endif %} 
+    
+    {% if additional_data and additional_data.type == 'house_search'%}
+    <div class="overflow-y-auto h-full pr-2">
+      <div class="grid grid-cols-1 gap-8 text-white pb-6">
+        {% for house in additional_data.houses %}
+        <div class="card bg-base-100 shadow-xl">
+          <div class="flex flex-col lg:flex-row">
+            <figure class="lg:w-1/3">
+              <img
+                class="h-64 lg:h-full w-full object-cover object-center"
+                src="/static/images/genhotel.jpg"
+                alt="{{ hotel.title }}"
+                onerror="this.src='/static/images/genhotel.jpg'"
+              />
+            </figure>
+            <div class="card-body lg:w-2/3">
+              <h2 class="card-title text-xl mb-4">
+                {{ house.formattedAddress }}
+              </h2>
+              <p class="text-base mb-6">
+                Property type: {{ house.propertyType }}
+              </p>
+              <p class="text-base mb-6">Price: ${{ house.price }}</p>
+              <div class="extra-details hidden">
+                <p>Number of bedrooms: {{house.bedrooms}}</p>
+                <p>Number of bathrooms: {{house.bathrooms}}</p>
+                <p>Square footage: {{house.squareFootage}}</p>
+                <p>Listing agent: {{house.listingAgent}}</p>
+                <p>Listing office: {{house.listingOffice}}</p>
+              </div>
+              <div class="card-actions justify-end mt-auto">
+                <button class="btn btn-primary toggle-details-btn">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
 
-<style>
-      main {
+    <div class="h-full lg:sticky lg:top-4">
+      <div
+        id="map"
+        class="w-full h-full rounded-lg"
+        data-locations="{{ locations_json|safe }}"
+      ></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <style>
+    main {
       min-height: 0 !important;
       height: calc(100vh - var(--footer-height));
       overflow-y: auto;
-  }
+    }
 
-
-  :root {
+    :root {
       --footer-height: 4rem;
-  }
+    }
+  </style>
 
-</style>
+  <script>
+    let map = null;
+    let markerCluster = null;
+    let markers = [];
+    let isInitializing = false;
 
-<script>
-let map = null;
-let markerCluster = null;
-let markers = [];
-let isInitializing = false;
+    async function initMap() {
+      if (isInitializing) return;
+      isInitializing = true;
 
-async function initMap() {
-    if (isInitializing) return;
-    isInitializing = true;
-
-    try {
+      try {
         await cleanupMap();
-        
+
         const mapElement = document.getElementById("map");
         if (!mapElement) {
-            isInitializing = false;
-            return;
+          isInitializing = false;
+          return;
         }
 
         const { Map } = await google.maps.importLibrary("maps");
-        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-        
-        const locationsData = mapElement.dataset.locations || '[]';
+        const { AdvancedMarkerElement } = await google.maps.importLibrary(
+          "marker"
+        );
+
+        const locationsData = mapElement.dataset.locations || "[]";
         let locations = [];
         try {
-            locations = JSON.parse(locationsData);
+          locations = JSON.parse(locationsData);
         } catch (e) {
-            console.warn('Failed to parse locations data, using default location');
-            locations = [];
+          console.warn(
+            "Failed to parse locations data, using default location"
+          );
+          locations = [];
         }
-        
-        const initialCenter = locations.length > 0 
+
+        const initialCenter =
+          locations.length > 0
             ? { lat: locations[0].lat, lng: locations[0].lng }
             : { lat: 39.8283, lng: -98.5795 };
 
-
         const mapOptions = {
-            center: initialCenter,
-            zoom: locations.length > 0 ? 15 : 4,
-            mapId: '8e0a97af9386fef',
-            useStaticMap: false, 
-            minZoom: 2,
-            maxZoom: 18,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
+          center: initialCenter,
+          zoom: locations.length > 0 ? 15 : 4,
+          mapId: "8e0a97af9386fef",
+          useStaticMap: false,
+          minZoom: 2,
+          maxZoom: 18,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
         };
-        
-        map = new Map(mapElement, mapOptions);
-        
-        await new Promise(resolve => google.maps.event.addListenerOnce(map, 'idle', resolve));
 
-        markers = await Promise.all(locations.map(async position => {
+        map = new Map(mapElement, mapOptions);
+
+        await new Promise((resolve) =>
+          google.maps.event.addListenerOnce(map, "idle", resolve)
+        );
+
+        markers = await Promise.all(
+          locations.map(async (position) => {
             const marker = new AdvancedMarkerElement({
-                position: {
-                    lat: position.lat,
-                    lng: position.lng
-                },
-                map: map
+              position: {
+                lat: position.lat,
+                lng: position.lng,
+              },
+              map: map,
             });
             return marker;
-        }));
+          })
+        );
 
         if (markers.length > 0) {
-            markerCluster = new markerClusterer.MarkerClusterer({
-                map,
-                markers,
-            });
+          markerCluster = new markerClusterer.MarkerClusterer({
+            map,
+            markers,
+          });
         }
 
         if (locations.length > 1) {
-            const bounds = new google.maps.LatLngBounds();
-            locations.forEach(location => {
-                bounds.extend({ lat: location.lat, lng: location.lng });
-            });
-            map.fitBounds(bounds);
-            map.setZoom(map.getZoom() - 1);
+          const bounds = new google.maps.LatLngBounds();
+          locations.forEach((location) => {
+            bounds.extend({ lat: location.lat, lng: location.lng });
+          });
+          map.fitBounds(bounds);
+          map.setZoom(map.getZoom() - 1);
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Error initializing map:", error);
-    } finally {
+      } finally {
         isInitializing = false;
+      }
     }
-}
 
-async function cleanupMap() {
-    return new Promise(resolve => {
+    async function cleanupMap() {
+      return new Promise((resolve) => {
         if (markers && markers.length) {
-            markers.forEach(marker => {
-                if (marker) {
-                    marker.map = null;
-                }
-            });
-            markers = [];
+          markers.forEach((marker) => {
+            if (marker) {
+              marker.map = null;
+            }
+          });
+          markers = [];
         }
 
         if (markerCluster) {
-            markerCluster.clearMarkers();
-            markerCluster = null;
+          markerCluster.clearMarkers();
+          markerCluster = null;
         }
 
         if (map) {
-            google.maps.event.clearInstanceListeners(map);
-            map = null;
+          google.maps.event.clearInstanceListeners(map);
+          map = null;
         }
         setTimeout(resolve, 100);
-    });
-}
+      });
+    }
 
-async function reinitializeMap() {
-    await cleanupMap();
-    if (window.google && window.google.maps) {
+    async function reinitializeMap() {
+      await cleanupMap();
+      if (window.google && window.google.maps) {
         await initMap();
-    } else {
+      } else {
         loadMapScripts();
+      }
     }
-}
 
-//since the chat's map is different and loads first, we have to clean up the scripts from that one first
-function loadMapScripts() {
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+    //since the chat's map is different and loads first, we have to clean up the scripts from that one first
+    function loadMapScripts() {
+      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
         return;
+      }
+
+      const markerClustererScript = document.createElement("script");
+      markerClustererScript.src =
+        "https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js";
+      markerClustererScript.async = true;
+      document.head.appendChild(markerClustererScript);
+
+      const mapsScript = document.createElement("script");
+      mapsScript.src =
+        "https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly";
+      mapsScript.async = true;
+      mapsScript.defer = true;
+      document.head.appendChild(mapsScript);
     }
-    
-    const markerClustererScript = document.createElement('script');
-    markerClustererScript.src = 'https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js';
-    markerClustererScript.async = true;
-    document.head.appendChild(markerClustererScript);
 
-    const mapsScript = document.createElement('script');
-    mapsScript.src = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly';
-    mapsScript.async = true;
-    mapsScript.defer = true;
-    document.head.appendChild(mapsScript);
-}
+    if (!window.google || !window.google.maps) {
+      loadMapScripts();
+    }
 
-if (!window.google || !window.google.maps) {
-    loadMapScripts();
-}
-
-let reinitTimeout;
-document.body.addEventListener('htmx:afterSwap', function(event) {
-    if (event.detail.target.id === 'search-results') {
+    let reinitTimeout;
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+      if (event.detail.target.id === "search-results") {
         clearTimeout(reinitTimeout);
         reinitTimeout = setTimeout(() => {
-            reinitializeMap();
+          reinitializeMap();
         }, 100);
-    }
-});
+      }
+    });
 
-document.addEventListener('click', function (e) {
-    if (e.target.matches('.toggle-details-btn')) {
-        const card = e.target.closest('.card-body');
-        const details = card.querySelector('.extra-details');
+    document.addEventListener("click", function (e) {
+      if (e.target.matches(".toggle-details-btn")) {
+        const card = e.target.closest(".card-body");
+        const details = card.querySelector(".extra-details");
         const button = e.target;
 
-        if (details.classList.contains('hidden')) {
-        details.classList.remove('hidden');
-        button.textContent = 'Hide Details';
+        if (details.classList.contains("hidden")) {
+          details.classList.remove("hidden");
+          button.textContent = "Hide Details";
         } else {
-        details.classList.add('hidden');
-        button.textContent = 'View Details';
+          details.classList.add("hidden");
+          button.textContent = "View Details";
         }
-    }
-});
-</script>
-{% endblock %}
-<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+      }
+    });
+  </script>
+  {% endblock %}
+  <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
+    async
+    defer
+  ></script>
+</div>
