@@ -5,6 +5,7 @@ import openai
 import json
 import requests
 from django.core.cache import cache
+from datetime import datetime
 
 
 class FlightSearchStrategy(SearchStrategy):
@@ -13,6 +14,11 @@ class FlightSearchStrategy(SearchStrategy):
 
     def __init__(self):
         self.api_key = settings.AVIATIONSTACK_API_KEY
+
+    @staticmethod
+    def get_cache_key(prefix, identifier):
+        safe_identifier = str(identifier).replace(' ', '_').lower()
+        return f'flight_search_{prefix}_{safe_identifier}'
     
 
     def should_handle(self, prompt):
@@ -86,6 +92,7 @@ class FlightSearchStrategy(SearchStrategy):
                 print(flight)'''
             cache.set(cache_key, flights_data, timeout=86400)
 
+
             return flights_data
         except Exception as e:
             print(f"Error fetching flights: {e}")
@@ -121,14 +128,14 @@ class FlightSearchStrategy(SearchStrategy):
                         'airport_iata': flight['departure'].get('iata'),
                         'terminal': flight['departure'].get('terminal'),
                         'gate': flight['departure'].get('gate'),
-                        'time': flight['departure'].get('estimated')
+                        'time': datetime.fromisoformat(flight['departure'].get('estimated')).strftime("%H:%M")
                     },
                     'arrival': {
                         'airport_name': flight['arrival'].get('airport'),
                         'airport_iata': flight['arrival'].get('iata'),
                         'terminal': flight['arrival'].get('terminal'),
                         'gate': flight['arrival'].get('gate'),
-                        'time': flight['arrival'].get('estimated')
+                        'time': datetime.fromisoformat(flight['arrival'].get('estimated')).strftime("%H:%M")
                     }
                 }
                 formatted_flights.append(formatted_flight)

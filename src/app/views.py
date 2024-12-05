@@ -405,20 +405,26 @@ def explore_page(request):
 
 @login_required
 def update_city_reason(request):
-  if request.method == "POST":
-    city = request.POST.get("city")
-    reason = request.POST.get("reason")
+    if request.method == "POST":
+        city = request.POST.get("city")
+        reason = request.POST.get("reason")
 
-    if city and reason:
-      return render(
-        request,
-        "partials/search.html",
-        {
-          "premade_prompts": choose_topics(reason),
-          "city": city,
-          "reason": reason,
-        },
-      )
+        if city and reason:
+            return render(
+            request,
+            "partials/search.html",
+            {
+                "premade_prompts": choose_topics(reason),
+                "city": city,
+                "reason": reason,
+            },
+        )
+        else:
+            return JsonResponse(
+            {"error": "Both city and reason are required."}, status=400
+            )
+    else:
+       return JsonResponse({"error": "Invalid request method."}, status=405)
 
 
 @login_required
