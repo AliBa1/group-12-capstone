@@ -14,6 +14,10 @@ class FlightSearchStrategy(SearchStrategy):
     def __init__(self):
         self.api_key = settings.AVIATIONSTACK_API_KEY
     
+    @staticmethod
+    def get_cache_key(prefix, identifier):
+        safe_identifier = str(identifier).replace(' ', '_').lower()
+        return f'flight_search_{prefix}_{safe_identifier}'
 
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
