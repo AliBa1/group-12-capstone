@@ -81,7 +81,9 @@ def fetch_conversation(request, conversation_id):
 
   locations = []
   flights = []
-  latest_hotel_message = (
+  houses = []
+  apartments = []
+  latest_message = (
       Message.objects.filter(
           conversation=conversation,
           is_from_user=False,
@@ -91,12 +93,12 @@ def fetch_conversation(request, conversation_id):
       .first()
   )
 
-  if latest_hotel_message and latest_hotel_message.additional_data:
+  if latest_message and latest_message.additional_data:
         try:
-            if isinstance(latest_hotel_message.additional_data, str):
-                data = json.loads(latest_hotel_message.additional_data)
+            if isinstance(latest_message.additional_data, str):
+                data = json.loads(latest_message.additional_data)
             else:
-                data = latest_hotel_message.additional_data
+                data = latest_message.additional_data
 
             if 'hotels' in data:
                 locations = [
@@ -109,6 +111,10 @@ def fetch_conversation(request, conversation_id):
                 ]
             if 'flights' in data:
                 flights = data['flights']
+            if 'houses' in data:
+                houses = data['houses']
+            if 'apartments' in data:
+                apartments = data['apartments']
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON: {e}")
         except Exception as e:
@@ -126,6 +132,8 @@ def fetch_conversation(request, conversation_id):
         "reason": conversation.reason,
         "locations": json.dumps(locations),
         "flights": flights,
+        "houses": houses,
+        "apartments": apartments,
         # "map_center": json.dumps(map_center) if map_center else None,
         },
     )
@@ -232,6 +240,8 @@ def send_response(request, conversation_id, prompt):
                 
                 flights = []
                 locations = []
+                houses = []
+                apartments = []
                 if 'data' in response:
                     try:
                         if isinstance(response['data'], str):
@@ -255,6 +265,22 @@ def send_response(request, conversation_id, prompt):
                                 "type": "flight_search"
                             }
                             message.save()
+
+                        if 'houses' in data:
+                            houses = data.get('houses', [])
+                            message.additional_data = {
+                                "houses": houses,
+                                "type": "house_search"
+                            }
+                            message.save()
+                        if 'apartments' in data:
+                            apartments = data.get('apartments', [])
+                            message.additional_data = {
+                                "apartments": apartments,
+                                "type": "apartment_search"
+                            }
+                            message.save()
+
                     except (json.JSONDecodeError, TypeError) as e:
                         print(f"Error decoding response['data']: {e}")
                     if 'hotels' in response['data']:
@@ -281,6 +307,8 @@ def send_response(request, conversation_id, prompt):
                     "reason": conversation.reason,
                     "locations": json.dumps(locations),
                     "flights": flights,
+                    "houses": houses,
+                    "apartments": apartments,
                 },
             )
         except Exception as e:
@@ -342,7 +370,7 @@ def chatbot_response(request, prompt):
       return JsonResponse({"error": f"Error: {str(e)}"}, status=500)
 
 @require_http_methods(["GET"])
-@cache_page(60 * 60 * 24)  # cache for 24 hours
+@cache_page(60 * 60 * 24)  # 24 hours
 def proxy_hotel_photo(request, photo_reference):
   if not photo_reference:
     return HttpResponseNotFound("No photo reference provided")
@@ -454,7 +482,7 @@ def search_response(request, city, reason, topic):
             "loading": False,
             "text": text,
             "additional_data": additional_data,
-             "locations_json": json.dumps(locations),
+            "locations_json": json.dumps(locations),
             "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
           },
         )

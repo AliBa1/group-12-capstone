@@ -52,8 +52,7 @@
       afterSendSearch();
     });
 
-  // Add this new event listener
-  document.body.addEventListener('htmx:afterSwap', function(event) {
+    document.body.addEventListener('htmx:afterSwap', function(event) {
     if (event.detail.target.id === 'search-results') {
       reinitializeMap();
     }

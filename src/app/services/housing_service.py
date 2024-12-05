@@ -83,7 +83,7 @@ class HousingSearchStrategy(SearchStrategy):
                 model="gpt-4o-mini",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the city and state from this query, and if the city name or state name is misspelled, correct it and use the proper city name or state name: '{query}'. "
+                    "content": f"Extract the city and state from this query, and if the city name, state name is misspelled, correct it and use the proper city name or state name: '{query}'. "
                               f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\", \"state\": \"TX\"}} "
                               f"(replace Austin and TX with the appropriate city and state)"
                 }]
@@ -96,7 +96,11 @@ class HousingSearchStrategy(SearchStrategy):
             return None
 
     def _search_houses(self, city, state, limit=5):
-        # ex city: Detroit, MI   
+        cache_key = self.get_cache_key('properties', city)
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return cached_data
         try:
             url = f"{self.base_url}?city={city}&state={state}&status=Active&limit={limit}"
             headers = {
@@ -107,6 +111,8 @@ class HousingSearchStrategy(SearchStrategy):
             #print(headers)
             response = requests.get(url, headers=headers)
             response.raise_for_status()
+            cache.set(cache_key, response, timeout=86400)
+
             #print(response)
             return response
         except Exception as e:
@@ -140,6 +146,8 @@ class HousingSearchStrategy(SearchStrategy):
                     formatted_address=house['formattedAddress'],
                     defaults={
                         'property_type': house.get('propertyType', ''),
+                        'latitude': house.get('latitude', 0),
+                        'longitude': house.get('longitude', 0),
                         'bedrooms': house.get('bedrooms', 0),
                         'bathrooms': house.get('bathrooms', 0),
                         'square_footage': house.get('squareFootage', 0),
@@ -158,66 +166,7 @@ class HousingSearchStrategy(SearchStrategy):
             except Exception as e:
                 print(f"Error storing house: {str(e)}")
                 continue
-        """
-            exaplme response (json):
-        [
-        {
-            "id": "3821-Hargis-St,-Austin,-TX-78723",
-            "formattedAddress": "3821 Hargis St, Austin, TX 78723",
-            "addressLine1": "3821 Hargis St",
-            "addressLine2": null,
-            "city": "Austin",
-            "state": "TX",
-            "zipCode": "78723",
-            "county": "Travis",
-            "latitude": 30.290643,
-            "longitude": -97.701547,
-            "propertyType": "Single Family",
-            "bedrooms": 4,
-            "bathrooms": 2.5,
-            "squareFootage": 2345,
-            "lotSize": 3284,
-            "yearBuilt": 2008,
-            "hoa": {
-            "fee": 65
-            },
-            "status": "Active",
-            "price": 899000,
-            "listingType": "Standard",
-            "listedDate": "2024-06-24T00:00:00.000Z",
-            "removedDate": ,
-            "createdDate": "2021-06-25T00:00:00.000Z",
-            "lastSeenDate": "2024-09-30T13:11:47.157Z",
-            "daysOnMarket": 99,
-            "mlsName": "UnlockMLS",
-            "mlsNumber": "5519228",
-            "listingAgent": {
-            "name": "Jennifer Welch",
-            "phone": "5124313110",
-            "email": "jennifer@gottesmanresidential.com",
-            "website": "https://www.gottesmanresidential.com"
-            },
-            "listingOffice": {
-            "name": "Gottesman Residential R.E.",
-            "phone": "5124512422",
-            "email": "nataliem@gottesmanresidential.com",
-            "website": "https://www.gottesmanresidential.com"
-            },
-            "history": {
-            "2024-06-24": {
-                "event": "Sale Listing",
-                "price": 899000,
-                "listingType": "Standard",
-                "listedDate": "2024-06-24T00:00:00.000Z",
-                "removedDate": null,
-                "daysOnMarket": 99
-            }
-            }
-        },
-        {
-            "id": "6808-Windrift-Way,-Austin,-TX-78745",
-            ...
-        """
+
     def _format_house_response(self, houses_data):
         formatted_data = []
         for house in houses_data:
@@ -225,6 +174,8 @@ class HousingSearchStrategy(SearchStrategy):
                 formatted_house = {
                     'formattedAddress': house.get('formattedAddress', ''),
                     'propertyType': house.get('propertyType', ''),
+                    'latitude': house.get('latitude', 0),
+                    'longitude': house.get('longitude', 0),
                     'bedrooms': house.get('bedrooms', 0),
                     'bathrooms': house.get('bathrooms', 0),
                     'squareFootage': house.get('squareFootage', 0),

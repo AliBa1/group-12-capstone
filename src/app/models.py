@@ -73,6 +73,8 @@ class ListingOffice(models.Model):
 
 class Property(models.Model):
     formatted_address = models.CharField(max_length=255)
+    latitude = models.FloatField(default=None)
+    longitude = models.FloatField(default=None)
     property_type = models.CharField(max_length=255)
     bedrooms = models.IntegerField()
     bathrooms = models.DecimalField(max_digits=3, decimal_places=1)

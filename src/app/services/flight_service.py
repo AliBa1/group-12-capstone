@@ -4,6 +4,8 @@ from ..models import Flight
 import openai
 import json
 import requests
+from django.core.cache import cache
+
 
 class FlightSearchStrategy(SearchStrategy):
     KEYWORDS = ['flights', 'airplane', 'fly', 'airport']
@@ -68,6 +70,11 @@ class FlightSearchStrategy(SearchStrategy):
             return {},{}
         
     def _search_flights(self, origin, dest):
+        cache_key = self.get_cache_key('flights', origin)
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return cached_data
         try:
             params = {
                 "access_key": self.api_key,
@@ -77,6 +84,8 @@ class FlightSearchStrategy(SearchStrategy):
             flights_data = self._make_request("flights", params)
             '''for flight in flights_data:
                 print(flight)'''
+            cache.set(cache_key, flights_data, timeout=86400)
+
             return flights_data
         except Exception as e:
             print(f"Error fetching flights: {e}")
