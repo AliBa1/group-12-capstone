@@ -90,24 +90,42 @@
     {% endif %}
 
     {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white conainer21">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
       {% for hotel in message.additional_data.hotels %}
-      <div class="card lg:card-side bg-base-100 shadow-xl">
-        <figure>
-          <img class="h-full w-full bg-cover bg-center bg-no-repeat"
-            src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}" alt="{{ hotel.title }}"
-            onerror="this.src='/static/images/genhotel.jpg'" />
-        </figure>
-        <div class="card-body">
-          <h2 class="card-title">{{ hotel.title }}</h2>
-          <p>{{ hotel.description }}</p>
-          <div class="extra-details hidden"> <!-- Changed from ID to class -->
-            <p>{{hotel.details.chain_code}}</p>
-            <p>{{hotel.details.dupe_id}}</p>
-            <p>{{hotel.details.iata_code}}</p>
+      <div class="card bg-base-100 shadow-xl flex flex-col lg:flex-row">
+        <figure class="w-full lg:w-1/2 min-h-[200px]">
+          <div class="carousel w-full h-full">
+            {% for image in hotel.images %}
+            <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" 
+                 class="carousel-item relative w-full h-full">
+              <img src="{% url 'proxy_hotel_photo' photo_reference=image %}" 
+                   alt="{{ hotel.title }}"
+                   onerror="this.src='/static/images/genhotel.jpg'"
+                   class="w-full h-full object-cover" />
+              {% if hotel.images|length > 1 %}
+              <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" 
+                   class="btn btn-circle">❮</a>
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" 
+                   class="btn btn-circle">❯</a>
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
           </div>
-          <div class="card-actions justify-end">
-            <button class="btn btn-primary ml-2 toggle-details-btn"> <!-- Changed from ID to class -->
+        </figure>
+        <div class="card-body w-full lg:w-1/2 p-4">
+          <h2 class="card-title text-lg">{{ hotel.title }}</h2>
+          <p class="text-sm">{{ hotel.description }}</p>
+          <p class="text-sm">Rating: {{ hotel.google_rating }}</p>
+    
+          <div class="extra-details hidden text-sm">
+            <p>{{ hotel.details.chain_code }}</p>
+            <p>{{ hotel.details.dupe_id }}</p>
+            <p>{{ hotel.details.iata_code }}</p>
+          </div>
+          <div class="card-actions justify-end mt-auto">
+            <button class="btn btn-primary btn-sm toggle-details-btn">
               View Details
             </button>
           </div>
@@ -116,8 +134,6 @@
       {% endfor %}
     </div>
     {% endif %}
-    <div>
-    </div>
   </div>
   {% endfor %}
 
@@ -238,4 +254,6 @@
       }
     }
   });
+
+
 </script>

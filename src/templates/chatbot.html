@@ -11,6 +11,9 @@
           for="new-conversation">
           New Conversation
         </label>
+        <div class="ml-2">
+          {% include 'partials/safety_modal.html' %}
+        </div>
       </div>
 
       <li class="menu-title mt-2">Conversations</li>
@@ -292,7 +295,7 @@
     if (initialLocations.length > 0) {
       addMarkers(initialLocations);
     }
-    
+
     document.addEventListener('mapUpdate', function (event) {
       const { locations, center } = event.detail;
 

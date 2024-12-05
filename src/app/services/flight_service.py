@@ -17,6 +17,11 @@ class FlightSearchStrategy(SearchStrategy):
 
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
+    
+    @staticmethod
+    def getcache_key(prefix, identifier):
+        safe_identifier = str(identifier).replace(' ', '').lower()
+        return f'flightsearch{prefix}_{safe_identifier}'
 
     def process_query(self, prompt, city=None, reason=None):
         try:

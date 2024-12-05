@@ -13,12 +13,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='property',
             name='latitude',
-            field=models.FloatField(default=None),
+            field=models.FloatField(default=0.0),
         ),
         migrations.AddField(
             model_name='property',
             name='longitude',
-            field=models.FloatField(default=None),
+            field=models.FloatField(default=0.0),
         ),
         migrations.AlterField(
             model_name='conversation',

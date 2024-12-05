@@ -45,16 +45,24 @@ def chatbot_page(request):
     )
 
     if latest_message and latest_message.additional_data:
-      try:
-        data = latest_message.additional_data
-        if "hotels" in data:
-          locations = [
-            {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-            for hotel in data["hotels"]
-            if "details" in hotel and "location" in hotel["details"]
-          ]
-      except Exception as e:
-        print(f"Error extracting locations: {e}")
+        try:
+            data = latest_message.additional_data
+            if "hotels" in data:
+                hotels = data.get("hotels", [])
+                locations = [
+                    {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+                    for hotel in hotels
+                    if "details" in hotel and "location" in hotel["details"]
+                ]
+            elif "apartments" in data or "houses" in data:
+                property_list = data.get("apartments", []) or data.get("houses", [])
+                locations = [
+                    {"lat": prop["latitude"], "lng": prop["longitude"]}
+                    for prop in property_list
+                    if "latitude" in prop and "longitude" in prop
+                ]
+        except Exception as e:
+            print(f"Error extracting locations: {e}")
 
   if not locations:
     locations = [

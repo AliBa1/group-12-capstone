@@ -32,14 +32,13 @@ class HotelSearchStrategy(SearchStrategy):
             
             if prompt_location_info and 'city' in prompt_location_info:
                 location_info = prompt_location_info
-                original_city = prompt
+    
             elif city:
                 location_info = self._get_city_code(city)
-                original_city = city
+           
             else:
                 location_info = None
-                original_city = None
-                    
+                      
             if not location_info or 'city' not in location_info:
                 return None
 
@@ -124,13 +123,17 @@ class HotelSearchStrategy(SearchStrategy):
 
             details_result = self.gmaps.place(
                 place_id=hotel['google_place_id'],
-                fields=['photo']
+                fields=['photo', 'rating']
             )
 
-            if 'result' in details_result and 'photos' in details_result['result']:
-                photos = details_result['result']['photos'][:3]
-                photo_references = [photo['photo_reference'] for photo in photos]
-                hotel['photo_references'] = photo_references
+            if 'result' in details_result:
+                if 'photos' in details_result['result']:
+                    photos = details_result['result']['photos'][:3]
+                    photo_references = [photo['photo_reference'] for photo in photos]
+                    hotel['photo_references'] = photo_references
+
+                if 'rating' in details_result['result']:
+                    hotel['google_rating'] = details_result['result']['rating']
 
             cache.set(cache_key, hotel, timeout=86400)  # 24 hrs
             
@@ -185,6 +188,7 @@ class HotelSearchStrategy(SearchStrategy):
                         'country_code': hotel_data['address']['countryCode'],
                         'google_place_id': hotel_data.get('google_place_id'),
                         'google_address': hotel_data.get('google_address'),
+                        'google_rating': hotel_data.get('google_rating'),
                         'photo_references': hotel_data.get('photo_references', []) 
                     }
                 )
@@ -216,7 +220,8 @@ class HotelSearchStrategy(SearchStrategy):
                         'lng': hotel['geoCode']['longitude']
                     },
                     'google_place_id': hotel.get('google_place_id'),
-                    'google_address': hotel.get('google_address')
+                    'google_address': hotel.get('google_address'),
+                    'google_rating': hotel.get('google_rating')
                 }
             }
             formatted_hotels.append(formatted_hotel)
