@@ -21,6 +21,7 @@ premade_travel = [
 ]
 
 topics_moving = [
+  "Apartments",
   "Employment",
   "Housing",
   "Schools",

@@ -64,7 +64,7 @@
               <img
                 class="h-64 lg:h-full w-full object-cover object-center"
                 src="/static/images/genhotel.jpg"
-                alt="{{ hotel.title }}"
+                alt="{{ house.formattedAddress }}"
                 onerror="this.src='/static/images/genhotel.jpg'"
               />
             </figure>
@@ -106,7 +106,7 @@
               <img
                 class="h-64 lg:h-full w-full object-cover object-center"
                 src="/static/images/genhotel.jpg"
-                alt="{{ hotel.title }}"
+                alt="{{ flight.iata }}"
                 onerror="this.src='/static/images/genhotel.jpg'"
               />
             </figure>
@@ -124,6 +124,48 @@
               <p><strong>Terminal:</strong>{{ flight.arrival.terminal }} | <strong>Gate:</strong>{{ flight.arrival.gate }}
               </p>
               <p><strong>Time:</strong>{{ flight.arrival.time }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if additional_data and additional_data.type == 'apartment_search'%}
+    <div class="overflow-y-auto h-full pr-2">
+      <div class="grid grid-cols-1 gap-8 text-white pb-6">
+        {% for apartment in additional_data.apartments %}
+        <div class="card bg-base-100 shadow-xl">
+          <div class="flex flex-col lg:flex-row">
+            <figure class="lg:w-1/3">
+              <img
+                class="h-64 lg:h-full w-full object-cover object-center"
+                src="/static/images/genhotel.jpg"
+                alt="{{ apartment.title }}"
+                onerror="this.src='/static/images/genhotel.jpg'"
+              />
+            </figure>
+            <div class="card-body lg:w-2/3">
+              <h2 class="card-title text-xl mb-4">
+                {{ apartment.formattedAddress }}
+              </h2>
+              <p class="text-base mb-6">
+                Property type: {{ apartment.propertyType }}
+              </p>
+              <p class="text-base mb-6">Price: ${{ apartment.price }}+/mo</p>
+              <div class="extra-details hidden">
+                <p>Number of bedrooms: {{apartment.bedrooms}}</p>
+                <p>Number of bathrooms: {{apartment.bathrooms}}</p>
+                <p>Square footage: {{apartment.squareFootage}}</p>
+                <p>Listing agent: {{apartment.listingAgent}}</p>
+                <p>Listing office: {{apartment.listingOffice}}</p>
+              </div>
+              <div class="card-actions justify-end mt-auto">
+                <button class="btn btn-primary toggle-details-btn">
+                  View Details
+                </button>
+              </div>
             </div>
           </div>
         </div>
