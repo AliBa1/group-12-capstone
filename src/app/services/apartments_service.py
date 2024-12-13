@@ -83,7 +83,7 @@ class ApartmentSearchStrategy(SearchStrategy):
             return None
 
     def _search_apartments(self, city, state, limit=5, propertyType = "Apartment"):
-        cache_key = self.get_cache_key('properties', city)
+        cache_key = self.get_cache_key('apartments', city)
         cached_data = cache.get(cache_key)
 
         if cached_data:

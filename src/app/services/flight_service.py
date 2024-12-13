@@ -75,7 +75,7 @@ class FlightSearchStrategy(SearchStrategy):
             return {},{}
         
     def _search_flights(self, origin, dest):
-        cache_key = self.get_cache_key('flights', origin)
+        cache_key = self.getcache_key('flights', origin)
         cached_data = cache.get(cache_key)
 
         if cached_data:
