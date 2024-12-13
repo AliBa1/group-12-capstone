@@ -1,0 +1,105 @@
+
+    <style>
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+
+    <button id="toggleMap" class="button">Hide Map</button>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+
+    <script>
+    const mapLocations = JSON.parse('{{ locations|safe }}');
+    let map;
+
+    function initMap() {
+        // Initialize the map
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: -28.024, lng: 140.887 },
+            zoom: 3
+        });
+        
+        // Create an InfoWindow object that we'll reuse for each marker
+        const infoWindow = new google.maps.InfoWindow();
+        
+        const markers = [];
+        
+        mapLocations.forEach(location => {
+            // Create marker
+            const marker = new google.maps.Marker({
+                position: { lat: location.lat, lng: location.lng },
+                map: map
+            });
+            markers.push(marker);
+            
+            // Create the info window content
+            const content = `
+                <div style="padding: 10px;">
+                    <h3>Location Details</h3>
+                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${location.lng.toFixed(6)}</p>
+                </div>
+            `;
+            
+            // Add click event listener to marker
+            marker.addListener('click', () => {
+                infoWindow.close();
+                infoWindow.setContent(content);
+                infoWindow.open({
+                    anchor: marker,
+                    map,
+                    shouldFocus: false,
+                });
+            });
+        });
+
+        // Create cluster manager
+        const markerCluster = new markerClusterer.MarkerClusterer({
+            map,
+            markers,
+            algorithm: new markerClusterer.SuperClusterAlgorithm({
+                radius: 100,
+                maxZoom: 15
+            })
+        });
+        
+        // Close info window when clicking elsewhere on the map
+        map.addListener('click', () => {
+            infoWindow.close();
+        });
+        
+        // Set up toggle button functionality
+        const toggleButton = document.getElementById('toggleMap');
+        const mapDiv = document.getElementById('map');
+        
+        toggleButton.addEventListener('click', () => {
+            if (mapDiv.style.display === 'none') {
+                mapDiv.style.display = 'block';
+                toggleButton.textContent = 'Hide Map';
+                // Trigger a resize event to ensure the map displays correctly
+                google.maps.event.trigger(map, 'resize');
+            } else {
+                mapDiv.style.display = 'none';
+                toggleButton.textContent = 'Show Map';
+            }
+        });
+    }
+    </script>
+
+    <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>

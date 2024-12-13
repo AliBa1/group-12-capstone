@@ -36,6 +36,7 @@ if not OPENAI_API_KEY:
         'Have you put it in a file at .env ?'
     )
 
+
 AMADEUS_API_KEY = os.getenv('AMADEUS_API_KEY')
 if not AMADEUS_API_KEY:
     raise ValueError(
@@ -49,10 +50,17 @@ if not AMADEUS_API_SECRET:
         'AMADEUS_API_SECRET is missing.' 
         'Have you put it in a file at .env ?'
     )
+
 AVIATIONSTACK_API_KEY = os.getenv('AVIATIONSTACK_API_KEY')
 if not AVIATIONSTACK_API_KEY:
     raise ValueError(
         'AVIATIONSTACK_API_KEY is missing.' 
+        'Have you put it in a file at .env ?'
+    )
+RENTCAST_API_KEY = os.getenv('RENTCAST_API_KEY')
+if not RENTCAST_API_KEY:
+    raise ValueError(
+        'RENTCAST_API_KEY is missing.' 
         'Have you put it in a file at .env ?'
     )
 SECURE_REFERRER_POLICY = 'no-referrer-when-downgrade'
@@ -77,6 +85,24 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'db_queries.log'),  # Path to the log file
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',  # Log all SQL queries
+            'propagate': False,  # Prevent duplicate logging
+        },
+    },
+}
 
 # Application definition
 
@@ -157,12 +183,15 @@ DATABASES = {
   }
 }
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379",
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -222,3 +251,5 @@ AUTHENTICATION_BACKENDS = [
   # `allauth` specific authentication methods, such as login by email
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+ML_MODELS_DIR = os.path.join(BASE_DIR, 'ml_models')

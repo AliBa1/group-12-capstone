@@ -1,0 +1,343 @@
+{% extends 'layouts/mainpage.html' %} {% block content %}
+<link rel="stylesheet" href="/static/stylesheets/map.css">
+
+<body>
+  <div class="flex w-full" style="height: calc(100vh - 64px)">
+    <ul id="conversation-menu"
+      class="menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
+      <div class="w-full flex justify-center sticky top-0 bg-base-200 py-2">
+        <label
+          class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center text-white bg-blue-500 hover:bg-blue-600"
+          for="new-conversation">
+          New Conversation
+        </label>
+        <div class="ml-2">
+          {% include 'partials/safety_modal.html' %}
+        </div>
+      </div>
+
+      <li class="menu-title mt-2">Conversations</li>
+      {% for c in conversations %}
+      <li class="list-none w-full">
+        <div id="conversation" data-id="{{ c.id }}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
+                     this.classList.add('active');" hx=="click, mapUpdate">
+          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+          <div class="dropdown dropdown-bottom dropdown-end">
+            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="inline-block h-5 w-5 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                </path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+              <li>
+                <a class="px-4" href="#"
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+              </li>
+              <li>
+                <a class="text-red-500 px-4" href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      {% endfor %}
+    </ul>
+    <svg xmlns="http://www.w3.org/2000/svg" class="btn bg-blue-500 hover:bg-blue-600 px-1" id="toggle-menu"
+      viewBox="0 0 512 512" width="60" height="100">
+      <path
+        d="M256 73.825a182.175 182.175 0 0 0-182.172 182.18c0 100.6 81.563 182.17 182.172 182.17s182.17-81.57 182.17-182.17c.001-100.618-81.561-182.18-182.17-182.18zm0 284.546a130.638 130.638 0 0 1-58.992-13.825c-4.65 3.717-25.674 19.15-46.53 11.935a45.77 45.77 0 0 0 14.608-35.56c-16.673-17.666-26.684-40.272-26.684-64.916 0-56.54 52.647-102.375 117.598-102.375s117.606 45.835 117.606 102.375c0 56.531-52.654 102.365-117.606 102.365z"
+        data-name="Chat 02" />
+    </svg>
+
+    <div class="flex-1 flex flex-col items-center py-4">
+      <div id="no-active" class="px-2 text-white font-bold text-xl">
+        Select a conversation to begin
+      </div>
+      <div id="chat" class="w-full px-4 flex flex-col h-full justify-end"
+        hx-on::after-swap="document.querySelector('#no-active').classList.add('hidden')">
+      </div>
+    </div>
+
+    <div id="map-container" class="w-1/4 lg:w-1/3 relative transition-all duration-300">
+      <button id="toggleMap"
+        class="absolute mt-10 top-4 left-4 z-10 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white">
+        Hide Map
+      </button>
+      <div id="map" class="h-full w-full"></div>
+    </div>
+  </div>
+
+  <div id="messages-container">
+    {% comment %} {% if messages %}
+    <div>
+      {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+  </div>
+
+  <input type="checkbox" id="new-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold items-center pb-4">Start a New Conversation</h3>
+      <form id="new-conversation-form" method="POST" action="{% url 'new_conversation' %}"
+        hx-target="#messages-container">
+        {% csrf_token %}
+        <div class="form-control">
+          <label for="conversation-title">Title</label>
+          <input type="text" id="conversation-title" name="title" class="input input-bordered" required />
+        </div>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="city">City</label>
+          <select id="city" name="city" class="select select-bordered" required>
+            <option value="" disabled selected>Pick one</option>
+            {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="reason">Reason</label>
+          <select id="reason" name="reason" class="select select-bordered" required>
+            <option value="" disabled selected>Pick one</option>
+            <option value="Travel">Travel</option>
+            <option value="Moving">Moving</option>
+          </select>
+        </label>
+
+        <div class="modal-action">
+          <label for="new-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
+          <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input type="checkbox" id="edit-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold pb-4">Edit Your Conversation</h3>
+      <form id="edit-conversation-form" method="POST" action="" hx-target="#messages-container">
+        {% csrf_token %}
+        <div class="form-control">
+          <label for="updated-title">Title</label>
+          <input type="text" id="updated-title" name="updated-title" class="input input-bordered" required />
+        </div>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="updated-city">City</label>
+          <select id="updated-city" name="updated-city" class="select select-bordered" required>
+            <option value="" disabled selected>Pick one</option>
+            {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="form-control mt-2">
+          <label class="label label-text" for="updated-reason">Reason</label>
+          <select id="updated-reason" name="updated-reason" class="select select-bordered" required>
+            <option value="" disabled selected>Pick one</option>
+            <option value="Travel">Travel</option>
+            <option value="Moving">Moving</option>
+          </select>
+        </label>
+
+        <div class="modal-action">
+          <label for="edit-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
+          <button type="submit" class="btn text-white bg-blue-500 hover:bg-blue-600">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input type="checkbox" id="delete-conversation" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
+      <h3 id="delete-conversation-title" class="text-lg font-bold pb-4 truncate">
+        Delete Conversation?
+      </h3>
+      <form id="delete-conversation-form" method="POST" action="" hx-target="#messages-container">
+        {% csrf_token %}
+        <p for="conversation-delete">
+          The conversation and all messages associated with it will be
+          permanatly deleted
+        </p>
+        <div class="modal-action">
+          <label for="delete-conversation" class="btn text-white">Cancel</label>
+          <button type="submit" class="btn text-white bg-red-500 hover:bg-red-600">
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+<script>
+  // hx-on::before-on-load="console.log('hrhr'); if (new_c_id != null) {document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); document.querySelector('[data-id=new_c_id]').classList.add('active');}"
+  function openEditModal(
+    conversationId,
+    currentTitle,
+    currentCity,
+    currentReason
+  ) {
+    document.querySelector(
+      "#edit-conversation-form"
+    ).action = `/edit_conversation/${conversationId}/`;
+    document.querySelector("#updated-title").value = currentTitle;
+    document.querySelector("#updated-city").value = currentCity;
+    document.querySelector("#updated-reason").value = currentReason;
+    // document.querySelector("#updated-title").focus();
+    document.querySelector("#edit-conversation").checked = true;
+  }
+
+  function openDeleteModal(conversationId, conversationTitle) {
+    document.querySelector(
+      "#delete-conversation-form"
+    ).action = `/delete_conversation/${conversationId}/`;
+    document.querySelector(
+      "#delete-conversation-title"
+    ).innerText = `Delete Conversation: ${conversationTitle}`;
+    document.querySelector("#delete-conversation").checked = true;
+  }
+
+
+  const mapLocations = JSON.parse('{{ locations|safe }}');
+  let map;
+  let markers = [];
+  let markerCluster;
+
+  function clearMarkers() {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function addMarkers(locations) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach(location => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map
+      });
+      markers.push(marker);
+
+      const content = `
+                <div style="padding: 10px;">
+                    <h3>Location Details</h3>
+                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${location.lng.toFixed(6)}</p>
+                </div>
+            `;
+
+      marker.addListener('click', () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15
+      })
+    });
+
+
+    if (markers.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach(marker => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+
+
+      if (markers.length === 1) {
+        map.setZoom(14);
+      }
+    }
+  }
+
+  function initMap() {
+
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: -33.8688, lng: 151.2093 },
+      zoom: 3
+    });
+
+
+    const initialLocations = JSON.parse('{{ locations|safe }}');
+    if (initialLocations.length > 0) {
+      addMarkers(initialLocations);
+    }
+
+    document.addEventListener('mapUpdate', function (event) {
+      const { locations, center } = event.detail;
+
+      if (locations && locations.length > 0) {
+        addMarkers(locations);
+      }
+
+      if (center) {
+        map.setCenter(center);
+      }
+    });
+    const toggleButton = document.getElementById('toggleMap');
+    const mapDiv = document.getElementById('map');
+    const mapContainer = document.getElementById('map-container');
+
+    toggleButton.addEventListener('click', () => {
+      if (mapDiv.style.display === 'none') {
+        mapDiv.style.display = 'block';
+        mapContainer.style.width = '';
+        toggleButton.textContent = 'Hide Map';
+        google.maps.event.trigger(map, 'resize');
+      } else {
+        mapDiv.style.display = 'none';
+        toggleButton.textContent = 'Show Map';
+      }
+    });
+  }
+  const toggleConversation = document.getElementById('toggle-menu');
+  const conversationMenu = document.getElementById('conversation-menu');
+  toggleConversation.addEventListener('click', () => {
+    if (conversationMenu.style.display === 'none') {
+      conversationMenu.style.display = 'block';
+      toggleButton.textContent = 'Hide Conversations';
+    } else {
+      conversationMenu.style.display = 'none';
+      toggleButton.textContent = 'Show Conversations';
+    }
+
+  })
+</script>
+
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async
+  defer></script>
+{%endblock%}

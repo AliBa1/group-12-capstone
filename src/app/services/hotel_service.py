@@ -4,9 +4,9 @@ import openai
 import json
 from .base import SearchStrategy
 from ..models import Hotel
-import requests
 import time
 import googlemaps
+from django.core.cache import cache
 
 class HotelSearchStrategy(SearchStrategy):
     KEYWORDS = ['hotels', 'place to stay', 'accommodation', 'resort', 'motel', 'hotel']
@@ -18,41 +18,49 @@ class HotelSearchStrategy(SearchStrategy):
         )
         self.gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
 
+    @staticmethod
+    def get_cache_key(prefix, identifier):
+        safe_identifier = str(identifier).replace(' ', '_').lower()
+        return f'hotel_search_{prefix}_{safe_identifier}'
+
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
 
     def process_query(self, prompt, city=None, reason=None):
-        prompt_location_info = self._query_location_info(prompt)
-        
-        if prompt_location_info and 'city' in prompt_location_info:
-            location_info = prompt_location_info
-            original_city = prompt
-        elif city:
-            location_info = self._get_city_code(city)
-            original_city = city
-        else:
-            location_info = None
-            original_city = None
-                
-        if not location_info or 'city' not in location_info:
+        try:
+            prompt_location_info = self._query_location_info(prompt)
+            
+            if prompt_location_info and 'city' in prompt_location_info:
+                location_info = prompt_location_info
+    
+            elif city:
+                location_info = self._get_city_code(city)
+           
+            else:
+                location_info = None
+                      
+            if not location_info or 'city' not in location_info:
+                return None
+
+            hotels_data = self._search_hotels(location_info['city'])
+            if not hotels_data:
+                return None
+
+            enhanced_hotels = self.hotel_details(hotels_data)
+            
+            self._store_hotels(enhanced_hotels)
+            formatted_data = self._format_hotel_response(enhanced_hotels)
+
+            response_text = f"I found {len(enhanced_hotels)} hotels in the {location_info['city']} area"
+
+            return {
+                'text': response_text,
+                'data': formatted_data
+            }
+        except Exception as e:
+            print(f"Error in process_query: {str(e)}")
             return None
-
-        hotels_data = self._search_hotels(location_info['city'])
-        if not hotels_data:
-            return None
-
-        enhanced_hotels = self.hotel_details(hotels_data)
         
-        self._store_hotels(enhanced_hotels)
-        formatted_data = self._format_hotel_response(enhanced_hotels)
-
-        response_text = f"I found {len(enhanced_hotels)} hotels in the {location_info['city']} area"
-
-        return {
-            'text': response_text,
-            'data': formatted_data
-        }
-
 #this one passes the pre selected city from the user
     def _get_city_code(self, city):
         try:
@@ -71,7 +79,7 @@ class HotelSearchStrategy(SearchStrategy):
             print(f"Error in get_city_code: {e}")
             return None
 
-#if the user switches city during prompt, i use this one
+#if the user switches city during prompt, we use this one
     def _query_location_info(self, query):
         try:
             response = openai.chat.completions.create(
@@ -89,7 +97,17 @@ class HotelSearchStrategy(SearchStrategy):
             print(f"Error in query_location_info: {e}")
             return None
 
+
     def _get_place_details(self, hotel):
+        if not hotel.get('hotelId'):
+            return hotel
+
+        cache_key = self.get_cache_key('place_details', hotel['hotelId'])
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return cached_data
+
         try:
             places_result = self.gmaps.places(
                 query=f"{hotel['name']} hotel",
@@ -105,20 +123,28 @@ class HotelSearchStrategy(SearchStrategy):
 
             details_result = self.gmaps.place(
                 place_id=hotel['google_place_id'],
-                fields=['photo']
+                fields=['photo', 'rating']
             )
 
-            if 'result' in details_result and 'photos' in details_result['result']:
-                photos = details_result['result']['photos'][:3]
-                photo_references = [photo['photo_reference'] for photo in photos]
-                hotel['photo_references'] = photo_references
+            if 'result' in details_result:
+                if 'photos' in details_result['result']:
+                    photos = details_result['result']['photos'][:3]
+                    photo_references = [photo['photo_reference'] for photo in photos]
+                    hotel['photo_references'] = photo_references
 
+                if 'rating' in details_result['result']:
+                    hotel['google_rating'] = details_result['result']['rating']
+
+            cache.set(cache_key, hotel, timeout=86400)  # 24 hrs
+            
             time.sleep(0.2)
             return hotel
 
         except Exception as e:
             print(f"Error getting place details for {hotel.get('name')}: {e}")
             return hotel
+
+
         
     def hotel_details(self, hotels_data):
         enhanced_hotels = []
@@ -128,11 +154,21 @@ class HotelSearchStrategy(SearchStrategy):
         return enhanced_hotels
 
     def _search_hotels(self, city_code, limit=5):
+        cache_key = self.get_cache_key('hotels', city_code)
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return cached_data
+
         try:
             hotel_response = self.amadeus.reference_data.locations.hotels.by_city.get(
                 cityCode=city_code
             )
-            return hotel_response.data[:limit]
+            result = hotel_response.data[:limit]
+            
+            cache.set(cache_key, result, timeout=86400)
+            
+            return result
         except Exception as e:
             print(f"Error in search_hotels: {e}")
             return []
@@ -152,6 +188,7 @@ class HotelSearchStrategy(SearchStrategy):
                         'country_code': hotel_data['address']['countryCode'],
                         'google_place_id': hotel_data.get('google_place_id'),
                         'google_address': hotel_data.get('google_address'),
+                        'google_rating': hotel_data.get('google_rating'),
                         'photo_references': hotel_data.get('photo_references', []) 
                     }
                 )
@@ -183,7 +220,8 @@ class HotelSearchStrategy(SearchStrategy):
                         'lng': hotel['geoCode']['longitude']
                     },
                     'google_place_id': hotel.get('google_place_id'),
-                    'google_address': hotel.get('google_address')
+                    'google_address': hotel.get('google_address'),
+                    'google_rating': hotel.get('google_rating')
                 }
             }
             formatted_hotels.append(formatted_hotel)

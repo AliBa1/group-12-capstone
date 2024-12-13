@@ -33,10 +33,75 @@ class Hotel(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, null=True, related_name='hotels')
     google_place_id = models.CharField(max_length=255, null=True, blank=True)
     google_address = models.TextField(null=True, blank=True)
+    google_rating = models.FloatField(null=True, blank=True)
     photo_references = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.iata_code if self.iata_code else ''}"
 
-# class Flight(models.Model):
+class Flight(models.Model):
+    flight_iata_num = models.CharField(max_length=10, null=True)
+    flight_date = models.DateField(max_length=10, null=True)
+    airline = models.CharField(max_length=25, null=True)
+    airline_code = models.CharField(max_length=3, null=True)
+    departure_city = models.CharField(max_length=50, null=True)
+    departure_time = models.DateTimeField(max_length=20, null=True)
+    departure_terminal = models.CharField(max_length=2, null=True)
+    departure_gate = models.CharField(max_length=3, null=True)
+    arrival_city = models.CharField(max_length=50, null=True)
+    arrival_time = models.DateTimeField(max_length=20, null=True)
+    arrival_terminal = models.CharField(max_length=2, null=True)
+    arrival_gate = models.CharField(max_length=3, null=True)
+
    
+class ListingAgent(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    website = models.URLField()
+
+    def __str__(self):
+        return self.name
+
+class ListingOffice(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    website = models.URLField()
+
+    def __str__(self):
+        return self.name
+
+class Property(models.Model):
+    formatted_address = models.CharField(max_length=255)
+    latitude = models.FloatField(default=None)
+    longitude = models.FloatField(default=None)
+    property_type = models.CharField(max_length=255)
+    bedrooms = models.IntegerField()
+    bathrooms = models.DecimalField(max_digits=3, decimal_places=1)
+    square_footage = models.IntegerField()
+    lot_size = models.IntegerField()
+    year_built = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    listing_type = models.CharField(max_length=50)
+    days_on_market = models.IntegerField()
+    mls_name = models.CharField(max_length=255)
+    mls_number = models.CharField(max_length=255)
+    listing_agent = models.ForeignKey(ListingAgent, on_delete=models.CASCADE)
+    listing_office = models.ForeignKey(ListingOffice, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.formatted_address
+
+class PropertyHistory(models.Model):
+    property = models.ForeignKey(Property, related_name="history", on_delete=models.CASCADE)
+    date = models.DateField()
+    event = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    listing_type = models.CharField(max_length=50)
+    listed_date = models.DateTimeField()
+    removed_date = models.DateTimeField(null=True, blank=True)
+    days_on_market = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.date} - {self.event}"

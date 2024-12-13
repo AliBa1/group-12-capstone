@@ -44,7 +44,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url, {"title": "Testing New Conversation ", "city": "Miami, FL", "reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
     self.assertTrue(
@@ -59,7 +59,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url, {"title": "", "city": "Miami, FL", "reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     messages = list(get_messages(response.wsgi_request))
     self.assertFalse(Conversation.objects.filter(title="", city="Miami, FL", reason="Moving", user=self.user).exists())
     self.assertGreater(len(messages), 0)
@@ -78,7 +78,7 @@ class ConversationTests(TestCase):
     )
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     self.assertFalse(
       Conversation.objects.filter(
         title="Testing New Conversation but Very Very Long so That There is a Limit on the size of Titles",
@@ -98,7 +98,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url, {"title": "Test C1"})
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     messages = list(get_messages(response.wsgi_request))
     self.assertGreater(len(messages), 0)
     self.assertEqual("A conversation with this title already exists", str(messages[0]))
@@ -110,7 +110,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url, {"updated-title": "Renamed Test C1", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
     self.assertTrue(Conversation.objects.filter(title="Renamed Test C1", city="Reno, NV", reason="Moving", user=self.user).exists())
@@ -123,7 +123,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url, {"updated-title": "Test C2", "updated-city": "Reno, NV", "updated-reason": "Moving"})
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     self.assertEqual(len(Conversation.objects.all()), 2)
     messages = list(get_messages(response.wsgi_request))
     self.assertGreater(len(messages), 0)
@@ -138,7 +138,7 @@ class ConversationTests(TestCase):
     response = self.client.post(url)
 
     self.assertEqual(response.status_code, 302)
-    self.assertRedirects(response, reverse("explore"))
+    self.assertRedirects(response, reverse("chatbot"))
     messages = list(get_messages(response.wsgi_request))
     self.assertEqual(len(messages), 0)
     self.assertEqual(len(Conversation.objects.all()), 1)
@@ -221,3 +221,45 @@ class ConversationTests(TestCase):
     self.assertEqual(response.context["conversation_id"], self.c1.id)
     self.assertFalse(response.context["bot_typing"])
     self.assertEqual(response.context["prompt"], None)
+
+  def test_render_explore(self):
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("explore")
+    response = self.client.get(url)
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "explore.html")
+    self.assertIn("cities", response.context)
+  
+  def test_update_city_reason(self):
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("update_city_reason")
+    response = self.client.post(url, {"city": "Miami, FL", "reason": "Moving"})
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/search.html")
+    self.assertIn("premade_prompts", response.context)
+    self.assertEqual(response.context["city"], "Miami, FL")
+    self.assertEqual(response.context["reason"], "Moving")
+  
+  def test_send_search(self):
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("send_search")
+    response = self.client.post(url)
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/search_results.html")
+    self.assertTrue(response.context["loading"])
+  
+  def test_search_results(self):
+    self.client.login(username="t@t.com", password="asdfghjkl")
+    url = reverse("search_response", args=["Las Vegas, NV", "Travel", "Hotels"])
+    response = self.client.post(url)
+
+    self.assertEqual(response.status_code, 200)
+    self.assertTemplateUsed(response, "partials/search_results.html")
+    self.assertFalse(response.context["loading"])
+    self.assertEqual(response.context["error"], "")
+    self.assertGreaterEqual(len(response.context["text"]), 5)
+    self.assertGreaterEqual(len(response.context["additional_data"]), 1)
+    self.assertGreaterEqual(len(response.context["locations"]), 1)

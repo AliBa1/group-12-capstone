@@ -1,30 +1,47 @@
 <link rel="stylesheet" href="/static/stylesheets/navbar.css">
 
 {% comment %} <div class="navbar bg-transparent text-white fixed z-10"> {% endcomment %}
-<div class="navbar bg-black text-white sticky top-0 z-10">
-  <div class="navbar-start mx-4">
-    <a class="nav-link text-xl font-bold" href="/">Embarkr</a>
+  <div class="navbar bg-black text-white sticky top-0 z-10">
+    <div class="navbar-start mx-4">
+      <a class="nav-link flex items-center gap-2" href="/">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+             viewBox="0 0 40 40" class="w-8 h-8">
+          <style type="text/css">
+            .logo-fill{fill:#ffffff;}
+          </style>
+          <g>
+            <path class="logo-fill" d="M2.06963,28.09026h34.42664l-5.59505,7.69515c-0.25913,0.35638-0.67315,0.56725-1.11377,0.56725H10.25818
+              c-0.38568,0-0.7537-0.16177-1.01452-0.44593L2.06963,28.09026z"/>
+            <polygon class="logo-fill" points="6.20083,26.7132 17.21735,12.254 17.21735,26.7132"/>
+            <path class="logo-fill" d="M19.97149,30.50013h-1.37707V4.33588c0-0.38028,0.30825-0.68853,0.68853-0.68853l0,0
+              c0.38027,0,0.68853,0.30826,0.68853,0.68853V30.50013z"/>
+            <path class="logo-fill" d="M35.02353,21.05173c-0.28753,2.06474-1.19119,4.00062-2.44405,5.66146H21.34855
+              c1.79369-2.99784,2.87194-6.43792,3.04992-9.96848c0.21565-4.2026-0.84208-8.46087-2.97119-12.06458
+              c3.22791,1.14555,6.34628,2.66011,8.90672,4.99644C33.46948,12.53169,35.60545,16.81433,35.02353,21.05173z"/>
+          </g>
+        </svg>
+        <span class="text-xl font-bold">Embarkr</span>
+      </a>
+    </div>
+    <div class="navbar-end mx-4">
+      {% if request.user.is_authenticated %}
+        <a class="nav-link mr-10" href="{% url 'explore' %}">Explore</a>
+        <a class="nav-link mr-10" href="{% url 'chatbot' %}">Chat</a>
+        <div class="dropdown dropdown-bottom">
+          <button type="button" class="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm hover:text-gray-900 hover:bg-gray-50" id="menu-button" aria-expanded="true" aria-haspopup="true">
+            {{ request.user.username }}
+            <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+              <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <ul tabindex="0" class="w-full dropdown-content menu bg-base-100 rounded-box z-[1] shadow">
+            <li><a href="{% url 'account_settings' %}">Account</a></li>
+            <li><a href="{% url 'logout' %}">Log Out</a></li>
+          </ul>
+        </div>
+      {% else %}
+        <a class="nav-link mr-5" href="{% url 'register' %}">Sign up</a>
+        <a class="nav-link" href="{% url 'login' %}">Sign in</a>
+      {% endif %}
+    </div>
   </div>
-  <div class="navbar-end mx-4">
-    {% if request.user.is_authenticated %}
-      <a class="nav-link mr-10" href="{% url 'explore' %}">Home</a>
-      <div class="dropdown dropdown-bottom">
-        <button type="button" class="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm hover:text-gray-900 hover:bg-gray-50" id="menu-button" aria-expanded="true" aria-haspopup="true">
-          {{ request.user.username }}
-          <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-            <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-          </svg>
-        </button>
-        
-        {% comment %} <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"> {% endcomment %}
-        <ul tabindex="0" class="w-full dropdown-content menu bg-base-100 rounded-box z-[1] shadow">
-          <li><a href="{% url 'account_settings' %}">Account</a></li>
-          <li><a href="{% url 'logout' %}">Log Out</a></li>
-        </ul>
-      </div>
-    {% else %}
-      <a class="nav-link mr-5" href="{% url 'register' %}">Register</a>
-      <a class="nav-link " href="{% url 'login' %}">Login</a>
-    {% endif %}
-  </div>
-</div>

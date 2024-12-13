@@ -28,7 +28,7 @@ from user.views import (
 )
 from app.views import (
   display_home,
-  explore_page,
+  chatbot_page,
   fetch_conversation,
   new_conversation,
   edit_conversation,
@@ -36,7 +36,12 @@ from app.views import (
   send_prompt,
   send_response,
   chatbot_response,
-  proxy_hotel_photo
+  proxy_hotel_photo,
+  explore_page,
+  update_city_reason,
+  send_search,
+  search_response,
+  predict_heat_index,
 )
 
 urlpatterns = [
@@ -46,7 +51,7 @@ urlpatterns = [
   path("register/", register_user, name="register"),
   path("login/", login_user, name="login"),
   path("logout/", logout_user, name="logout"),
-  path("explore/", explore_page, name="explore"),
+  path("chatbot/", chatbot_page, name="chatbot"),
   path("fetch_conversation/<int:conversation_id>/", fetch_conversation, name="fetch_conversation"),
   path("new_conversation/", new_conversation, name="new_conversation"),
   path("send_prompt/<int:conversation_id>/", send_prompt, name="send_prompt"),
@@ -58,7 +63,14 @@ urlpatterns = [
   path("resetpassword/", account_passwordreset, name="account_passwordreset"),
   path("delete/", account_delete, name="account_delete"),
   path("accounts/", include("allauth.urls")),
-  path('accounts/', include('allauth.socialaccount.urls')),
-  path('api/chatbot/', chatbot_response, name="chatbot_response"),
-  path('hotel-photo/<str:photo_reference>/', proxy_hotel_photo, name='proxy_hotel_photo'),
+  path("accounts/", include("allauth.socialaccount.urls")),
+  path("api/chatbot/", chatbot_response, name="chatbot_response"),
+  path('heat_index/', predict_heat_index, name='predict_heat_index'),
+  path("hotel-photo/<str:photo_reference>/", proxy_hotel_photo, name="proxy_hotel_photo"),
+  path("explore/", explore_page, name="explore"),
+  path("update_city_reason/", update_city_reason, name="update_city_reason"),
+  # path("send_search/<str:city>/<str:reason>", send_search, name="send_search"),
+  path("send_search/", send_search, name="send_search"),
+  path("search_response/<str:city>/<str:reason>/<str:topic>", search_response, name="search_response"),
+  path('heat_index/', predict_heat_index, name='predict_heat_index'),
 ]
