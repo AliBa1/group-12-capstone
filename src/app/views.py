@@ -326,7 +326,7 @@ def send_response(request, conversation_id, prompt):
     return redirect("chatbot")
 
 
-# colter's functions below
+# colter's function below
 def chatbot_response(request, prompt):
   if request.method == "POST":
     try:
