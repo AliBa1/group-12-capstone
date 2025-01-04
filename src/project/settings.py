@@ -51,6 +51,13 @@ if not AMADEUS_API_SECRET:
         'Have you put it in a file at .env ?'
     )
 
+FLIGHTS_API_KEY = os.getenv('FLIGHTS_API_KEY')
+if not FLIGHTS_API_KEY:
+    raise ValueError(
+        'FLIGHTS_API_KEY is missing.'
+        'Do you have it in your .env file?'
+    )
+
 AVIATIONSTACK_API_KEY = os.getenv('AVIATIONSTACK_API_KEY')
 if not AVIATIONSTACK_API_KEY:
     raise ValueError(
