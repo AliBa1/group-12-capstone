@@ -1,21 +1,18 @@
-{% extends 'layouts/mainpage.html' %} {% block content %}
+{% extends 'layouts/mainpage.html' %} 
+{% block content %}
 <link rel="stylesheet" href="/static/stylesheets/map.css">
 
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul id="conversation-menu"
       class="menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-      <div class="w-full flex justify-center sticky top-0 bg-base-200 py-2">
-        <label
-          class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center text-white bg-blue-500 hover:bg-blue-600"
-          for="new-conversation">
-          New Conversation
-        </label>
+      <div class="w-full flex justify-center sticky top-0 py-2">
         <div class="ml-2">
           {% include 'partials/safety_modal.html' %}
         </div>
       </div>
 
+      <div class="overflow-y-scroll">
       <li class="menu-title mt-2">Conversations</li>
       {% for c in conversations %}
       <li class="list-none w-full">
@@ -49,6 +46,147 @@
       </li>
 
       {% endfor %}
+
+      {% comment %} DELETE ALL BELOW (EXTRA CHATS TO TEST) {% endcomment %}
+      {% for c in conversations %}
+      <li class="list-none w-full">
+        <div id="conversation" data-id="{{ c.id }}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
+                     this.classList.add('active');" hx=="click, mapUpdate">
+          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+          <div class="dropdown dropdown-bottom dropdown-end">
+            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="inline-block h-5 w-5 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                </path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+              <li>
+                <a class="px-4" href="#"
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+              </li>
+              <li>
+                <a class="text-red-500 px-4" href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <!-- prettier-ignore -->
+      {% endfor %}
+      <!-- prettier-ignore -->
+      {% for c in conversations %}
+      <li class="list-none w-full">
+        <div id="conversation" data-id="{{ c.id }}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
+                     this.classList.add('active');" hx=="click, mapUpdate">
+          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+          <div class="dropdown dropdown-bottom dropdown-end">
+            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="inline-block h-5 w-5 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                </path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+              <li>
+                <a class="px-4" href="#"
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+              </li>
+              <li>
+                <a class="text-red-500 px-4" href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      {% endfor %}
+      {% for c in conversations %}
+      <li class="list-none w-full">
+        <div id="conversation" data-id="{{ c.id }}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
+                     this.classList.add('active');" hx=="click, mapUpdate">
+          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+          <div class="dropdown dropdown-bottom dropdown-end">
+            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="inline-block h-5 w-5 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                </path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+              <li>
+                <a class="px-4" href="#"
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+              </li>
+              <li>
+                <a class="text-red-500 px-4" href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      {% endfor %}
+      {% for c in conversations %}
+      <li class="list-none w-full">
+        <div id="conversation" data-id="{{ c.id }}"
+          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
+                     this.classList.add('active');" hx=="click, mapUpdate">
+          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+          <div class="dropdown dropdown-bottom dropdown-end">
+            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="inline-block h-5 w-5 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                </path>
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+              <li>
+                <a class="px-4" href="#"
+                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+              </li>
+              <li>
+                <a class="text-red-500 px-4" href="#"
+                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      {% endfor %}
+      {% comment %} DELETE ALL ABOVE {% endcomment %}
+    </div>
+
+      <div class="bottom-0 sticky mx-auto py-2">
+        <label
+          class="btn btn-secondary btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center"
+          for="new-conversation">
+          New Conversation
+        </label>
+      </div>
     </ul>
     <svg xmlns="http://www.w3.org/2000/svg" class="btn bg-blue-500 hover:bg-blue-600 px-1" id="toggle-menu"
       viewBox="0 0 512 512" width="60" height="100">

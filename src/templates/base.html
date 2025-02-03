@@ -1,48 +1,52 @@
-{% load static %}
-{% load socialaccount %}
+{% load static %} {% load socialaccount %}
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
+<html lang="en" data-theme="night">
+  <head>
     <title>Home</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
       }
-    }
-  </script>
+    </script>
 
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.13/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.13/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.13"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/creativetimofficial/tailwind-starter-kit/tailwind.css"> 
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/creativetimofficial/tailwind-starter-kit/tailwind.css"
+    />
+  </head>
 
-<body class=" flex flex-col font-sans  min-h-screen relative overflow-x-hidden">
+  <body class="flex flex-col font-sans min-h-screen relative overflow-x-hidden">
+    <!-- prettier-ignore -->
     {% include 'includes/header.html' %}
+    <!-- prettier-ignore -->
     {% include 'includes/partial_messages.html' %}
 
-    <main class="flex-grow" style="background-image: linear-gradient(to bottom, 
-    #050410, 
-    #050410, 
-    #050410, 
-    #0f1132,
-    #121755, 
-    #1c1979, 
-    #31169c);" >
-        {% block layout %} 
-        {% endblock %}
+    <main
+      class="flex-grow bg-base-100"
+    >
+      <!-- prettier-ignore -->
+      {% block layout %} 
+      <!-- prettier-ignore -->
+      {% endblock %}
     </main>
-    <footer>
-        {% include 'includes/footer.html' %}
-    </footer>
-</body>
-
+    <footer>{% include 'includes/footer.html' %}</footer>
+  </body>
 </html>

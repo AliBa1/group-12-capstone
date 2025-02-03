@@ -1,56 +1,78 @@
+<!-- prettier-ignore -->
 {% extends 'layouts/mainpage.html' %}
+<!-- prettier-ignore -->
 {% block content %}
 
-<div class="min-h-6 flex justify-center ">
-    <div class="bg-gradient-to-r from-indigo-500 to-blue-500 
-                rounded-2xl shadow-2xl shadow-indigo-500/60
-                w-full max-w-2xl p-16 min-h-[400px] mx-auto mt-20 ">
-        <h1 class="text-6xl dark:text-white mb-5">Account Settings</h1>
+<div class="min-h-6 flex justify-center">
+  <div
+    class="bg-primary rounded-2xl shadow-2xl shadow-accent w-full max-w-2xl p-16 min-h-[400px] mx-auto mt-20 text-center"
+  >
+    <h1 class="text-6xl dark:text-white mb-5">Account Settings</h1>
 
-        <table class="w-full text-sm text-left text-gray-500">
-            <tbody>
-                <tr>
-                    <th scope="row" class="pt-4 pb-1 text-base font-bold text-gray-900">
-                        Email address
-                    </th>
-                    <td id="email-address" class="pt-4 pb-1 pl-4 text-gray-900 dark:text-white">
-                        {% if user.email %}{{ user.email }}{% else %}No Email{% endif %}
-                    </td>
-                    <td class="pt-4 pb-1 pl-4">
-                        <a id="email-edit" class="btn btn-outline btn-accent font-medium text-blue-900 hover:underline"
-                            hx-get="{%url 'account_emailchange'%}" hx-target="#email-address" hx-swap="innerHTML">
-                            Edit
-                        </a>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row" class="pt-4 pb-1 text-base font-bold text-gray-900">
-                        Password
-                    </th>
-                    <td id="password" class="pt-4 pb-1 pl-4 text-gray-900 dark:text-white">
-                    </td>
-                    <td class="pt-4 pb-1 pl-4">
-                        <a id="password-reset" class="btn btn-outline btn-accent font-medium text-blue-900 hover:underline"
-                            hx-get="{%url 'account_passwordreset'%}" hx-target="#password" hx-swap="innerHTML">
-                            Reset
-                        </a>
-                    </td>
-                </tr>
-                <tr class="border-b">
-                    <th scope="row" class="py-4 text-base font-bold text-gray-900">
-                        Delete Account
-                    </th>
-                    <td class="py-4 pl-4 text-gray-900 dark:text-white">
-                        Once deleted, account is gone. Forever.
-                    </td>
-                    <td class="py-4 pl-4">
-                        <a href="{% url 'account_delete' %}" class="btn btn-outline btn-error font-medium text-red-600 hover:underline">
-                            Delete
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <table class="w-full text-sm text-left text-gray-500">
+      <tbody>
+        <tr>
+          <th scope="row" class="pt-4 pb-1 text-base font-bold text-gray-900">
+            Email address
+          </th>
+          <td
+            id="email-address"
+            class="pt-4 pb-1 pl-4 text-gray-900 dark:text-white"
+          >
+            <!-- prettier-ignore -->
+            {% if user.email %}{{ user.email }}{% else %}No Email{% endif %}
+          </td>
+          <td class="pt-4 pb-1 pl-4">
+            <a
+              id="email-edit"
+              class="w-full btn btn-accent font-medium hover:underline"
+              hx-get="{%url 'account_emailchange'%}"
+              hx-target="#email-address"
+              hx-swap="innerHTML"
+            >
+              Edit
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row" class="pt-4 pb-1 text-base font-bold text-gray-900">
+            Password
+          </th>
+          <td
+            id="password"
+            class="pt-4 pb-1 pl-4 text-gray-900 dark:text-white"
+          ></td>
+          <td class="pt-4 pb-1 pl-4">
+            <a
+              id="password-reset"
+              class="w-full btn btn-accent font-medium hover:underline"
+              hx-get="{%url 'account_passwordreset'%}"
+              hx-target="#password"
+              hx-swap="innerHTML"
+            >
+              Reset
+            </a>
+          </td>
+        </tr>
+        <tr class="border-b">
+          <th scope="row" class="py-4 text-base font-bold text-gray-900">
+            Delete Account
+          </th>
+          <td class="py-4 pl-4 text-gray-900 dark:text-white">
+            Once deleted, account is gone. Forever.
+          </td>
+          <td class="py-4 pl-4">
+            <a
+              href="{% url 'account_delete' %}"
+              class="w-full btn btn-error font-medium hover:underline"
+            >
+              Delete
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+<!-- prettier-ignore -->
 {%endblock%}

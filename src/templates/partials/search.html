@@ -9,7 +9,7 @@
   {% csrf_token %}
   <label class="form-control w-full">
     <label class="label label-text text-lg" for="topic">Topic</label>
-    <select id="topic" name="topic" class="select select-bordered" required>
+    <select id="topic" name="topic" class="select select-primary" required>
       <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
@@ -17,7 +17,7 @@
     </select>
   </label>
 
-  <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+  <button type="submit" class="btn btn-secondary">
     Search
   </button>
 </form>

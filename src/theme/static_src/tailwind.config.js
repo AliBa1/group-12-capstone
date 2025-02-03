@@ -5,6 +5,8 @@
  * https://unpkg.com/browse/tailwindcss@latest/stubs/defaultConfig.stub.js
  */
 
+const { default: daisyui } = require('daisyui');
+
 module.exports = {
     content: [
         /**
@@ -43,6 +45,9 @@ module.exports = {
     ],
     theme: {
         extend: {},
+    },
+    daisyui: {
+        themes: ["night"],
     },
     plugins: [
         /**
