@@ -22,21 +22,21 @@ DB_PORT = 5432
 ```
 
 - Create a cache in redis <br />
-Steps for Windows:
-  -Install docker.
-  -If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after.
-  -If you are using docked in the CLI, run the following command: docker run --name my-redis -p 6379:6379 -d redis
-  -To confirm connection to docker, the command is: docker ps.
-  -You should be able to start the container with the command: docker start my-redis and stop the container with docker stop my-redis
+#### Steps for Windows:
+  - Install docker.
+  - If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after.
+  - If you are using docked in the CLI, run the following command: docker run --name my-redis -p 6379:6379 -d redis
+  - To confirm connection to docker, the command is: docker ps.
+  - You should be able to start the container with the command: docker start my-redis and stop the container with docker stop my-redis
 
-Steps for Mac:
-  -brew install redis
-  -brew services start redis
+#### Steps for Mac:
+  - brew install redis
+  - brew services start redis
 
-Steps for Linux:
-  -sudo apt-get update
-  -sudo apt-get install redis-server
-  -sudo systemctl start redis-server
+#### Steps for Linux:
+  - sudo apt-get update
+  - sudo apt-get install redis-server
+  - sudo systemctl start redis-server
 
 - Setup Ruff with your code editor: https://docs.astral.sh/ruff/editors/setup/#vs-code
 
