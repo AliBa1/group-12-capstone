@@ -3,17 +3,18 @@
 
 <section>
   <div
-    class="w-full lg:w-1/2 px-3.5 mx-auto flex flex-col"
+    class="w-full lg:w-1/2 mx-auto flex flex-col px-4"
     style="height: calc(100vh - 128px)"
   >
-    <form class="flex space-x-8" method="POST">
+    {% comment %} <form class="flex space-x-8" method="POST"> {% endcomment %}
+    <form class="flex gap-8" method="POST">
       {% csrf_token %}
       <label class="form-control w-full">
         <label class="label label-text text-lg" for="city">City</label>
         <select
           id="city"
           name="city"
-          class="select select-primary w-full max-w-xs"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
@@ -32,7 +33,7 @@
         <select
           id="reason"
           name="reason"
-          class="select select-primary w-full max-w-xs"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
