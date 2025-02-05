@@ -29,3 +29,8 @@ test:
 	$(VENV_ACTIVATE) && \
 	cd src && \
 	$(PYTHON) manage.py test
+
+redis-mac:
+	$(VENV_ACTIVATE) && \
+	cd src && \
+	docker start my-redis
