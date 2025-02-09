@@ -6,67 +6,68 @@
 
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
-    <ul id="conversation-menu"
-      class="menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-      <div class="w-full flex justify-center sticky top-0 py-2">
-        <div class="ml-2">
+    <ul id="conversation-menu" class="flex flex-col justify-between menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
+
+      <div class="overflow-y-scroll h-full">
+        <li class="menu-title text-white text-xl sticky top-0 px-0 bg-base-100">Conversations</li>
+        <!-- prettier-ignore -->
+        {% for c in conversations %}
+        <li class="list-none w-full">
+          <div 
+            id="conversation" 
+            data-id="{{ c.id }}"
+            class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+            hx-get="{% url 'fetch_conversation' c.id %}" 
+            hx-target="#chat" hx-swap="innerHTML" 
+            hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); this.classList.add('active');" 
+            hx="click, mapUpdate"
+          >
+            <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+            <div class="dropdown dropdown-bottom dropdown-end">
+              <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  class="inline-block h-5 w-5 stroke-current">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                  </path>
+                </svg>
+              </div>
+              <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+                <li>
+                  <a class="px-4" href="#"
+                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+                </li>
+                <li>
+                  <a class="text-red-500 px-4" href="#"
+                    onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </li>
+        <!-- prettier-ignore -->
+        {% endfor %}
+        
+        
+      </div>
+
+      <div class="bottom-0 sticky mx-auto py-2 flex flex-col gap-4">
+        <!-- prettier-ignore -->
+        <label
+          {% comment %} class="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center" {% endcomment %}
+          class="btn btn-primary self-center"
+          for="new-conversation">
+          New Conversation
+        </label>
+        <div>
           <!-- prettier-ignore -->
           {% include 'partials/safety_modal.html' %}
         </div>
       </div>
-
-      <div class="overflow-y-scroll">
-      <li class="menu-title mt-2 text-white">Conversations</li>
-      <!-- prettier-ignore -->
-      {% for c in conversations %}
-      <li class="list-none w-full">
-        <div 
-          id="conversation" 
-          data-id="{{ c.id }}"
-          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
-          hx-get="{% url 'fetch_conversation' c.id %}" 
-          hx-target="#chat" hx-swap="innerHTML" 
-          hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); this.classList.add('active');" 
-          hx="click, mapUpdate"
-        >
-          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
-
-          <div class="dropdown dropdown-bottom dropdown-end">
-            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                class="inline-block h-5 w-5 stroke-current">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
-                </path>
-              </svg>
-            </div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
-              <li>
-                <a class="px-4" href="#"
-                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
-              </li>
-              <li>
-                <a class="text-red-500 px-4" href="#"
-                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </li>
-      <!-- prettier-ignore -->
-      {% endfor %}
-    </div>
-
-      <div class="bottom-0 sticky mx-auto py-2">
-        <label
-          class="btn btn-secondary btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center"
-          for="new-conversation">
-          New Conversation
-        </label>
-      </div>
     </ul>
 
-    <svg xmlns="http://www.w3.org/2000/svg" class="btn btn-secondary px-1" id="toggle-menu" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" class="btn btn-primary px-1" id="toggle-menu" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
 
     <div class="flex-1 flex flex-col items-center py-4">
       <div id="no-active" class="px-2 text-white font-bold text-xl">
@@ -87,6 +88,7 @@
   </div>
 
   <div id="messages-container">
+    <!-- prettier-ignore -->
     {% comment %} {% if messages %}
     <div>
       {% for message in messages %}
@@ -100,6 +102,7 @@
   <div class="modal">
     <div class="modal-box">
       <h3 class="text-lg font-bold items-center pb-4">Start a New Conversation</h3>
+      <!-- prettier-ignore -->
       <form id="new-conversation-form" method="POST" action="{% url 'new_conversation' %}"
         hx-target="#messages-container">
         <!-- prettier-ignore -->
