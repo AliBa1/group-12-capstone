@@ -6,6 +6,11 @@
     class="w-full lg:w-1/2 mx-auto flex flex-col px-4"
     style="height: calc(100vh - 128px)"
   >
+    <p class="text-center mt-4 font-bold">
+      Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
+      <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
+    </p>
+    
     {% comment %} <form class="flex space-x-8" method="POST"> {% endcomment %}
     <form class="flex gap-8" method="POST">
       {% csrf_token %}
@@ -48,9 +53,9 @@
     </form>
 
     <div id="search-box" class="flex flex-col items-center">
-      <h3 class="text-center mt-4 font-bold text-xl">
+      {% comment %} <h3 class="text-center mt-4 font-bold text-xl">
         Select values above to continue
-      </h3>
+      </h3> {% endcomment %}
     </div>
   </div>
 </section>
