@@ -9,9 +9,9 @@
 
     <!-- <pre>{{ flights|safe }}</pre> -->
     {% if message.additional_data and message.additional_data.type == 'flight_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg: grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+    <div class="flex flex-col gap-6 text-white">
       {% for flight in message.additional_data.flights %}
-      <div class="card lg: card-side bg-base-100 shadow-xl">
+      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
         <div class="card-body">
           <h2 class="card-title">{{ flight.iata }}</h2>
           <p><strong>Airline:</strong>{{ flight.airline.name }}</p>
@@ -30,9 +30,9 @@
     </div>
     {% endif %}
     {% if message.additional_data and message.additional_data.type == 'house_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white conainer21">
+    <div class="flex flex-col gap-6 text-white">
       {% for house in message.additional_data.houses %}
-      <div class="card lg:card-side bg-base-100 shadow-xl">
+      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
         <figure>
           <img class="h-full w-full bg-cover bg-center bg-no-repeat" src="/static/images/genhotel.jpg"
             alt="{{ hotel.title }}" onerror="this.src='/static/images/genhotel.jpg'" />
@@ -60,10 +60,10 @@
     {% endif %}
 
     {% if message.additional_data and message.additional_data.type == 'apartment_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white conainer21">
+    <div class="flex flex-col gap-6 text-white">
       {% for apartment in message.additional_data.apartments %}
-      <div class="card lg:card-side bg-base-100 shadow-xl">
-        <figure>
+      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+        <figure class="w-full">
           <img class="h-full w-full bg-cover bg-center bg-no-repeat" src="/static/images/genhotel.jpg"
             alt="{{ hotel.title }}" onerror="this.src='/static/images/genhotel.jpg'" />
         </figure>
@@ -90,10 +90,10 @@
     {% endif %}
 
     {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+    <div class="flex flex-col gap-6 text-white">
       {% for hotel in message.additional_data.hotels %}
-      <div class="card bg-base-100 shadow-xl flex flex-col lg:flex-row">
-        <figure class="w-full lg:w-1/2 min-h-[200px]">
+      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+        <figure class="w-full">
           <div class="carousel w-full h-full">
             {% for image in hotel.images %}
             <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" 
@@ -114,10 +114,10 @@
             {% endfor %}
           </div>
         </figure>
-        <div class="card-body w-full lg:w-1/2 p-4">
+        <div class="card-body w-full p-4">
           <h2 class="card-title text-lg">{{ hotel.title }}</h2>
           <p class="text-sm">{{ hotel.description }}</p>
-          <p class="text-sm">Rating: {{ hotel.google_rating }}</p>
+          {% if hotel.google_rating %}<p class="text-sm">Rating: {{ hotel.google_rating }}</p>{% endif %}
     
           <div class="extra-details hidden text-sm">
             <p>{{ hotel.details.chain_code }}</p>
