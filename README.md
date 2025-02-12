@@ -22,26 +22,27 @@ DB_PORT = 5432
 ```
 
 - Create a cache in redis <br />
-Steps for Windows:
-  -Install docker.
-  -If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after.
-  -If you are using docked in the CLI, run the following command: docker run --name my-redis -p 6379:6379 -d redis
-  -To confirm connection to docker, the command is: docker ps.
-  -You should be able to start the container with the command: docker start my-redis and stop the container with docker stop my-redis
+#### Steps for Windows:
+  - Install docker.
+  - If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after.
+  - If you are using docked in the CLI, run the following command: docker run --name my-redis -p 6379:6379 -d redis
+  - To confirm connection to docker, the command is: docker ps.
+  - You should be able to start the container with the command: docker start my-redis and stop the container with docker stop my-redis
 
-Steps for Mac:
-  -brew install redis
-  -brew services start redis
+#### Steps for Mac:
+  - brew install redis
+  - brew services start redis
 
-Steps for Linux:
-  -sudo apt-get update
-  -sudo apt-get install redis-server
-  -sudo systemctl start redis-server
+#### Steps for Linux:
+  - sudo apt-get update
+  - sudo apt-get install redis-server
+  - sudo systemctl start redis-server
 
 - Setup Ruff with your code editor: https://docs.astral.sh/ruff/editors/setup/#vs-code
 
 ### Run Project (in CLI)
 
+#### Option 1
 - Create virtual envirnoment (follow steps above if not created)
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate` (to exit environment use `deactivate`)
 - Install dependencies: `pip install -r requirements.txt`
@@ -49,15 +50,21 @@ Steps for Linux:
 - Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
 - (optional) To use tailwind with hot reloading run<br /> Linux/Mac: `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
+#### Option 2
+- Run `make run` in terminal
+
 ### Run Project (in Docker)
 
 _STILL NOT FULLY SET UP YET_
 
 ### Run Tests
-
+#### Option 1
 - Enter python environment.<br /> Linux/Mac: `source env/bin/activate` <br /> Windows: `.\env\Scripts\activate`
 - Enter project directory: `cd src`
 - To run all tests use<br /> Linux/Mac: `python manage.py test`<br /> Windows:`py manage.py test`
+
+#### Option 2
+- Run `make test` in terminal
 
 ### Make new app (if needed)
 

@@ -1,13 +1,13 @@
 <link rel="stylesheet" href="/static/stylesheets/map.css" />
 {% block content %}
 {% if error %}
-<h3 class="text-center text-red-500 text-lg">{{ error }}</h3>
+<h3 class="text-center text-error text-lg">{{ error }}</h3>
 {% endif %}
 
 {% if loading %}
 <div class="flex flex-col items-center">
-    <h3 class="text-center my-4 text-xl">Your response is loading</h3>
-    <span class="loading loading-ball loading-lg"></span>
+    <h3 class="text-center my-4 text-xl">Getting you answers</h3>
+    <span class="loading loading-spinner loading-lg"></span>
 </div>
 {% else %}
 {% if text %}

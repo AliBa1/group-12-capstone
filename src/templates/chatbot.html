@@ -1,61 +1,73 @@
-{% extends 'layouts/mainpage.html' %} {% block content %}
+<!-- prettier-ignore -->
+{% extends 'layouts/mainpage.html' %} 
+<!-- prettier-ignore -->
+{% block content %}
 <link rel="stylesheet" href="/static/stylesheets/map.css">
 
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
-    <ul id="conversation-menu"
-      class="menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-      <div class="w-full flex justify-center sticky top-0 bg-base-200 py-2">
+    <ul id="conversation-menu" class="flex flex-col justify-between menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
+
+      <div class="overflow-y-scroll h-full">
+        <li class="menu-title text-white text-xl sticky top-0 px-0 bg-base-200">Conversations</li>
+        <!-- prettier-ignore -->
+        {% for c in conversations %}
+        <li class="list-none w-full">
+          <div 
+            id="conversation" 
+            data-id="{{ c.id }}"
+            class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
+            hx-get="{% url 'fetch_conversation' c.id %}" 
+            hx-target="#chat" hx-swap="innerHTML" 
+            hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); this.classList.add('active');" 
+            hx="click, mapUpdate"
+          >
+            <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
+
+            <div class="dropdown dropdown-bottom dropdown-end">
+              <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  class="inline-block h-5 w-5 stroke-current">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+                  </path>
+                </svg>
+              </div>
+              <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
+                <li>
+                  <a class="px-4" href="#"
+                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+                </li>
+                <li>
+                  <a class="text-error px-4" href="#"
+                    onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </li>
+        <!-- prettier-ignore -->
+        {% endfor %}
+        
+        
+      </div>
+
+      <div class="bottom-0 sticky mx-auto py-2 flex flex-col gap-4">
+        <!-- prettier-ignore -->
         <label
-          class="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center text-white bg-blue-500 hover:bg-blue-600"
+          {% comment %} class="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg md:text-sm self-center items-center" {% endcomment %}
+          class="btn btn-primary self-center"
           for="new-conversation">
           New Conversation
         </label>
-        <div class="ml-2">
+        <div>
+          <!-- prettier-ignore -->
           {% include 'partials/safety_modal.html' %}
         </div>
       </div>
-
-      <li class="menu-title mt-2">Conversations</li>
-      {% for c in conversations %}
-      <li class="list-none w-full">
-        <div id="conversation" data-id="{{ c.id }}"
-          class="flex items-center justify-between w-full h-12 px-0 cursor-pointer transition-colors"
-          hx-get="{% url 'fetch_conversation' c.id %}" hx-target="#chat" hx-swap="innerHTML" hx-on:click="document.querySelectorAll('#conversation').forEach((cdiv) => cdiv.classList.remove('active')); 
-                     this.classList.add('active');" hx=="click, mapUpdate">
-          <a class="flex items-center h-full px-2 truncate"> {{ c.title }} </a>
-
-          <div class="dropdown dropdown-bottom dropdown-end">
-            <div tabindex="0" role="button" class="btn bg-transparent border-none" onclick="event.stopPropagation()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                class="inline-block h-5 w-5 stroke-current">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
-                </path>
-              </svg>
-            </div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
-              <li>
-                <a class="px-4" href="#"
-                  onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
-              </li>
-              <li>
-                <a class="text-red-500 px-4" href="#"
-                  onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </li>
-
-      {% endfor %}
     </ul>
-    <svg xmlns="http://www.w3.org/2000/svg" class="btn bg-blue-500 hover:bg-blue-600 px-1" id="toggle-menu"
-      viewBox="0 0 512 512" width="60" height="100">
-      <path
-        d="M256 73.825a182.175 182.175 0 0 0-182.172 182.18c0 100.6 81.563 182.17 182.172 182.17s182.17-81.57 182.17-182.17c.001-100.618-81.561-182.18-182.17-182.18zm0 284.546a130.638 130.638 0 0 1-58.992-13.825c-4.65 3.717-25.674 19.15-46.53 11.935a45.77 45.77 0 0 0 14.608-35.56c-16.673-17.666-26.684-40.272-26.684-64.916 0-56.54 52.647-102.375 117.598-102.375s117.606 45.835 117.606 102.375c0 56.531-52.654 102.365-117.606 102.365z"
-        data-name="Chat 02" />
-    </svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg" class="btn btn-primary px-1" id="toggle-menu" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
 
     <div class="flex-1 flex flex-col items-center py-4">
       <div id="no-active" class="px-2 text-white font-bold text-xl">
@@ -66,16 +78,21 @@
       </div>
     </div>
 
-    <div id="map-container" class="w-1/4 lg:w-1/3 relative transition-all duration-300">
-      <button id="toggleMap"
-        class="absolute mt-10 top-4 left-4 z-10 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white">
+    <button id="toggleMap" class="btn btn-primary mr-2">
+      Hide Map
+    </button>
+
+    <div id="map-container" class="w-1/4 lg:w-1/3 relative transition-all duration-300 border">
+      {% comment %} <button id="toggleMap"
+        class="absolute mt-10 top-4 left-4 z-10 btn btn-primary">
         Hide Map
-      </button>
+      </button> {% endcomment %}
       <div id="map" class="h-full w-full"></div>
     </div>
   </div>
 
   <div id="messages-container">
+    <!-- prettier-ignore -->
     {% comment %} {% if messages %}
     <div>
       {% for message in messages %}
@@ -89,8 +106,10 @@
   <div class="modal">
     <div class="modal-box">
       <h3 class="text-lg font-bold items-center pb-4">Start a New Conversation</h3>
+      <!-- prettier-ignore -->
       <form id="new-conversation-form" method="POST" action="{% url 'new_conversation' %}"
         hx-target="#messages-container">
+        <!-- prettier-ignore -->
         {% csrf_token %}
         <div class="form-control">
           <label for="conversation-title">Title</label>
@@ -101,8 +120,10 @@
           <label class="label label-text" for="city">City</label>
           <select id="city" name="city" class="select select-bordered" required>
             <option value="" disabled selected>Pick one</option>
+            <!-- prettier-ignore -->
             {% for city in cities %}
             <option value="{{ city }}">{{ city }}</option>
+            <!-- prettier-ignore -->
             {% endfor %}
           </select>
         </label>
@@ -117,8 +138,8 @@
         </label>
 
         <div class="modal-action">
-          <label for="new-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
-          <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+          <label for="new-conversation" class="btn btn-error">Cancel</label>
+          <button type="submit" class="btn btn-success">
             Create
           </button>
         </div>
@@ -131,6 +152,7 @@
     <div class="modal-box">
       <h3 class="text-lg font-bold pb-4">Edit Your Conversation</h3>
       <form id="edit-conversation-form" method="POST" action="" hx-target="#messages-container">
+        <!-- prettier-ignore -->
         {% csrf_token %}
         <div class="form-control">
           <label for="updated-title">Title</label>
@@ -141,8 +163,10 @@
           <label class="label label-text" for="updated-city">City</label>
           <select id="updated-city" name="updated-city" class="select select-bordered" required>
             <option value="" disabled selected>Pick one</option>
+            <!-- prettier-ignore -->
             {% for city in cities %}
             <option value="{{ city }}">{{ city }}</option>
+            <!-- prettier-ignore -->
             {% endfor %}
           </select>
         </label>
@@ -157,8 +181,8 @@
         </label>
 
         <div class="modal-action">
-          <label for="edit-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
-          <button type="submit" class="btn text-white bg-blue-500 hover:bg-blue-600">
+          <label for="edit-conversation" class="btn btn-error">Cancel</label>
+          <button type="submit" class="btn btn-info">
             Save
           </button>
         </div>
@@ -173,14 +197,15 @@
         Delete Conversation?
       </h3>
       <form id="delete-conversation-form" method="POST" action="" hx-target="#messages-container">
+        <!-- prettier-ignore -->
         {% csrf_token %}
         <p for="conversation-delete">
           The conversation and all messages associated with it will be
           permanatly deleted
         </p>
         <div class="modal-action">
-          <label for="delete-conversation" class="btn text-white">Cancel</label>
-          <button type="submit" class="btn text-white bg-red-500 hover:bg-red-600">
+          <label for="delete-conversation" class="btn btn-outline">Cancel</label>
+          <button type="submit" class="btn btn-error">
             Delete
           </button>
         </div>
@@ -311,15 +336,26 @@
     const mapDiv = document.getElementById('map');
     const mapContainer = document.getElementById('map-container');
 
+    // toggleButton.addEventListener('click', () => {
+    //   if (mapDiv.style.display === 'none') {
+    //     mapDiv.style.display = 'block';
+    //     mapContainer.style.width = '';
+    //     toggleButton.textContent = 'Hide Map';
+    //     google.maps.event.trigger(map, 'resize');
+    //   } else {
+    //     mapDiv.style.display = 'none';
+    //     toggleButton.textContent = 'Show Map';
+    //   }
+    // });
+
     toggleButton.addEventListener('click', () => {
-      if (mapDiv.style.display === 'none') {
-        mapDiv.style.display = 'block';
-        mapContainer.style.width = '';
+      if (mapContainer.classList.contains('hidden')) {
         toggleButton.textContent = 'Hide Map';
-        google.maps.event.trigger(map, 'resize');
+        mapContainer.classList.remove('hidden');
       } else {
-        mapDiv.style.display = 'none';
         toggleButton.textContent = 'Show Map';
+        mapContainer.classList.add('hidden');
+        google.maps.event.trigger(map, 'resize');
       }
     });
   }
@@ -327,7 +363,7 @@
   const conversationMenu = document.getElementById('conversation-menu');
   toggleConversation.addEventListener('click', () => {
     if (conversationMenu.style.display === 'none') {
-      conversationMenu.style.display = 'block';
+      conversationMenu.style.display = 'flex';
       toggleButton.textContent = 'Hide Conversations';
     } else {
       conversationMenu.style.display = 'none';
@@ -338,6 +374,10 @@
 </script>
 
 <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async
-  defer></script>
+<script 
+  src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" 
+  async
+  defer
+></script>
+<!-- prettier-ignore -->
 {%endblock%}

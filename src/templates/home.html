@@ -15,7 +15,9 @@
                 Embark to a new journey.
             </p>
             <a href="{%if request.user.is_authenticated%} {%url 'explore'%} {%else%} {%url 'register'%} {%endif%}"
-                class="mt-8 inline-block bg-white text-gray-900 text-lg font-semibold py-2 px-6 border border-white hover:bg-gray-200">
+                {% comment %} class="mt-8 inline-block bg-white text-gray-900 text-lg font-semibold py-2 px-6 border border-white hover:bg-gray-200" {% endcomment %}
+                class="mt-8 text-lg font-semibold py-2 px-6 btn btn-primary"
+                >
                 {%if request.user.is_authenticated%}
                 Explore &rarr;
                 {%else%}

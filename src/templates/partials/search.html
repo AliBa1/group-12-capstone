@@ -1,6 +1,6 @@
 <form
   id="send-search"
-  class="flex items-end w-full space-x-8"
+  class="flex flex-col w-full items-center gap-4"
   method="POST"
   hx-post="{% url 'send_search' %}"
   hx-target="#search-results"
@@ -9,7 +9,7 @@
   {% csrf_token %}
   <label class="form-control w-full">
     <label class="label label-text text-lg" for="topic">Topic</label>
-    <select id="topic" name="topic" class="select select-bordered" required>
+    <select id="topic" name="topic" class="select select-primary" required>
       <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
@@ -17,14 +17,14 @@
     </select>
   </label>
 
-  <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+  <button type="submit" id="search-btn" class="btn btn-secondary w-1/2">
     Search
   </button>
 </form>
-<p class="text-center mt-4 font-bold">
+{% comment %} <p class="text-center mt-4 font-bold">
   Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
   <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
-</p>
+</p> {% endcomment %}
 
 <div
   id="search-results"
@@ -36,6 +36,7 @@
     const city = "{{ city }}";
     const reason = "{{ reason }}";
     const topic = document.querySelector("#topic").value;
+    document.querySelector('#search-btn').disabled = true;
 
     htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
       target: "#search-results",
@@ -55,6 +56,7 @@
     document.body.addEventListener('htmx:afterSwap', function(event) {
     if (event.detail.target.id === 'search-results') {
       reinitializeMap();
+      document.querySelector('#search-btn').disabled = false;
     }
   });
 </script>

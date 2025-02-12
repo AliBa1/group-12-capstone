@@ -1,18 +1,25 @@
-{% extends 'layouts/mainpage.html' %} {% block content %}
+{% extends 'layouts/mainpage.html' %} 
+{% block content %}
 
 <section>
   <div
-    class="w-full lg:w-1/2 px-3.5 mx-auto flex flex-col"
+    class="w-full lg:w-1/2 mx-auto flex flex-col px-4"
     style="height: calc(100vh - 128px)"
   >
-    <form class="flex space-x-8" method="POST">
+    <p class="text-center mt-4 font-bold">
+      Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
+      <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
+    </p>
+    
+    {% comment %} <form class="flex space-x-8" method="POST"> {% endcomment %}
+    <form class="flex gap-8" method="POST">
       {% csrf_token %}
       <label class="form-control w-full">
         <label class="label label-text text-lg" for="city">City</label>
         <select
           id="city"
           name="city"
-          class="select select-bordered"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
@@ -31,7 +38,7 @@
         <select
           id="reason"
           name="reason"
-          class="select select-bordered"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
@@ -46,9 +53,9 @@
     </form>
 
     <div id="search-box" class="flex flex-col items-center">
-      <h3 class="text-center mt-4 font-bold text-xl">
+      {% comment %} <h3 class="text-center mt-4 font-bold text-xl">
         Select values above to continue
-      </h3>
+      </h3> {% endcomment %}
     </div>
   </div>
 </section>
