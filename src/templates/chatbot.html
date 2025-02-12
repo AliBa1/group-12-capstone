@@ -39,7 +39,7 @@
                     onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
                 </li>
                 <li>
-                  <a class="text-red-500 px-4" href="#"
+                  <a class="text-error px-4" href="#"
                     onclick="openDeleteModal({{ c.id }}, '{{ c.title|escapejs }}')">Delete</a>
                 </li>
               </ul>
@@ -138,8 +138,8 @@
         </label>
 
         <div class="modal-action">
-          <label for="new-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
-          <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+          <label for="new-conversation" class="btn btn-error">Cancel</label>
+          <button type="submit" class="btn btn-success">
             Create
           </button>
         </div>
@@ -181,8 +181,8 @@
         </label>
 
         <div class="modal-action">
-          <label for="edit-conversation" class="btn text-white bg-red-500 hover:bg-red-600">Cancel</label>
-          <button type="submit" class="btn text-white bg-blue-500 hover:bg-blue-600">
+          <label for="edit-conversation" class="btn btn-error">Cancel</label>
+          <button type="submit" class="btn btn-info">
             Save
           </button>
         </div>
@@ -204,8 +204,8 @@
           permanatly deleted
         </p>
         <div class="modal-action">
-          <label for="delete-conversation" class="btn text-white">Cancel</label>
-          <button type="submit" class="btn text-white bg-red-500 hover:bg-red-600">
+          <label for="delete-conversation" class="btn btn-outline">Cancel</label>
+          <button type="submit" class="btn btn-error">
             Delete
           </button>
         </div>

@@ -1,7 +1,7 @@
 {% if messages %}
 <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
     {% for message in messages %}
-    <div class="mx-auto text-white px-6 py-4 border-0 rounded-xl relative mb-4 shadow-lg {% if message.tags == 'error' %} bg-red-500 {% elif message.tags == 'success' %} bg-green-500 {% else %} bg-blue-500 {% endif %}">
+    <div class="mx-auto text-white px-6 py-4 border-0 rounded-xl relative mb-4 shadow-lg {% if message.tags == 'error' %} bg-error {% elif message.tags == 'success' %} bg-success {% else %} bg-info {% endif %}">
         <span class="text-xl inline-block mr-5 align-middle">
             <i class="fas fa-bell"></i>
         </span>
