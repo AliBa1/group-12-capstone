@@ -26,7 +26,7 @@ class FlightSearchStrategy(SearchStrategy):
 
     def process_query(self, prompt, city=None, reason=None):
         try:
-            origin_iata, destination_iata, date = self._query_location_info(prompt)
+            origin_iata, destination_iata, date, stops = self._query_location_info(prompt)
 
             if not origin_iata:
                 print("Missing origin city.")
@@ -38,6 +38,7 @@ class FlightSearchStrategy(SearchStrategy):
             origin = origin_iata.get('origin_city', '')
             destination = destination_iata.get('destination_city', '')
             date = date.get('date', '')
+            stops = stops.get('stops', '')
             
             flights_data = self._search_flights(origin, destination, date)
             if not flights_data:
@@ -49,9 +50,13 @@ class FlightSearchStrategy(SearchStrategy):
 
 
             self._store_flights(flights)
+            if stops == 'nonstop_flights':
+                response_text = f"I found {len(flights)} nonstop flights between {origin} and {destination} departing on {date}."
+                if len(flights) == 0:
+                    response_text += "By default, I search for nonstop flights. Please specify the number of stops you are willing to take in your query."
 
-            response_text = f"I found {len(flights)} flights from {origin} to {destination} departing today."
-
+            else:
+                response_text = f"I found {len(flights)} flights with {stops} stops between {origin} and {destination} departing on {date}."
             return {
                 'text': response_text,
                 'data': formatted_data
@@ -65,20 +70,22 @@ class FlightSearchStrategy(SearchStrategy):
                 model="gpt-4o-mini",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the origin city, destination city, and desired date from this query: '{query}'. "
-                               f"If either city name is misspelled, correct it and use the proper nearest airport's IATA code"
-                               f"Return ONLY a SINGLE JSON object in this EXACT format: "
-                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}, {{\"date\": \"YYYY-MM-DD\"}}]"
+                    "content": f"Extract the origin city, destination city, desired flight date, and whether stops are tolerable "
+                               f"from this query: '{query}'. If either city name is misspelled, correct it and use "
+                               f"the proper nearest airport's IATA code. Default to all unless user specifies only nonstop flights "
+                               f"Options for stops are 'all' or 'nonstop_flights' Return ONLY a SINGLE JSON object in this EXACT format: "
+                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}, {{\"date\": \"YYYY-MM-DD\"}}, {{\"stops\": \"nonstop_flights\"}}]"
                                f"(Replace placeholders with actual values from the query)."
                 }]
             )
-            content = response.choices[0].message.content
-            result = json.loads(content.strip())
+            content = response.choices[0].message.content.strip()
+            print(f"content: {content}")
+            result = json.loads(content)
 
-            return result[0], result[1], result[2]
+            return result[0], result[1], result[2], result[3]
         except Exception as e:
             print(f"Error in query_location_info: {e}")
-            return {},{}, {}
+            return {},{},{},{}
         
     def _search_flights(self, origin, dest, date):
 #        cache_key = self.getcache_key('flights', origin)
@@ -93,7 +100,7 @@ class FlightSearchStrategy(SearchStrategy):
                 "toId": dest,
                 "departureDate": date,
                 "cabinClass": "ECONOMY",
-                "numberOfStops":"nonstop_flights"
+                "numberOfStops": 'all'
             }
             flights_data = self._make_request("search-oneway", params)
             print(f"flights found: {len(flights_data['flights'])}")
@@ -131,6 +138,7 @@ class FlightSearchStrategy(SearchStrategy):
                     # 'aircraft_model': flight['aircraft'].get('iata'),
                     'iata': curr['flightNumber'],
                     'flight_price': ((flight['travelerPrices'][0]['price']['price']['value']) / 100),
+                    'booking_url': flight['shareableUrl'],
                     'airline': {
                         'name': curr['operatingCarrier']['name'],
                         'iata_code': curr['operatingCarrier']['code']

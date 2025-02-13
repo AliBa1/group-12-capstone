@@ -42,7 +42,7 @@ class Hotel(models.Model):
 class Flight(models.Model):
     flight_iata_num = models.CharField(max_length=10, null=True)
     flight_date = models.DateField(max_length=10, null=True)
-    airline = models.CharField(max_length=25, null=True)
+    airline = models.CharField(max_length=40, null=True)
     airline_code = models.CharField(max_length=3, null=True)
     departure_city = models.CharField(max_length=50, null=True)
     departure_time = models.CharField(max_length=10, null=True)

@@ -49,6 +49,73 @@
             </div>
         {% endif %}
 
+        <!-- {% if additional_data and additional_data.type == 'flight_search' %}
+            <div class = "overflow-y-auto h-full pr-2">
+                <div class="grid grid-cols-1 gap-8 text-white pb-6">
+                    {% for flight in additional_data.flights %}
+                        <div class="card lg: card-side bg-base-100 shadow-xl">
+                            <div class="card-body">
+                            <h2 class="card-title">{{ flight.iata }}</h2>
+                            <p><strong>Airline: </strong>{{ flight.airline.name }}</p>
+                            <p><strong>Flight Date: </strong>{{ flight.flight_date }}</p>
+                            <p><strong>Departure Airport: </strong>{{ flight.departure.airport_iata }}</p>
+                            <p><strong>Departure Time: </strong>{{ flight.departure.time }}</p>
+                            <p><strong>Arrival Airport: </strong>{{ flight.arrival.airport_iata }}</p>
+                            <p><strong>Arrival Time: </strong>{{ flight.arrival.time }}</p>
+                            <p><strong>Price: $</strong>{{ flight.flight_price }}</p>
+                            <a href={{ flight.booking_url }} target="_blank"><strong><u>Book This Flight</u></strong></a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %} -->
+        {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-white">
+            {% for flight in additional_data.flights %}
+            <div class="card bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 font-semibold">Departure {{ flight.flight_date }}</p>
+                        <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
+                        <p class="text-gray-500">{{ flight.departure.airport_iata }} {{ flight.departure.city }}</p>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
+                        <div class="flex items-center">
+                            <span class="h-1 w-6 bg-gray-500"></span>
+                            <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
+                            <span class="h-1 w-6 bg-gray-500"></span>
+                        </div>
+                        <p class="text-gray-500 text-sm">{{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
+                        <p class="text-gray-500">{{ flight.arrival.airport_iata }} {{ flight.arrival.city }}</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="flex items-center space-x-2">
+                        <img src="{{ flight.airline.logo_url }}" alt="{{ flight.airline.name }}" class="h-6 w-6">
+                        <p class="text-gray-500">{{ flight.airline.name }}</p>
+                    </div>
+                    <p class="text-gray-500 text-sm">Economy</p>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <p class="text-lg font-bold text-gray-900">US${{ flight.flight_price }}</p>
+                    <a href="{{ flight.booking_url }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        View trip
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <div class="h-full lg:sticky lg:top-4">
           <div id="map" class="w-full h-full rounded-lg" data-locations='{{ locations_json|safe }}'></div>
     </div>
@@ -219,4 +286,4 @@ document.body.addEventListener('htmx:afterSwap', function(event) {
 </script>
 {% endblock %}
 <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script> -->

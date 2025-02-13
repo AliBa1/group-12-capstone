@@ -21,6 +21,7 @@
           <p><strong>Arrival Airport: </strong>{{ flight.arrival.airport_iata }}</p>
           <p><strong>Arrival Time: </strong>{{ flight.arrival.time }}</p>
           <p><strong>Price: $</strong>{{ flight.flight_price }}</p>
+          <a href={{ flight.booking_url }} target="_blank"><strong><u>Book This Flight</u></strong></a>
         </div>
       </div>
       {% endfor %}

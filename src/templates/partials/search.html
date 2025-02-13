@@ -1,30 +1,53 @@
 <form
   id="send-search"
-  class="flex items-end w-full space-x-8"
+  class="flex flex-col w-full items-center gap-4"
   method="POST"
   hx-post="{% url 'send_search' %}"
   hx-target="#search-results"
   hx-swap="innerHTML"
 >
   {% csrf_token %}
+  <!-- Topic Selection -->
   <label class="form-control w-full">
     <label class="label label-text text-lg" for="topic">Topic</label>
-    <select id="topic" name="topic" class="select select-bordered" required>
-      <option value="" disabled selected>Pick one</option>
+    <select id="topic" name="topic" class="select select-primary" required>
+      <option value="" disabled selected>Select one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
       {% endfor %}
     </select>
   </label>
 
-  <button type="submit" class="btn text-white bg-green-500 hover:bg-green-600">
+  <!-- Origin Selection (Hidden by Default)-->
+  <div id="origin-container" class="w-full" style="display:none;">
+    <label class="form-control w-full">
+      <label class="label label-text text-lg">Origin</label>
+      <select id="origin" name="origin" class="select select-primary">
+        <option value="" disabled selected>Select One</option>
+        {% for location in cities %}
+        <option value="{{ location }}">{{ location }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <!-- Flight Date Selection (Hidden by Default)-->
+  <div id="flight-date-container" class="w-full" style="display:none;">
+    <label class="form-control w-full">
+      <label class="label label-text text-lg" for="flight-date">Flight Date</label>
+      <input type="date" id="flight-date" name="flight-date" class="input input-primary">
+    </label>
+  </div>
+
+  <button type="submit" id="search-btn" class="btn btn-secondary w-1/2">
     Search
   </button>
 </form>
-<p class="text-center mt-4 font-bold">
+
+{% comment %} <p class="text-center mt-4 font-bold">
   Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
   <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
-</p>
+</p> {% endcomment %}
 
 <div
   id="search-results"
@@ -32,12 +55,43 @@
 ></div>
 
 <script>
+  function handleTopicChange() {
+    const topic = document.querySelector("#topic").value;
+    const origin = document.querySelector("#origin-container");
+    const flight_date = document.querySelector("#flight-date-container");
+
+    if (topic === "Flights") {
+      origin.style.display = "block";
+      flight_date.style.display = "block"
+    } else {
+      origin.style.display = "none";
+      flight_date.style.display = "none";
+    }
+  }
+  document.querySelector("#topic").addEventListener("change", handleTopicChange);
+
   function afterSendSearch() {
     const city = "{{ city }}";
     const reason = "{{ reason }}";
     const topic = document.querySelector("#topic").value;
+    document.querySelector('#search-btn').disabled = true;
+    let url = `/search_response/${city}/${reason}/${topic}/`;
 
-    htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
+    if (topic === "Flights") {
+      const origin_elmt = document.querySelector("#origin");
+      const flight_date_elmt = document.querySelector("#flight-date");
+
+      const origin = origin_elmt ? origin_elmt.value : null;
+      const flight_date = flight_date_elmt ? flight_date_elmt.value : null;
+      if(origin) {
+        url += `?origin=${encodeURIComponent(origin)}`;
+      } 
+      if (flight_date) {
+        url += origin ? `&flight_date=${encodeURIComponent(flight_date)}` : `?flight_date=${encodeURIComponent(flight_date)}`;
+      }
+    }
+
+    htmx.ajax("POST", url, {
       target: "#search-results",
       swap: "innerHTML",
       headers: {
@@ -54,7 +108,14 @@
 
     document.body.addEventListener('htmx:afterSwap', function(event) {
     if (event.detail.target.id === 'search-results') {
-      reinitializeMap();
+      if (typeof reinitializeMap === "function") {
+        try {
+          reinitializeMap();
+        } catch (error) {
+          console.error("Error reinitializing map:", error);
+        }
+      }
+      document.querySelector('#search-btn').disabled = false;
     }
   });
 </script>

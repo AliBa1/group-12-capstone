@@ -362,6 +362,8 @@ def chatbot_response(request, prompt):
         if conversation_id:
           conversation = get_object_or_404(Conversation, id=conversation_id)
           city = conversation.city
+        
+        print(f"strategy: {strategy}")
 
         strategy_response = strategy.process_query(prompt, city=city)
         if strategy_response:
@@ -425,6 +427,7 @@ def update_city_reason(request):
           "premade_prompts": choose_topics(reason),
           "city": city,
           "reason": reason,
+          "cities": cities,
         },
       )
 
@@ -445,7 +448,13 @@ def send_search(request):
 def search_response(request, city, reason, topic):
   if request.method == "POST":
     try:
-      prompt = f"I want to learn more about {topic} in {city}"
+      origin = request.GET.get("origin", None)
+      flight_date = request.GET.get("flight_date", None)
+      if topic == "Flights":
+        prompt = f"Find me flights between {origin} and {city} on {flight_date}"
+      else:
+        prompt = f"I want to learn more about {topic} in {city}"
+
       response = chatbot_response(request, prompt)
       # response = "Test Response"
       additional_data = None
