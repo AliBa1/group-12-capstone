@@ -8,7 +8,7 @@
 >
   {% csrf_token %}
   <label class="form-control w-full">
-    <label class="label label-text text-lg" for="topic">Topic</label>
+    <label class="label label-text text-lg text-white" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
       <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
@@ -17,7 +17,22 @@
     </select>
   </label>
 
-  <button type="submit" id="search-btn" class="btn btn-secondary w-1/2">
+  <div id="propertyTypeSelect" class="hidden form-control">
+    <label class="label label-text text-lg text-white" for="propertyType">Property Type</label>
+    <select id="propertyType" name="propertyType" class="select select-primary truncate w-full" required>
+      <option value="" disabled selected>Pick one</option>
+      <option value="Single%20Family">Single Family: A detached, single-family property</option>
+      <option value="Condo">Condo: A single unit in a condominium development or building, which is part of a homeowner’s association (HOA)</option>
+      <option value="Townhouse">Townhouse: A single-family property that shares walls with other adjacent homes, and is typically part of a homeowner’s association (HOA)</option>
+      <option value="Manufactured">Manufactured: 	A pre-fabricated or mobile home, typically constructed at a factory</option>
+      <option value="Multi-Family">Multi-Family: A residential multi-family building (2-4 units)</option>
+      <option value="Apartment">Apartment: A commercial multi-family building or apartment complex (5+ units)</option>
+      <option value="Land">Land: A single parcel of vacant, undeveloped land</option>
+    </select>
+  </div>
+
+
+  <button type="submit" id="search-btn" class="btn btn-secondary w-1/2" disabled>
     Search
   </button>
 </form>
@@ -36,14 +51,31 @@
     const city = "{{ city }}";
     const reason = "{{ reason }}";
     const topic = document.querySelector("#topic").value;
+    const propertyType = document.querySelector("#propertyType").value;
     document.querySelector('#search-btn').disabled = true;
 
-    htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
+    htmx.ajax("POST", `/update_preferences/${propertyType}`, {
       target: "#search-results",
-      swap: "innerHTML",
+      swap: "none",
       headers: {
         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
       },
+    }).then(() => {
+      return htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
+        target: "#search-results",
+        swap: "innerHTML",
+        headers: {
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+        },
+      });
+    }).then(() => {
+      reinitializeMap();
+    })
+    .catch((error) => {
+      console.error("Error in AJAX request:", error);
+    })
+    .finally(() => {
+      document.querySelector('#search-btn').disabled = false;
     });
   }
 
@@ -53,9 +85,24 @@
       afterSendSearch();
     });
 
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-    if (event.detail.target.id === 'search-results') {
-      reinitializeMap();
+  document.querySelector("#topic").addEventListener('change', () => {
+    const topic = document.querySelector("#topic").value;
+    if (topic == "") {
+      document.querySelector('#search-btn').disabled = true;
+    }
+
+    if (topic != "Housing") {
+      document.querySelector('#propertyTypeSelect').style.display = 'none';
+    } else {
+      document.querySelector('#propertyTypeSelect').style.display = 'block';
+    }
+  });
+
+  document.querySelector("#propertyType").addEventListener('change', () => {
+    const propertyType = document.querySelector("#propertyType").value;
+    if (propertyType == "") {
+      document.querySelector('#search-btn').disabled = true;
+    } else {
       document.querySelector('#search-btn').disabled = false;
     }
   });

@@ -6,5 +6,5 @@ class CarRentalSearchStrategy(SearchStrategy):
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
 
-    def process_query(self, prompt, city=None, reason=None):
+    def process_query(self, prompt, city=None, reason=None, user=None):
         return "\nCar rental search functionality coming soon"

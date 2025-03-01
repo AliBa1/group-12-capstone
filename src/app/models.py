@@ -11,6 +11,9 @@ class Conversation(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   # folder = models.
 
+class Preferences(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  house_property_type = models.CharField(max_length=100, null=True, blank=True)
 
 class Message(models.Model):
   timestamp = models.DateTimeField(auto_now_add=True)

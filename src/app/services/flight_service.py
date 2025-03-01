@@ -23,7 +23,7 @@ class FlightSearchStrategy(SearchStrategy):
         safe_identifier = str(identifier).replace(' ', '').lower()
         return f'flightsearch{prefix}_{safe_identifier}'
 
-    def process_query(self, prompt, city=None, reason=None):
+    def process_query(self, prompt, city=None, reason=None, user=None):
         try:
             origin_iata, destination_iata = self._query_location_info(prompt)
 

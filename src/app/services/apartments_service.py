@@ -22,7 +22,7 @@ class ApartmentSearchStrategy(SearchStrategy):
         safe_identifier = str(identifier).replace(' ', '_').lower()
         return f'property_search_{prefix}_{safe_identifier}'
 
-    def process_query(self, prompt, city=None, state=None, reason=None):
+    def process_query(self, prompt, city=None, state=None, reason=None, user=None):
         prompt_location_info = self._query_location_info(prompt)
 
         if prompt_location_info and 'city' in prompt_location_info and 'state' in prompt_location_info:
