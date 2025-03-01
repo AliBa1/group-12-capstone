@@ -561,6 +561,8 @@ def predict_heat_index(request):
 def update_preferences(request, property_type):
   if request.method == "POST":
     property_type = property_type or request.POST.get("property_type")
+    if property_type == "any":
+      property_type = None
     print("Property Type: ", property_type)
     preferences, created = Preferences.objects.get_or_create(user=request.user)
     preferences.house_property_type = property_type
