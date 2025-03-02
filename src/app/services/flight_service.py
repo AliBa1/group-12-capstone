@@ -3,6 +3,7 @@ from django.conf import settings
 from ..models import Flight
 import openai
 import json
+import re
 import requests
 from django.core.cache import cache
 from datetime import datetime
@@ -64,6 +65,15 @@ class FlightSearchStrategy(SearchStrategy):
         except Exception as e:
             print(f"Error in process_query: {e}")
 
+    def _clean_json_response(self, response):
+    # Remove leading and trailing whitespace
+        response = response.strip()
+    # Remove code fences if present
+    # Matches either triple backticks or triple single quotes with optional 'json' after opening fence
+        pattern = r"^(?:```json|'''json|```|''')\s*|\s*(?:```|''')$"
+        cleaned = re.sub(pattern, "", response)
+        return cleaned
+
     def _query_location_info(self, query):
         try:
             response = openai.chat.completions.create(
@@ -78,9 +88,11 @@ class FlightSearchStrategy(SearchStrategy):
                                f"(Replace placeholders with actual values from the query)."
                 }]
             )
-            content = response.choices[0].message.content.strip()
-            print(f"content: {content}")
-            result = json.loads(content)
+            mess = response.choices[0].message.content
+            mess.strip()
+            print(f"content: {mess}")
+            clean = self._clean_json_response(mess)
+            result = json.loads(clean)
 
             return result[0], result[1], result[2], result[3]
         except Exception as e:

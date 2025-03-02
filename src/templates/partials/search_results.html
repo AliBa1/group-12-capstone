@@ -15,7 +15,7 @@
 {% endif %}
 
 <div class="container mx-auto px-4 pb-8">
-    <div class="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6" style="height: calc(100vh - 16rem);">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="height: calc(100vh - 16rem);">
         {% if additional_data and additional_data.type == 'hotel_search' %}
             <div class="overflow-y-auto h-full pr-2">
                 <div class="grid grid-cols-1 gap-8 text-white pb-6">
@@ -71,7 +71,7 @@
             </div>
         {% endif %} -->
         {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-white">
+        <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 text-white">
             {% for flight in additional_data.flights %}
             <div class="card bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between">
                 <div class="flex justify-between items-center">
@@ -116,9 +116,12 @@
         </div>
         {% endif %}
 
-        <div class="h-full lg:sticky lg:top-4">
-          <div id="map" class="w-full h-full rounded-lg" data-locations='{{ locations_json|safe }}'></div>
-    </div>
+        <div class = "relative">
+            <button id="toggleMap" class="absolute top-2 left-2 z-10 btn btn-sm">
+                Hide Map
+            </button>
+            <div id="map" class="w-full h-full rounded-lg" data-locations='{{ locations_json|safe }}'></div>
+        </div>
 </div>
 {% endif %}
 
@@ -219,6 +222,27 @@ async function initMap() {
     }
 }
 
+function setupMapToggle() {
+    const toggleButton = document.getElementById('toggleMap');
+    const mapDiv = document.getElementById('map');
+
+    if (!toggleButton || !mapDiv) return;
+
+    toggleButton.addEventListener('click', () => {
+        const currentDisplay = window.getComputedStyle(mapDiv).display;
+        if (currentDisplay !== 'none') {
+            mapDiv.style.display = 'none';
+            toggleButton.textContent = 'Show Map';
+        } else {
+            mapDiv.style.display = 'block';
+            toggleButton.textContent = 'Hide Map';
+            if (typeof google !== 'undefined' && google.maps) {
+                google.maps.event.trigger(map, 'resize');
+            }
+        }
+    });
+}
+
 async function cleanupMap() {
     return new Promise(resolve => {
         if (markers && markers.length) {
@@ -280,6 +304,7 @@ document.body.addEventListener('htmx:afterSwap', function(event) {
         clearTimeout(reinitTimeout);
         reinitTimeout = setTimeout(() => {
             reinitializeMap();
+            setupMapToggle();
         }, 100);
     }
 });
