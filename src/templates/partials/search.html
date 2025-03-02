@@ -12,8 +12,6 @@
     <label class="label label-text text-lg" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
       <option value="" disabled selected>Select one</option>
-    <select id="topic" name="topic" class="select select-primary" required>
-      <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
       {% endfor %}
@@ -42,7 +40,6 @@
   </div>
 
   <button type="submit" id="search-btn" class="btn btn-secondary w-1/2">
-  <button type="submit" id="search-btn" class="btn btn-secondary w-1/2">
     Search
   </button>
 </form>
@@ -50,7 +47,7 @@
 {% comment %} <p class="text-center mt-4 font-bold">
   Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
   <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
-</p> {% endcomment %} {% endcomment %}
+</p> {% endcomment %}
 
 <div
   id="search-results"
@@ -81,23 +78,16 @@
     let url = `/search_response/${city}/${reason}/${topic}/`;
 
     if (topic === "Flights") {
-      const origin_elmt = document.querySelector("#origin");
-      const flight_date_elmt = document.querySelector("#flight-date");
+      const origin = document.querySelector("#origin")?.value;
+      const flight_date = document.querySelector("#flight-date")?.value;
 
-      const origin = origin_elmt ? origin_elmt.value : null;
-      const flight_date = flight_date_elmt ? flight_date_elmt.value : null;
-      if(origin) {
-        url += `?origin=${encodeURIComponent(origin)}`;
-      } 
-      if (flight_date) {
-        url += origin ? `&flight_date=${encodeURIComponent(flight_date)}` : `?flight_date=${encodeURIComponent(flight_date)}`;
-      }
+      const params = new URLSearchParams();
+      if(origin) params.append("origin", origin);
+      if (flight_date) params.append("flight_date", flight_date);
+      url += "?" + params.toString();
     }
 
     htmx.ajax("POST", url, {
-    document.querySelector('#search-btn').disabled = true;
-
-    htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
       target: "#search-results",
       swap: "innerHTML",
       headers: {
@@ -121,8 +111,6 @@
           console.error("Error reinitializing map:", error);
         }
       }
-      document.querySelector('#search-btn').disabled = false;
-      reinitializeMap();
       document.querySelector('#search-btn').disabled = false;
     }
   });
