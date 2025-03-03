@@ -42,6 +42,7 @@ from app.views import (
   send_search,
   search_response,
   predict_heat_index,
+  update_preferences
 )
 
 urlpatterns = [
@@ -73,4 +74,5 @@ urlpatterns = [
   path("send_search/", send_search, name="send_search"),
   path("search_response/<str:city>/<str:reason>/<str:topic>/", search_response, name="search_response"),
   path('heat_index/', predict_heat_index, name='predict_heat_index'),
+  path('update_preferences/<str:property_type>', update_preferences, name='update_preferences'),
 ]

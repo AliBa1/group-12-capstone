@@ -25,7 +25,7 @@ class FlightSearchStrategy(SearchStrategy):
         safe_identifier = str(identifier).replace(' ', '').lower()
         return f'flightsearch{prefix}_{safe_identifier}'
 
-    def process_query(self, prompt, city=None, reason=None):
+    def process_query(self, prompt, city=None, reason=None, user=None):
         try:
             origin_iata, destination_iata, date, stops = self._query_location_info(prompt)
 
@@ -46,6 +46,7 @@ class FlightSearchStrategy(SearchStrategy):
                 return None
             
             formatted_data = self._format_flight_response(flights_data)
+            print("Flight data: ", formatted_data)
             flights = formatted_data['flights']
             
 

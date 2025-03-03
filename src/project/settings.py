@@ -129,6 +129,7 @@ INSTALLED_APPS = [
   "allauth.socialaccount",
   "allauth.socialaccount.providers.google",
   "user",
+  'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [

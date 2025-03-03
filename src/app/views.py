@@ -7,7 +7,7 @@ import pandas as pd
 from openai import OpenAI
 from django.conf import settings
 from app.constants import cities
-from app.models import Conversation, Message
+from app.models import Conversation, Message, Preferences
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -365,7 +365,7 @@ def chatbot_response(request, prompt):
         
         print(f"strategy: {strategy}")
 
-        strategy_response = strategy.process_query(prompt, city=city)
+        strategy_response = strategy.process_query(prompt, city=city, user=request.user)
         if strategy_response:
           if isinstance(strategy_response, dict):
             assistant_message = f"{assistant_message} {strategy_response.get('text', '')}"
@@ -565,3 +565,16 @@ def predict_heat_index(request):
       'error': 'Failed to make prediction',
       'details': str(e)
     }, status=500)
+  
+@login_required
+def update_preferences(request, property_type):
+  if request.method == "POST":
+    property_type = property_type or request.POST.get("property_type")
+    if property_type == "any":
+      property_type = None
+    print("Property Type: ", property_type)
+    preferences, created = Preferences.objects.get_or_create(user=request.user)
+    preferences.house_property_type = property_type
+    preferences.save()
+    return JsonResponse({"status": "success"})
+  return JsonResponse({"status": "error"}, status=400)

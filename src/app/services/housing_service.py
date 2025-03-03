@@ -3,7 +3,7 @@ from django.conf import settings
 import requests
 import json
 import openai
-from ..models import Property, ListingAgent, ListingOffice
+from ..models import Property, ListingAgent, ListingOffice, Preferences
 from django.core.cache import cache
 
 
@@ -30,12 +30,19 @@ class HousingSearchStrategy(SearchStrategy):
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
     
-    @staticmethod
-    def get_cache_key(prefix, identifier):
-        safe_identifier = str(identifier).replace(' ', '_').lower()
-        return f'property_search_{prefix}_{safe_identifier}'
+    # @staticmethod
+    # def get_cache_key(prefix, identifier):
+    #     safe_identifier = str(identifier).replace(' ', '_').lower()
+    #     return f'property_search_{prefix}_{safe_identifier}'
 
-    def process_query(self, prompt, city=None, state=None, reason=None):
+    @staticmethod
+    def get_cache_key(prefix, city, property_type):
+        safe_city = str(city).replace(' ', '_').lower()
+        safe_property_type = str(property_type).replace(' ', '_').lower()
+        
+        return f'property_search_{prefix}_{safe_city}_{safe_property_type}'
+
+    def process_query(self, prompt, city=None, state=None, reason=None, user=None):
         prompt_location_info = self._query_location_info(prompt)
 
         if prompt_location_info and 'city' in prompt_location_info and 'state' in prompt_location_info:
@@ -51,7 +58,8 @@ class HousingSearchStrategy(SearchStrategy):
         if not location_info or 'city' not in location_info or 'state' not in location_info:
             return None
 
-        response = houses_data = self._search_houses(location_info['city'], location_info['state'])
+        property_type = Preferences.objects.filter(user=user).first().house_property_type or None
+        response = houses_data = self._search_houses(location_info['city'], location_info['state'], property_type)
         print(houses_data.text)
         print('test')
 
@@ -95,14 +103,19 @@ class HousingSearchStrategy(SearchStrategy):
             print(f"Error in query_location_info: {e}")
             return None
 
-    def _search_houses(self, city, state, limit=5):
-        cache_key = self.get_cache_key('properties', city)
+    def _search_houses(self, city, state, property_type, limit=5):
+        # cache_key = self.get_cache_key('properties', city)
+        cache_key = self.get_cache_key('properties', city, property_type)
         cached_data = cache.get(cache_key)
+        print("Search house property type: ", property_type)
 
         if cached_data:
             return cached_data
         try:
-            url = f"{self.base_url}?city={city}&state={state}&status=Active&limit={limit}"
+            if property_type is None:
+                url = f"{self.base_url}?city={city}&state={state}&status=Active&limit={limit}"
+            else:
+                url = f"{self.base_url}?city={city}&state={state}&propertyType={property_type}&status=Active&limit={limit}"
             headers = {
                 "accept": "application/json",
                 "X-API-KEY": self.api_key

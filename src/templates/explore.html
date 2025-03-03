@@ -2,9 +2,12 @@
 {% block content %}
 
 <section>
-  <div
+  {% comment %} <div
     class="w-full lg:w-1/2 mx-auto flex flex-col px-4"
     style="height: calc(100vh - 128px)"
+  > {% endcomment %}
+  <div
+    class="w-full lg:w-1/2 mx-auto flex flex-col px-4 min-h-screen"
   >
     <p class="text-center mt-4 font-bold">
       Do you want to learn more about the city? (neighborhood security of an specific address, stays near gas stations) Go to the
@@ -15,11 +18,11 @@
     <form class="flex gap-8" method="POST">
       {% csrf_token %}
       <label class="form-control w-full">
-        <label class="label label-text text-lg" for="city">Destination</label>
+        <label class="label label-text text-lg text-white" for="city">Destination</label>
         <select
           id="city"
           name="city"
-          class="select select-bordered"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
@@ -34,7 +37,7 @@
       </label>
 
       <label class="form-control w-full">
-        <label class="label label-text text-lg" for="reason">Reason</label>
+        <label class="label label-text text-lg text-white" for="reason">Reason</label>
         <select
           id="reason"
           name="reason"
