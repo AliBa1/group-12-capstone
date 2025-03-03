@@ -40,3 +40,9 @@ migrate:
 	cd src && \
 	$(PYTHON) manage.py makemigrations && \
 	$(PYTHON) manage.py migrate
+
+hot-reload:
+	$(VENV_ACTIVATE) && \
+	$(PYTHON) -m pip install -r requirements.txt && \
+	cd src && \
+	$(PYTHON) manage.py tailwind start
