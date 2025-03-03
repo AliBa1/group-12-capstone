@@ -66,13 +66,6 @@
     Search
   </button>
 </form>
-{% comment %}
-<p class="text-center mt-4 font-bold">
-  Do you want to learn more about the city? (neighborhood security of an
-  specific address, stays near gas stations) Go to the
-  <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
-</p>
-{% endcomment %}
 
 <div
   id="search-results"
@@ -80,108 +73,92 @@
 ></div>
 
 <script>
-    function afterSendSearch() {
-      const city = "{{ city }}";
-      const reason = "{{ reason }}";
-      const topic = document.querySelector("#topic").value;
-      const propertyType = document.querySelector("#propertyType").value;
-      document.querySelector('#search-btn').disabled = true;
+  function afterSendSearch() {
+    const city = "{{ city }}";
+    const reason = "{{ reason }}";
+    const topic = document.querySelector("#topic").value;
+    const propertyType = document.querySelector("#propertyType").value;
+    document.querySelector("#search-btn").disabled = true;
 
-      htmx.ajax("POST", `/update_preferences/${propertyType}`, {
+    htmx
+      .ajax("POST", `/update_preferences/${propertyType}`, {
         target: "#search-results",
         swap: "none",
         headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+            .value,
         },
-      }).then(() => {
-        return htmx.ajax("POST", `/search_response/${city}/${reason}/${topic}`, {
-          target: "#search-results",
-          swap: "innerHTML",
-          headers: {
-            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-          },
-        });
-      }).then(() => {
+      })
+      .then(() => {
+        return htmx.ajax(
+          "POST",
+          `/search_response/${city}/${reason}/${topic}`,
+          {
+            target: "#search-results",
+            swap: "innerHTML",
+            headers: {
+              "X-CSRFToken": document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+              ).value,
+            },
+          }
+        );
+      })
+      .then(() => {
         reinitializeMap();
       })
       .catch((error) => {
         console.error("Error in AJAX request:", error);
       })
       .finally(() => {
-        document.querySelector('#search-btn').disabled = false;
+        document.querySelector("#search-btn").disabled = false;
       });
-    }
-
-    document
-      .querySelector("#send-search")
-      .addEventListener("htmx:afterRequest", () => {
-        afterSendSearch();
-      });
-
-    {% comment %} document.querySelector("#topic").addEventListener('change', () => {
-      const topic = document.querySelector("#topic").value;
-      if (topic == "") {
-        document.querySelector('#search-btn').disabled = true;
-      }
-
-      if (topic != "Housing") {
-        document.querySelector('#propertyTypeSelect').style.display = 'none';
-      } else {
-        document.querySelector('#propertyTypeSelect').style.display = 'block';
-      }
-    });
-
-    document.querySelector("#propertyType").addEventListener('change', () => {
-      const propertyType = document.querySelector("#propertyType").value;
-      if (propertyType == "") {
-        document.querySelector('#search-btn').disabled = true;
-      } else {
-        document.querySelector('#search-btn').disabled = false;
-      }
-    }); {% endcomment %}
-
-    function validateSearchButton() {
-      const topic = document.querySelector("#topic").value;
-      const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
-      const propertyType = document.querySelector("#propertyType").value;
-
-      const searchBtn = document.querySelector('#search-btn');
-
-      // If no topic selected, always disable
-      if (!topic) {
-          searchBtn.disabled = true;
-          return;
-      }
-
-      // If topic is Housing, require property type
-      if (topic === "Housing") {
-          if (!propertyType) {
-              searchBtn.disabled = true;
-              return;
-          }
-      }
-
-      // Otherwise, enable button
-      searchBtn.disabled = false;
   }
 
-  document.querySelector("#topic").addEventListener('change', () => {
-      const topic = document.querySelector("#topic").value;
-      const propertyTypeSelect = document.querySelector('#propertyTypeSelect');
+  document
+    .querySelector("#send-search")
+    .addEventListener("htmx:afterRequest", () => {
+      afterSendSearch();
+    });
 
-      if (topic === "Housing") {
-          propertyTypeSelect.style.display = 'block';
-      } else {
-          propertyTypeSelect.style.display = 'none';
+  function validateSearchButton() {
+    const topic = document.querySelector("#topic").value;
+    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
+    const propertyType = document.querySelector("#propertyType").value;
+
+    const searchBtn = document.querySelector("#search-btn");
+
+    if (!topic) {
+      searchBtn.disabled = true;
+      return;
+    }
+
+    if (topic === "Housing") {
+      if (!propertyType) {
+        searchBtn.disabled = true;
+        return;
       }
+    }
 
-      validateSearchButton();  // Call to update button state
+    searchBtn.disabled = false;
+  }
+
+  document.querySelector("#topic").addEventListener("change", () => {
+    const topic = document.querySelector("#topic").value;
+    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
+
+    if (topic === "Housing") {
+      propertyTypeSelect.style.display = "block";
+    } else {
+      propertyTypeSelect.style.display = "none";
+    }
+
+    validateSearchButton();
   });
 
-  document.querySelector("#propertyType").addEventListener('change', () => {
-      validateSearchButton();  // Call to update button state
+  document.querySelector("#propertyType").addEventListener("change", () => {
+    validateSearchButton();
   });
 
-  // Initial check in case page loads with pre-filled data
   validateSearchButton();
 </script>
