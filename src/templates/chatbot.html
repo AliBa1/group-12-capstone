@@ -7,9 +7,8 @@
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul id="conversation-menu" class="flex flex-col justify-between menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-
+      <div class="menu-title text-white text-xl sticky top-0 px-0 bg-base-200">Conversations</div>
       <div class="overflow-y-scroll h-full">
-        <li class="menu-title text-white text-xl sticky top-0 px-0 bg-base-200">Conversations</li>
         <!-- prettier-ignore -->
         {% for c in conversations %}
         <li class="list-none w-full">
