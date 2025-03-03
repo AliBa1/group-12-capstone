@@ -56,7 +56,7 @@
       </option>
     </select>
   </div>
-  
+
   <!-- Origin Selection (Hidden by Default)-->
   <div id="origin-container" class="w-full" style="display: none">
     <label class="form-control w-full">
@@ -131,30 +131,35 @@
     const topic = document.querySelector("#topic").value;
     const propertyType = document.querySelector("#propertyType").value;
     document.querySelector("#search-btn").disabled = true;
+    let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
 
-    htmx
-      .ajax("POST", `/update_preferences/${propertyType}/`, {
-        target: "#search-results",
-        swap: "none",
+    if (topic === "Flights") {
+      const origin = document.querySelector("#origin")?.value;
+      const flight_date = document.querySelector("#flight-date")?.value;
+
+      const params = new URLSearchParams();
+      if (origin) params.append("origin", origin);
+      if (flight_date) params.append("flight_date", flight_date);
+      searchUrl += "?" + params.toString();
+    }
+
+    if (topic == "Housing") {
+      htmx.ajax("POST", `/update_preferences/${propertyType}/`, {
         headers: {
           "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
             .value,
         },
-      })
-      .then(() => {
-        return htmx.ajax(
-          "POST",
-          `/search_response/${city}/${reason}/${topic}/`,
-          {
-            target: "#search-results",
-            swap: "innerHTML",
-            headers: {
-              "X-CSRFToken": document.querySelector(
-                "[name=csrfmiddlewaretoken]"
-              ).value,
-            },
-          }
-        );
+      });
+    }
+
+    htmx
+      .ajax("POST", searchUrl, {
+        target: "#search-results",
+        swap: "innerHTML",
+        headers: {
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+            .value,
+        },
       })
       .then(() => {
         reinitializeMap();
@@ -165,16 +170,6 @@
       .finally(() => {
         document.querySelector("#search-btn").disabled = false;
       });
-  }
-
-  if (topic === "Flights") {
-    const origin = document.querySelector("#origin")?.value;
-    const flight_date = document.querySelector("#flight-date")?.value;
-
-    const params = new URLSearchParams();
-    if (origin) params.append("origin", origin);
-    if (flight_date) params.append("flight_date", flight_date);
-    url += "?" + params.toString();
   }
 
   document
