@@ -7,10 +7,11 @@
   hx-swap="innerHTML"
 >
   {% csrf_token %}
+  <!-- Topic Selection -->
   <label class="form-control w-full">
     <label class="label label-text text-lg text-white" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
-      <option value="" disabled selected>Pick one</option>
+      <option value="" disabled selected>Select one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
       {% endfor %}
