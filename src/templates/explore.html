@@ -15,11 +15,11 @@
     <form class="flex gap-8" method="POST">
       {% csrf_token %}
       <label class="form-control w-full">
-        <label class="label label-text text-lg text-white" for="city">Destination</label>
+        <label class="label label-text text-lg text-white" for="city">City</label>
         <select
           id="city"
           name="city"
-          class="select select-bordered"
+          class="select select-primary"
           hx-post="{% url 'update_city_reason' %}"
           hx-trigger="change"
           hx-target="#search-box"
