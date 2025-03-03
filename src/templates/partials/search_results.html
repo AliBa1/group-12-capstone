@@ -25,16 +25,8 @@
     class="flex flex-col md:flex-row gap-6 h-screen justify-center"
     style="height: calc(100vh - 16rem)"
   >
-    {% comment %}
-    <div
-      class="grid grid-cols-1 lg:grid-cols-2 gap-6"
-      style="height: calc(100vh - 16rem)"
-    >
-      {% endcomment %}
       <!-- prettier-ignore -->
       {% if additional_data and additional_data.type == 'hotel_search' %}
-      {% comment %} <div class="overflow-y-auto h-full pr-2">
-        <div class="grid grid-cols-1 gap-8 text-white pb-6"> {% endcomment %}
 			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
           {% for hotel in additional_data.hotels %}
           <div class="card bg-base-100 shadow-xl border border-primary">
@@ -66,17 +58,19 @@
 
       <!-- prettier-ignore -->
       {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
-      {% comment %} <div class="grid grid-cols-1 gap-6 text-white"> {% endcomment %}
-			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
+			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full">
         {% for flight in additional_data.flights %}
         <div
           class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
         >
-          <div class="flex justify-between items-center">
+					<p class="text-sm text-gray-500 font-semibold">
+						Departure {{ flight.flight_date }}
+					</p>
+          <div class="flex w-full gap-4 justify-between items-center">
             <div>
-              <p class="text-sm text-gray-500 font-semibold">
+              {% comment %} <p class="text-sm text-gray-500 font-semibold">
                 Departure {{ flight.flight_date }}
-              </p>
+              </p> {% endcomment %}
               <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
               <p class="text-gray-500">
                 {{ flight.departure.airport_iata }} {{ flight.departure.city }}
@@ -103,20 +97,21 @@
             </div>
           </div>
 
-          <div class="flex justify-between items-center mt-4">
+          <div class="flex gap-2 justify-between items-center mt-4">
             <div class="flex items-center space-x-2">
-              <img
+							{% comment %} Logo url not in data yet {% endcomment %}
+              {% comment %} <img
                 src="{{ flight.airline.logo_url }}"
                 alt="{{ flight.airline.name }}"
                 class="h-6 w-6"
-              />
-              <p class="text-gray-500">{{ flight.airline.name }}</p>
+              /> {% endcomment %}
+              <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
             </div>
             <p class="text-gray-500 text-sm">Economy</p>
           </div>
 
           <div class="flex justify-between items-center mt-4">
-            <p class="text-lg font-bold text-gray-900">
+            <p class="text-lg font-bold">
               US${{ flight.flight_price }}
             </p>
             <a
@@ -134,7 +129,6 @@
 
       <!-- prettier-ignore -->
       {% if additional_data and additional_data.type == 'house_search' %}
-      {% comment %} <div class="grid grid-cols-1 gap-8 text-white pb-6"> {% endcomment %}
       <div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
         <!-- prettier-ignore -->
         {% for house in additional_data.houses %}
@@ -188,11 +182,6 @@
       {% endif %}
 
       <div id="mapSection" class="w-full h-full lg:sticky lg:top-4">
-        {% comment %}
-        <button id="toggleMap" class="absolute top-2 left-2 z-10 btn btn-sm">
-          Hide Map
-        </button>
-        {% endcomment %}
         <div
           id="map"
           class="w-full h-full rounded-lg"
