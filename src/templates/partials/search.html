@@ -7,10 +7,11 @@
   hx-swap="innerHTML"
 >
   {% csrf_token %}
+  <!-- Topic Selection -->
   <label class="form-control w-full">
     <label class="label label-text text-lg text-white" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
-      <option value="" disabled selected>Pick one</option>
+      <option value="" disabled selected>Select one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
       {% endfor %}
@@ -25,7 +26,6 @@
       id="propertyType"
       name="propertyType"
       class="select select-primary truncate w-full"
-      required
     >
       <option value="" disabled selected>Pick one</option>
       <option value="any">Any</option>
@@ -56,6 +56,34 @@
       </option>
     </select>
   </div>
+  
+  <!-- Origin Selection (Hidden by Default)-->
+  <div id="origin-container" class="w-full" style="display: none">
+    <label class="form-control w-full">
+      <label class="label label-text text-lg">Origin</label>
+      <select id="origin" name="origin" class="select select-primary">
+        <option value="" disabled selected>Select One</option>
+        {% for location in cities %}
+        <option value="{{ location }}">{{ location }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <!-- Flight Date Selection (Hidden by Default)-->
+  <div id="flight-date-container" class="w-full" style="display: none">
+    <label class="form-control w-full">
+      <label class="label label-text text-lg" for="flight-date"
+        >Flight Date</label
+      >
+      <input
+        type="date"
+        id="flight-date"
+        name="flight-date"
+        class="input input-primary"
+      />
+    </label>
+  </div>
 
   <button
     type="submit"
@@ -66,6 +94,13 @@
     Search
   </button>
 </form>
+{% comment %} {% comment %}
+<p class="text-center mt-4 font-bold">
+  Do you want to learn more about the city? (neighborhood security of an
+  specific address, stays near gas stations) Go to the
+  <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
+</p>
+{% endcomment %}
 
 <div
   id="search-results"
@@ -73,6 +108,23 @@
 ></div>
 
 <script>
+  function handleTopicChange() {
+    const topic = document.querySelector("#topic").value;
+    const origin = document.querySelector("#origin-container");
+    const flight_date = document.querySelector("#flight-date-container");
+
+    if (topic === "Flights") {
+      origin.style.display = "block";
+      flight_date.style.display = "block";
+    } else {
+      origin.style.display = "none";
+      flight_date.style.display = "none";
+    }
+  }
+  document
+    .querySelector("#topic")
+    .addEventListener("change", handleTopicChange);
+
   function afterSendSearch() {
     const city = "{{ city }}";
     const reason = "{{ reason }}";
@@ -81,7 +133,7 @@
     document.querySelector("#search-btn").disabled = true;
 
     htmx
-      .ajax("POST", `/update_preferences/${propertyType}`, {
+      .ajax("POST", `/update_preferences/${propertyType}/`, {
         target: "#search-results",
         swap: "none",
         headers: {
@@ -92,7 +144,7 @@
       .then(() => {
         return htmx.ajax(
           "POST",
-          `/search_response/${city}/${reason}/${topic}`,
+          `/search_response/${city}/${reason}/${topic}/`,
           {
             target: "#search-results",
             swap: "innerHTML",
@@ -113,6 +165,16 @@
       .finally(() => {
         document.querySelector("#search-btn").disabled = false;
       });
+  }
+
+  if (topic === "Flights") {
+    const origin = document.querySelector("#origin")?.value;
+    const flight_date = document.querySelector("#flight-date")?.value;
+
+    const params = new URLSearchParams();
+    if (origin) params.append("origin", origin);
+    if (flight_date) params.append("flight_date", flight_date);
+    url += "?" + params.toString();
   }
 
   document

@@ -3,16 +3,18 @@ from django.conf import settings
 from ..models import Flight
 import openai
 import json
+import re
 import requests
 from django.core.cache import cache
+from datetime import datetime
 
 
 class FlightSearchStrategy(SearchStrategy):
     KEYWORDS = ['flights', 'airplane', 'fly', 'airport']
-    BASE_URL = "https://api.aviationstack.com/v1"
+    BASE_URL = "https://booking-com18.p.rapidapi.com/flights"
 
     def __init__(self):
-        self.api_key = settings.AVIATIONSTACK_API_KEY
+        self.api_key = settings.FLIGHTS_API_KEY
     
 
     def should_handle(self, prompt):
@@ -25,15 +27,21 @@ class FlightSearchStrategy(SearchStrategy):
 
     def process_query(self, prompt, city=None, reason=None, user=None):
         try:
-            origin_iata, destination_iata = self._query_location_info(prompt)
+            origin_iata, destination_iata, date, stops = self._query_location_info(prompt)
 
-            if not origin_iata or not destination_iata:
-                print("Incomplete flight search parameters.")
+            if not origin_iata:
+                print("Missing origin city.")
                 return None
+            if not destination_iata:
+                print("Missing dest_iata")
+            if not date:
+                print("Missing flight date")
             origin = origin_iata.get('origin_city', '')
             destination = destination_iata.get('destination_city', '')
+            date = date.get('date', '')
+            stops = stops.get('stops', '')
             
-            flights_data = self._search_flights(origin, destination)
+            flights_data = self._search_flights(origin, destination, date)
             if not flights_data:
                 return None
             
@@ -43,9 +51,13 @@ class FlightSearchStrategy(SearchStrategy):
 
 
             self._store_flights(flights)
+            if stops == 'nonstop_flights':
+                response_text = f"I found {len(flights)} nonstop flights between {origin} and {destination} departing on {date}."
+                if len(flights) == 0:
+                    response_text += "By default, I search for nonstop flights. Please specify the number of stops you are willing to take in your query."
 
-            response_text = f"I found {len(flights_data)} flights from {origin} to {destination} departing today."
-
+            else:
+                response_text = f"I found {len(flights)} flights with {stops} stops between {origin} and {destination} departing on {date}."
             return {
                 'text': response_text,
                 'data': formatted_data
@@ -53,43 +65,58 @@ class FlightSearchStrategy(SearchStrategy):
         except Exception as e:
             print(f"Error in process_query: {e}")
 
+    def _clean_json_response(self, response):
+    # Remove leading and trailing whitespace
+        response = response.strip()
+    # Remove code fences if present
+    # Matches either triple backticks or triple single quotes with optional 'json' after opening fence
+        pattern = r"^(?:```json|'''json|```|''')\s*|\s*(?:```|''')$"
+        cleaned = re.sub(pattern, "", response)
+        return cleaned
+
     def _query_location_info(self, query):
         try:
             response = openai.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the origin city and destination city from this query: '{query}'. "
-                               f"If either city name is misspelled, correct it and use the proper nearest airport's IATA code "
-                               f"Return ONLY a SINGLE JSON object in this EXACT format: "
-                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}]"
+                    "content": f"Extract the origin city, destination city, desired flight date, and whether stops are tolerable "
+                               f"from this query: '{query}'. If either city name is misspelled, correct it and use "
+                               f"the proper nearest airport's IATA code. Default to all unless user specifies only nonstop flights "
+                               f"Options for stops are 'all' or 'nonstop_flights' Return ONLY a SINGLE JSON object in this EXACT format: "
+                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}, {{\"date\": \"YYYY-MM-DD\"}}, {{\"stops\": \"nonstop_flights\"}}]"
                                f"(Replace placeholders with actual values from the query)."
                 }]
             )
-            content = response.choices[0].message.content
-            result = json.loads(content.strip())
+            mess = response.choices[0].message.content
+            mess.strip()
+            print(f"content: {mess}")
+            clean = self._clean_json_response(mess)
+            result = json.loads(clean)
 
-            return result[0], result[1]
+            return result[0], result[1], result[2], result[3]
         except Exception as e:
             print(f"Error in query_location_info: {e}")
-            return {},{}
+            return {},{},{},{}
         
-    def _search_flights(self, origin, dest):
-        cache_key = self.getcache_key('flights', origin)
-        cached_data = cache.get(cache_key)
+    def _search_flights(self, origin, dest, date):
+#        cache_key = self.getcache_key('flights', origin)
+#        cached_data = cache.get(cache_key)
 
-        if cached_data:
-            return cached_data
+#        if cached_data:
+#            return cached_data
         try:
             params = {
-                "access_key": self.api_key,
-                "dep_iata": origin,
-                "arr_iata": dest,
+                # "access_key": self.api_key,
+                "fromId": origin,
+                "toId": dest,
+                "departureDate": date,
+                "cabinClass": "ECONOMY",
+                "numberOfStops": 'all'
             }
-            flights_data = self._make_request("flights", params)
-            '''for flight in flights_data:
-                print(flight)'''
-            cache.set(cache_key, flights_data, timeout=86400)
+            flights_data = self._make_request("search-oneway", params)
+            print(f"flights found: {len(flights_data['flights'])}")
+#            cache.set(cache_key, flights_data, timeout=86400)
 
             return flights_data
         except Exception as e:
@@ -97,11 +124,15 @@ class FlightSearchStrategy(SearchStrategy):
             return []
 
     
-    def _make_request(self, endpoint, params):
+    def _make_request(self, endpoint, querystring):
         url = f"{self.BASE_URL}/{endpoint}"
         try:
             # querystring = {"access_key": self.api_key, "iataCode": "LAS", "type": "departure"}
-            api_result = requests.get(url, params)
+            headers = {
+                "x-rapidapi-key": self.api_key,
+                "x-rapidapi-host": "booking-com18.p.rapidapi.com"
+            }
+            api_result = requests.get(url, headers=headers, params=querystring)
             api_result.raise_for_status()
             response = api_result.json().get("data", [])
             return response
@@ -112,28 +143,27 @@ class FlightSearchStrategy(SearchStrategy):
     def _format_flight_response(self, flights_data):
         try:
             formatted_flights = []
-            for flight in flights_data:
+            for flight in flights_data['flights']:
+                curr = flight['bounds'][0]['segments'][0]
                 formatted_flight = {
-                    'flight_date': flight.get('flight_date'),
+                    'flight_date': datetime.fromisoformat(curr['departuredAt']).strftime("%Y-%m-%d"),
                     # 'aircraft_model': flight['aircraft'].get('iata'),
-                    'iata': flight['flight'].get('iata'),
+                    'iata': curr['flightNumber'],
+                    'flight_price': ((flight['travelerPrices'][0]['price']['price']['value']) / 100),
+                    'booking_url': flight['shareableUrl'],
                     'airline': {
-                        'name': flight['airline'].get('name'),
-                        'iata_code': flight['airline'].get('iataCode', 'N/A')
+                        'name': curr['operatingCarrier']['name'],
+                        'iata_code': curr['operatingCarrier']['code']
                     },
                     'departure': {
-                        'airport_name': flight['departure'].get('airport'),
-                        'airport_iata': flight['departure'].get('iata'),
-                        'terminal': flight['departure'].get('terminal'),
-                        'gate': flight['departure'].get('gate'),
-                        'time': flight['departure'].get('estimated')
+                        'airport_name': curr['origin']['airportName'],
+                        'airport_iata': curr['origin']['code'],
+                        'time': datetime.fromisoformat(curr['departuredAt']).strftime("%I:%M %p")
                     },
                     'arrival': {
-                        'airport_name': flight['arrival'].get('airport'),
-                        'airport_iata': flight['arrival'].get('iata'),
-                        'terminal': flight['arrival'].get('terminal'),
-                        'gate': flight['arrival'].get('gate'),
-                        'time': flight['arrival'].get('estimated')
+                        'airport_name': curr['destination']['airportName'],
+                        'airport_iata': curr['destination']['code'],
+                        'time': datetime.fromisoformat(curr['arrivedAt']).strftime("%I:%M %p")
                     }
                 }
                 formatted_flights.append(formatted_flight)
@@ -150,17 +180,14 @@ class FlightSearchStrategy(SearchStrategy):
                 Flight.objects.update_or_create(
                     flight_iata_num=flight['iata'],
                     flight_date=flight['flight_date'],
+                    flight_price=flight['flight_price'],
                     defaults={
                         'airline': flight['airline'].get('name', 'Unknown Airline'),
                         'airline_code': flight['airline'].get('iata_code'),
-                        'departure_city': flight['departure'].get('airport_name'),
+                        'departure_city': flight['departure'].get('airport_iata'),
                         'departure_time': flight['departure'].get('time'),
-                        'departure_terminal': flight['departure'].get('terminal'),
-                        'departure_gate': flight['departure'].get('gate'),
-                        'arrival_city': flight['arrival'].get('airport_name'),
+                        'arrival_city': flight['arrival'].get('airport_iata'),
                         'arrival_time': flight['arrival'].get('time'),
-                        'arrival_terminal': flight['arrival'].get('terminal'),
-                        'arrival_gate': flight['arrival'].get('gate'),
                     }
                 )
             except Exception as e:
