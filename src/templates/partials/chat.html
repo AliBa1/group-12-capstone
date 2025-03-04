@@ -241,8 +241,9 @@
   function afterSendPrompt() {
     const conversationId = "{{ conversation_id }}";
     const prompt = "{{ prompt }}";
+    const encodedPrompt = encodeURIComponent(prompt);
 
-    htmx.ajax("POST", `/send_response/${conversationId}/${prompt}`, {
+    htmx.ajax("POST", `/send_response/${conversationId}/${encodedPrompt}`, {
       target: "#chat",
       swap: "innerHTML",
       headers: {
