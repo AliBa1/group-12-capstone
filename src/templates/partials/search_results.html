@@ -1,313 +1,397 @@
 {% load humanize %}
 <link rel="stylesheet" href="/static/stylesheets/map.css" />
-<!-- prettier-ignore -->
-{% block content %}
-<!-- prettier-ignore -->
-{% if error %}
-<h3 class="text-center text-error text-lg">{{ error }}</h3>
-<!-- prettier-ignore -->
-{% endif %}
 
-<!-- prettier-ignore -->
-{% if loading %}
+{% block content %} {% if error %}
+<h3 class="text-center text-error text-lg">{{ error }}</h3>
+{% endif %} {% if loading %}
 <div class="flex flex-col items-center">
   <h3 class="text-center my-4 text-xl">Getting you answers</h3>
   <span class="loading loading-spinner loading-lg"></span>
 </div>
-<!-- prettier-ignore -->
-{% else %}
-<!-- prettier-ignore -->
-{% if text %}
+{% else %} {% if text %}
 <h3 class="text-center my-4 text-xl">{{ text }}</h3>
-<!-- prettier-ignore -->
 {% endif %}
 
 <div class="container mx-auto px-4 pb-8">
+	{% if additional_data %}
+	<div class="flex w-full items-center my-2">
+		<button id="toggleMap" class="btn btn-info w-1/2 mx-auto">
+			Hide Map
+		</button>
+	</div>
+	{% endif %}
+
   <div
-    class="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6"
+    class="flex flex-col md:flex-row gap-6 h-screen justify-center"
     style="height: calc(100vh - 16rem)"
   >
-    <!-- prettier-ignore -->
-    {% if additional_data and additional_data.type == 'hotel_search' %}
-    <div class="overflow-y-auto h-full pr-2">
-      <div class="grid grid-cols-1 gap-8 text-white pb-6">
-        <!-- prettier-ignore -->
-        {% for hotel in additional_data.hotels %}
-        <div class="card bg-base-100 shadow-xl">
-          <div class="flex flex-col lg:flex-row">
-            <figure class="lg:w-1/3">
-              <img
-                class="h-64 lg:h-full w-full object-cover object-center"
-                src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
-                alt="{{ hotel.title }}"
-                onerror="this.src='/static/images/genhotel.jpg'"
-              />
-            </figure>
-            <div class="card-body lg:w-2/3">
-              <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
-              <p class="text-base mb-6">{{ hotel.description }}</p>
-              <div class="card-actions justify-end mt-auto">
-                <button
-                  class="btn btn-primary"
-                  onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
-                >
-                  View Details
-                </button>
+      <!-- prettier-ignore -->
+      {% if additional_data and additional_data.type == 'hotel_search' %}
+			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
+          {% for hotel in additional_data.hotels %}
+          <div class="card bg-base-100 shadow-xl border border-primary">
+              <figure>
+                <img
+              		class="w-full object-cover object-center"
+                  src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0 %}"
+                  alt="{{ hotel.title }}"
+                  onerror="this.src='/static/images/genhotel.jpg'"
+                />
+              </figure>
+              <div class="card-body">
+                <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+                <p class="text-base mb-6">{{ hotel.description }}</p>
+                <div class="card-actions justify-end mt-auto">
+                  <button
+                    class="btn btn-primary"
+                    onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- prettier-ignore -->
+      {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
+			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full">
+        {% for flight in additional_data.flights %}
+        <div
+          class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
+        >
+					<p class="text-sm text-gray-500 font-semibold">
+						Departure {{ flight.flight_date }}
+					</p>
+          <div class="flex w-full gap-4 justify-between items-center">
+            <div>
+              {% comment %} <p class="text-sm text-gray-500 font-semibold">
+                Departure {{ flight.flight_date }}
+              </p> {% endcomment %}
+              <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
+              <p class="text-gray-500">
+                {{ flight.departure.airport_iata }} {{ flight.departure.city }}
+              </p>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
+              <div class="flex items-center">
+                <span class="h-1 w-6 bg-gray-500"></span>
+                <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
+                <span class="h-1 w-6 bg-gray-500"></span>
+              </div>
+              <p class="text-gray-500 text-sm">
+                {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+              </p>
+            </div>
+
+            <div>
+              <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
+              <p class="text-gray-500">
+                {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
+              </p>
             </div>
           </div>
+
+          <div class="flex gap-2 justify-between items-center mt-4">
+            <div class="flex items-center space-x-2">
+							{% comment %} Logo url not in data yet {% endcomment %}
+              {% comment %} <img
+                src="{{ flight.airline.logo_url }}"
+                alt="{{ flight.airline.name }}"
+                class="h-6 w-6"
+              /> {% endcomment %}
+              <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
+            </div>
+            <p class="text-gray-500 text-sm">Economy</p>
+          </div>
+
+          <div class="flex justify-between items-center mt-4">
+            <p class="text-lg font-bold">
+              US${{ flight.flight_price }}
+            </p>
+            <a
+              href="{{ flight.booking_url }}"
+              target="_blank"
+              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              View trip
+            </a>
+          </div>
         </div>
-        <!-- prettier-ignore -->
         {% endfor %}
       </div>
-    </div>
-    <!-- prettier-ignore -->
-    {% endif %}
+      {% endif %}
 
-    <!-- prettier-ignore -->
-    {% if additional_data and additional_data.type == 'house_search' %}
-    <div class="grid grid-cols-1 gap-8 text-white pb-6">
       <!-- prettier-ignore -->
-      {% for house in additional_data.houses %}
-      <div class="card bg-base-100 shadow-xl">
-        <figure>
-          <img
-            class="w-full object-cover object-center"
-            src="/static/images/genhotel.jpg"
-            alt="{{ house.formattedAddress }}"
-            onerror="this.src='/static/images/genhotel.jpg'"
-          />
-        </figure>
-        <div class="card-body">
-          <div class="flex flex-row justify-between gap-4 w-full">
-            <h2 class="card-title text-xl max-w-3/4 text-wrap">
-              {{ house.propertyType }}
-            </h2>
-            <h2 class="card-title text-xl text-wrap">
-              ${{ house.price|intcomma }}
-            </h2>
-          </div>
-          <div>
-            <p>{{ house.formattedAddress }}</p>
-            {% if house.propertyType != "Land" %}
-            <p>{{ house.squareFootage }} sq. ft</p>
-            {% endif %}
-          </div>
-          <div class="flex flex-col w-full gap-2 mt-2">
-            {% if house.propertyType != "Land" %}
-            <div class="card-actions items-center">
-              <div class="badge badge-outline">
-                {{house.bathrooms}} Bathroom(s)
-              </div>
-              <div class="badge badge-outline">
-                {{house.bedrooms}} Bedrooms(s)
-              </div>
+      {% if additional_data and additional_data.type == 'house_search' %}
+      <div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
+        <!-- prettier-ignore -->
+        {% for house in additional_data.houses %}
+        <div class="card bg-base-100 shadow-xl border border-primary">
+          <figure>
+            <img
+              class="w-full object-cover object-center"
+              src="/static/images/genhotel.jpg"
+              alt="{{ house.formattedAddress }}"
+              onerror="this.src='/static/images/genhotel.jpg'"
+            />
+          </figure>
+          <div class="card-body">
+            <div class="flex flex-row justify-between gap-4 w-full">
+              <h2 class="card-title text-xl max-w-3/4 text-wrap">
+                {{ house.propertyType }}
+              </h2>
+              <h2 class="card-title text-xl text-wrap">
+                ${{ house.price|intcomma }}
+              </h2>
             </div>
-            {% endif %}
-            <button
-              class="btn btn-primary"
-              onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
-            >
-              View Details
-            </button>
+            <div>
+              <p>{{ house.formattedAddress }}</p>
+              {% if house.propertyType != "Land" %}
+              <p>{{ house.squareFootage }} sq. ft</p>
+              {% endif %}
+            </div>
+            <div class="flex flex-col w-full gap-2 mt-2">
+              {% if house.propertyType != "Land" %}
+              <div class="card-actions items-center">
+                <div class="badge badge-outline">
+                  {{house.bathrooms}} Bathroom(s)
+                </div>
+                <div class="badge badge-outline">
+                  {{house.bedrooms}} Bedrooms(s)
+                </div>
+              </div>
+              {% endif %}
+              <button
+                class="btn btn-primary"
+                onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
+              >
+                View Details
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- prettier-ignore -->
-      {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div id="mapSection" class="w-full h-full lg:sticky lg:top-4">
+        <div
+          id="map"
+          class="w-full h-full rounded-lg"
+          data-locations="{{ locations_json|safe }}"
+        ></div>
+      </div>
     </div>
-    <!-- prettier-ignore -->
     {% endif %}
 
-    <div class="h-full lg:sticky lg:top-4">
-      <div
-        id="map"
-        class="w-full h-full rounded-lg"
-        data-locations="{{ locations_json|safe }}"
-      ></div>
-    </div>
-  </div>
-  <!-- prettier-ignore -->
-  {% endif %}
+    <style>
+      main {
+        min-height: 0 !important;
+        height: calc(100vh - var(--footer-height));
+        overflow-y: auto;
+      }
 
-  <style>
-    main {
-      min-height: 0 !important;
-      height: calc(100vh - var(--footer-height));
-      overflow-y: auto;
-    }
+      :root {
+        --footer-height: 4rem;
+      }
+    </style>
 
-    :root {
-      --footer-height: 4rem;
-    }
-  </style>
+    <script>
+      let map = null;
+      let markerCluster = null;
+      let markers = [];
+      let isInitializing = false;
 
-  <script>
-    let map = null;
-    let markerCluster = null;
-    let markers = [];
-    let isInitializing = false;
+      async function initMap() {
+        if (isInitializing) return;
+        isInitializing = true;
 
-    async function initMap() {
-      if (isInitializing) return;
-      isInitializing = true;
+        try {
+          await cleanupMap();
 
-      try {
-        await cleanupMap();
+          const mapElement = document.getElementById("map");
+          if (!mapElement) {
+            isInitializing = false;
+            return;
+          }
 
-        const mapElement = document.getElementById("map");
-        if (!mapElement) {
+          const { Map } = await google.maps.importLibrary("maps");
+          const { AdvancedMarkerElement } = await google.maps.importLibrary(
+            "marker"
+          );
+
+          const locationsData = mapElement.dataset.locations || "[]";
+          console.log("Locations: ", locationsData);
+          let locations = [];
+          try {
+            locations = JSON.parse(locationsData);
+          } catch (e) {
+            console.warn(
+              "Failed to parse locations data, using default location"
+            );
+            locations = [];
+          }
+
+          const initialCenter =
+            locations.length > 0
+              ? { lat: locations[0].lat, lng: locations[0].lng }
+              : { lat: 39.8283, lng: -98.5795 };
+
+          const mapOptions = {
+            center: initialCenter,
+            zoom: locations.length > 0 ? 15 : 4,
+            mapId: "8e0a97af9386fef",
+            useStaticMap: false,
+            minZoom: 2,
+            maxZoom: 18,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+          };
+
+          map = new Map(mapElement, mapOptions);
+
+          await new Promise((resolve) =>
+            google.maps.event.addListenerOnce(map, "idle", resolve)
+          );
+
+          markers = await Promise.all(
+            locations.map(async (position) => {
+              const marker = new AdvancedMarkerElement({
+                position: {
+                  lat: position.lat,
+                  lng: position.lng,
+                },
+                map: map,
+              });
+              return marker;
+            })
+          );
+
+          if (markers.length > 0) {
+            markerCluster = new markerClusterer.MarkerClusterer({
+              map,
+              markers,
+            });
+          }
+
+          if (locations.length > 1) {
+            const bounds = new google.maps.LatLngBounds();
+            locations.forEach((location) => {
+              bounds.extend({ lat: location.lat, lng: location.lng });
+            });
+            map.fitBounds(bounds);
+            map.setZoom(map.getZoom() - 1);
+          }
+        } catch (error) {
+          console.error("Error initializing map:", error);
+        } finally {
           isInitializing = false;
+        }
+      }
+
+      function setupMapToggle() {
+        const toggleButton = document.getElementById("toggleMap");
+        const mapDiv = document.getElementById("map");
+        const mapSection = document.getElementById("mapSection");
+
+        if (!toggleButton || !mapDiv) return;
+
+        toggleButton.addEventListener("click", () => {
+          const currentDisplay = window.getComputedStyle(mapSection).display;
+          if (currentDisplay !== "none") {
+            mapSection.style.display = "none";
+            toggleButton.textContent = "Show Map";
+          } else {
+            mapSection.style.display = "block";
+            toggleButton.textContent = "Hide Map";
+            if (typeof google !== "undefined" && google.maps) {
+              google.maps.event.trigger(map, "resize");
+            }
+          }
+        });
+      }
+
+      async function cleanupMap() {
+        return new Promise((resolve) => {
+          if (markers && markers.length) {
+            markers.forEach((marker) => {
+              if (marker) {
+                marker.map = null;
+              }
+            });
+            markers = [];
+          }
+
+          if (markerCluster) {
+            markerCluster.clearMarkers();
+            markerCluster = null;
+          }
+
+          if (map) {
+            google.maps.event.clearInstanceListeners(map);
+            map = null;
+          }
+          setTimeout(resolve, 100);
+        });
+      }
+
+      async function reinitializeMap() {
+        await cleanupMap();
+        if (window.google && window.google.maps) {
+          await initMap();
+        } else {
+          loadMapScripts();
+        }
+      }
+
+      //since the chat's map is different and loads first, we have to clean up the scripts from that one first
+      function loadMapScripts() {
+        if (document.querySelector('script[src*="maps.googleapis.com"]')) {
           return;
         }
 
-        const { Map } = await google.maps.importLibrary("maps");
-        const { AdvancedMarkerElement } = await google.maps.importLibrary(
-          "marker"
-        );
+        const markerClustererScript = document.createElement("script");
+        markerClustererScript.src =
+          "https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js";
+        markerClustererScript.async = true;
+        document.head.appendChild(markerClustererScript);
 
-        const locationsData = mapElement.dataset.locations || "[]";
-        console.log("Locations: ", locationsData);
-        let locations = [];
-        try {
-          locations = JSON.parse(locationsData);
-        } catch (e) {
-          console.warn(
-            "Failed to parse locations data, using default location"
-          );
-          locations = [];
-        }
-
-        const initialCenter =
-          locations.length > 0
-            ? { lat: locations[0].lat, lng: locations[0].lng }
-            : { lat: 39.8283, lng: -98.5795 };
-
-        const mapOptions = {
-          center: initialCenter,
-          zoom: locations.length > 0 ? 15 : 4,
-          mapId: "8e0a97af9386fef",
-          useStaticMap: false,
-          minZoom: 2,
-          maxZoom: 18,
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
-        };
-
-        map = new Map(mapElement, mapOptions);
-
-        await new Promise((resolve) =>
-          google.maps.event.addListenerOnce(map, "idle", resolve)
-        );
-
-        markers = await Promise.all(
-          locations.map(async (position) => {
-            const marker = new AdvancedMarkerElement({
-              position: {
-                lat: position.lat,
-                lng: position.lng,
-              },
-              map: map,
-            });
-            return marker;
-          })
-        );
-
-        if (markers.length > 0) {
-          markerCluster = new markerClusterer.MarkerClusterer({
-            map,
-            markers,
-          });
-        }
-
-        if (locations.length > 1) {
-          const bounds = new google.maps.LatLngBounds();
-          locations.forEach((location) => {
-            bounds.extend({ lat: location.lat, lng: location.lng });
-          });
-          map.fitBounds(bounds);
-          map.setZoom(map.getZoom() - 1);
-        }
-      } catch (error) {
-        console.error("Error initializing map:", error);
-      } finally {
-        isInitializing = false;
+        const mapsScript = document.createElement("script");
+        mapsScript.src =
+          "https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly";
+        mapsScript.async = true;
+        mapsScript.defer = true;
+        document.head.appendChild(mapsScript);
       }
-    }
 
-    async function cleanupMap() {
-      return new Promise((resolve) => {
-        if (markers && markers.length) {
-          markers.forEach((marker) => {
-            if (marker) {
-              marker.map = null;
-            }
-          });
-          markers = [];
-        }
-
-        if (markerCluster) {
-          markerCluster.clearMarkers();
-          markerCluster = null;
-        }
-
-        if (map) {
-          google.maps.event.clearInstanceListeners(map);
-          map = null;
-        }
-        setTimeout(resolve, 100);
-      });
-    }
-
-    async function reinitializeMap() {
-      await cleanupMap();
-      if (window.google && window.google.maps) {
-        await initMap();
-      } else {
+      if (!window.google || !window.google.maps) {
         loadMapScripts();
       }
-    }
 
-    //since the chat's map is different and loads first, we have to clean up the scripts from that one first
-    function loadMapScripts() {
-      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-        return;
-      }
-
-      const markerClustererScript = document.createElement("script");
-      markerClustererScript.src =
-        "https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js";
-      markerClustererScript.async = true;
-      document.head.appendChild(markerClustererScript);
-
-      const mapsScript = document.createElement("script");
-      mapsScript.src =
-        "https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly";
-      mapsScript.async = true;
-      mapsScript.defer = true;
-      document.head.appendChild(mapsScript);
-    }
-
-    if (!window.google || !window.google.maps) {
-      loadMapScripts();
-    }
-
-    let reinitTimeout;
-    document.body.addEventListener("htmx:afterSwap", function (event) {
-      if (event.detail.target.id === "search-results") {
-        clearTimeout(reinitTimeout);
-        reinitTimeout = setTimeout(() => {
-          reinitializeMap();
-        }, 100);
-      }
-    });
-  </script>
-  <!-- prettier-ignore -->
-  {% endblock %}
-  <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
-    async
-    defer
-  ></script>
+      let reinitTimeout;
+      document.body.addEventListener("htmx:afterSwap", function (event) {
+        if (event.detail.target.id === "search-results") {
+          clearTimeout(reinitTimeout);
+          reinitTimeout = setTimeout(() => {
+            reinitializeMap();
+            setupMapToggle();
+          }, 100);
+        }
+      });
+    </script>
+    <!-- prettier-ignore -->
+    {% endblock %}
+    <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
+      async
+      defer
+    ></script>
+  </div>
 </div>

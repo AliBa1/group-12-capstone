@@ -38,6 +38,7 @@ class FlightSearchStrategy(SearchStrategy):
                 return None
             
             formatted_data = self._format_flight_response(flights_data)
+            # print("Flight data: ", formatted_data)
             flights = formatted_data['flights']
             
 
