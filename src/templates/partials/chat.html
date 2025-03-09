@@ -3,7 +3,7 @@
   {% for message in chat_messages %}
   <div class="flex flex-col gap-4 mb-4">
     <div class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}">
-      <div class="chat-bubble text-white">
+      <div class="chat-bubble bg-slate-500 text-white">
         {{ message.text }}
       </div>
     </div>
@@ -12,7 +12,7 @@
     {% if message.additional_data and message.additional_data.type == 'flight_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for flight in message.additional_data.flights %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble    shadow-xl flex flex-col">
         <div class="card-body">
           <h2 class="card-title">{{ flight.iata }}</h2>
           <p><strong>Airline:</strong>{{ flight.airline.name }}</p>
@@ -33,7 +33,7 @@
     {% if message.additional_data and message.additional_data.type == 'house_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for house in message.additional_data.houses %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure>
           <img
             class="w-full object-cover object-center"
@@ -84,7 +84,7 @@
     {% if message.additional_data and message.additional_data.type == 'apartment_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for apartment in message.additional_data.apartments %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure>
           <img
             class="w-full object-cover object-center"
@@ -131,7 +131,7 @@
     {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for hotel in message.additional_data.hotels %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure class="w-full">
           <div class="carousel w-full h-full">
             {% for image in hotel.images %}
@@ -178,7 +178,7 @@
 
   {% if bot_typing %}
   <div class="chat chat-start">
-    <div class="chat-bubble">
+    <div class="chat-bubble bg-slate-500 text-white">
       <span class="loading loading-dots loading-sm"></span>
     </div>
   </div>

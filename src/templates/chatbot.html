@@ -7,7 +7,7 @@
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul id="conversation-menu" class="flex flex-col justify-between menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-      <div class="menu-title text-white text-xl sticky top-0 px-0 bg-base-200">Conversations</div>
+      <div class="menu-title text-base-content text-xl sticky top-0 px-0 bg-base-200">Conversations</div>
       <div class="overflow-y-scroll h-full">
         <!-- prettier-ignore -->
         {% for c in conversations %}
@@ -69,7 +69,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" class="btn btn-primary px-1" id="toggle-menu" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
 
     <div class="flex-1 flex flex-col items-center py-4">
-      <div id="no-active" class="px-2 text-white font-bold text-xl">
+      <div id="no-active" class="px-2 font-bold text-xl">
         Select a conversation to begin
       </div>
       <div id="chat" class="w-full px-4 flex flex-col h-full justify-end"

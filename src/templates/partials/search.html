@@ -8,7 +8,7 @@
 >
   {% csrf_token %}
   <label class="form-control w-full">
-    <label class="label label-text text-lg text-white" for="topic">Topic</label>
+    <label class="label label-text text-lg" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
       <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
@@ -18,7 +18,7 @@
   </label>
 
   <div id="propertyTypeSelect" class="hidden form-control w-full">
-    <label class="label label-text text-lg text-white" for="propertyType"
+    <label class="label label-text text-lg" for="propertyType"
       >Property Type</label
     >
     <select

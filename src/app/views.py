@@ -33,7 +33,6 @@ travel_factory.register_strategy(ApartmentSearchStrategy())
 def display_home(request):
   return render(request, "home.html")
 
-
 @login_required
 def chatbot_page(request):
   latest_conversation = Conversation.objects.filter(user=request.user.id).order_by("-created_at").first()
