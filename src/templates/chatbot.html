@@ -335,18 +335,6 @@
     const mapDiv = document.getElementById('map');
     const mapContainer = document.getElementById('map-container');
 
-    // toggleButton.addEventListener('click', () => {
-    //   if (mapDiv.style.display === 'none') {
-    //     mapDiv.style.display = 'block';
-    //     mapContainer.style.width = '';
-    //     toggleButton.textContent = 'Hide Map';
-    //     google.maps.event.trigger(map, 'resize');
-    //   } else {
-    //     mapDiv.style.display = 'none';
-    //     toggleButton.textContent = 'Show Map';
-    //   }
-    // });
-
     toggleButton.addEventListener('click', () => {
       if (mapContainer.classList.contains('hidden')) {
         toggleButton.textContent = 'Hide Map';
@@ -358,15 +346,14 @@
       }
     });
   }
+  
   const toggleConversation = document.getElementById('toggle-menu');
   const conversationMenu = document.getElementById('conversation-menu');
   toggleConversation.addEventListener('click', () => {
     if (conversationMenu.style.display === 'none') {
       conversationMenu.style.display = 'flex';
-      toggleButton.textContent = 'Hide Conversations';
     } else {
       conversationMenu.style.display = 'none';
-      toggleButton.textContent = 'Show Conversations';
     }
 
   })

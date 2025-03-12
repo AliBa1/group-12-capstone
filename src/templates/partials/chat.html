@@ -167,6 +167,10 @@
             <button class="btn btn-primary btn-sm toggle-details-btn">
               View Details
             </button>
+
+            <button class="btn btn-primary btn-sm toggle-map-btn" data-location='{{ hotel.details.location }}' data-lat='{{ hotel.details.location.lat }}' data-lng='{{ hotel.details.location.lng }}'>
+              View on Map
+            </button>
           </div>
         </div>
       </div>
@@ -295,5 +299,80 @@
     }
   });
 
+
+
+  function clearMarkers() {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function readdMarkers(curLat, curLng, locations) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach(location => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map
+      });
+      markers.push(marker);
+
+      const content = `
+                <div style="padding: 10px;">
+                    <h3>Location Details</h3>
+                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
+                    <p><strong>Longitude:</strong> ${location.lng.toFixed(6)}</p>
+                </div>
+            `;
+
+      marker.addListener('click', () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+
+      if (curLat == location.lat && curLng == location.lng) {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: true,
+        });
+      }
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15
+      })
+    });
+  }
+
+
+  document.querySelectorAll(".toggle-map-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let lat = this.getAttribute("data-lat");
+        let lng = this.getAttribute("data-lng");
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: Number(lat), lng: Number(lng) },
+          zoom: 15
+        });
+        const mapLocations = JSON.parse('{{ locations|safe }}');
+        readdMarkers(lat, lng, mapLocations)
+    });
+  });
 
 </script>
