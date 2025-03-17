@@ -121,6 +121,16 @@
             >
               View Details
             </button>
+
+            <button 
+              class="btn btn-primary toggle-map-btn"
+              data-title='{{ apartment.formattedAddress }}'
+              data-description='{{ apartment.squareFootage }} sq. ft, {{apartment.bathrooms}} Bathroom(s), {{apartment.bedrooms}} Bedrooms(s)' 
+              data-lat='{{ apartment.latitude }}' 
+              data-lng='{{ apartment.longitude }}'
+            >
+              View on Map
+            </button>
           </div>
         </div>
       </div>
@@ -143,10 +153,8 @@
                    class="w-full h-full object-cover" />
               {% if hotel.images|length > 1 %}
               <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" 
-                   class="btn btn-circle">❮</a>
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" 
-                   class="btn btn-circle">❯</a>
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" class="btn btn-circle">❮</a>
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" class="btn btn-circle">❯</a>
               </div>
               {% endif %}
             </div>
@@ -168,7 +176,13 @@
               View Details
             </button>
 
-            <button class="btn btn-primary btn-sm toggle-map-btn" data-title='{{ hotel.title }}' data-description='{{ hotel.description }}' data-location='{{ hotel.details.location }}' data-lat='{{ hotel.details.location.lat }}' data-lng='{{ hotel.details.location.lng }}'>
+            <button 
+              class="btn btn-primary btn-sm toggle-map-btn"
+              data-title='{{ hotel.title }}'
+              data-description='{{ hotel.description }}'
+              data-lat='{{ hotel.details.location.lat }}'
+              data-lng='{{ hotel.details.location.lng }}'
+            >
               View on Map
             </button>
           </div>
@@ -320,7 +334,7 @@
         map: map
       });
       markers.push(marker);
-      
+
       // code below styled by ChatGPT
       const content = `
         <div style="
@@ -388,6 +402,7 @@
         let lng = this.getAttribute("data-lng");
         let title = this.getAttribute("data-title");
         let description = this.getAttribute("data-description");
+        console.log("Info: ", lat, lng, title, description);
 
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: Number(lat), lng: Number(lng) },
