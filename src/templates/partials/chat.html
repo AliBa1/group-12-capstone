@@ -168,7 +168,7 @@
               View Details
             </button>
 
-            <button class="btn btn-primary btn-sm toggle-map-btn" data-location='{{ hotel.details.location }}' data-lat='{{ hotel.details.location.lat }}' data-lng='{{ hotel.details.location.lng }}'>
+            <button class="btn btn-primary btn-sm toggle-map-btn" data-title='{{ hotel.title }}' data-description='{{ hotel.description }}' data-location='{{ hotel.details.location }}' data-lat='{{ hotel.details.location.lat }}' data-lng='{{ hotel.details.location.lng }}'>
               View on Map
             </button>
           </div>
@@ -309,7 +309,7 @@
     }
   }
 
-  function readdMarkers(curLat, curLng, locations) {
+  function readMarkers(curLat, curLng, locations, title, description) {
     clearMarkers();
 
     const infoWindow = new google.maps.InfoWindow();
@@ -320,14 +320,35 @@
         map: map
       });
       markers.push(marker);
-
+      
+      // code below styled by ChatGPT
       const content = `
-                <div style="padding: 10px;">
-                    <h3>Location Details</h3>
-                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
-                    <p><strong>Longitude:</strong> ${location.lng.toFixed(6)}</p>
-                </div>
-            `;
+        <div style="
+          padding: 15px;
+          background-color: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          max-width: 250px;
+          font-family: Arial, sans-serif;
+          color: #333;
+        ">
+          <h1 style="
+            font-size: 18px;
+            margin: 0 0 8px 0;
+          ">
+            ${title}
+          </h1>
+          <p style="
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            color: #555;
+          ">
+            ${description}
+          </p>
+        </div>
+      `;
+
 
       marker.addListener('click', () => {
         infoWindow.close();
@@ -365,13 +386,15 @@
     button.addEventListener("click", function () {
         let lat = this.getAttribute("data-lat");
         let lng = this.getAttribute("data-lng");
+        let title = this.getAttribute("data-title");
+        let description = this.getAttribute("data-description");
 
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: Number(lat), lng: Number(lng) },
-          zoom: 15
+          zoom: 19
         });
         const mapLocations = JSON.parse('{{ locations|safe }}');
-        readdMarkers(lat, lng, mapLocations)
+        readMarkers(lat, lng, mapLocations, title, description)
     });
   });
 
