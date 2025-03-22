@@ -118,6 +118,11 @@ def fetch_conversation(request, conversation_id):
         flights = data["flights"]
       if "houses" in data:
         houses = data["houses"]
+        locations = [
+          {"lat": house["latitude"], "lng": house["longitude"]}
+          for house in data["houses"]
+          if "latitude" in house and "longitude" in house
+        ]
       if "apartments" in data:
         apartments = data["apartments"]
         locations = [
@@ -285,6 +290,12 @@ def send_response(request, conversation_id, prompt):
               {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
               for hotel in response["data"]["hotels"]
               if "details" in hotel and "location" in hotel["details"]
+            ]
+          elif "houses" in response["data"]:
+            locations = [
+              {"lat": house["latitude"], "lng": house["longitude"]}
+              for house in response["data"]["houses"]
+              if "latitude" in house and "longitude" in house
             ]
           elif "apartments" in response["data"]:
             locations = [
@@ -471,12 +482,21 @@ def search_response(request, city, reason, topic):
               if "details" in hotel and "location" in hotel["details"]
             ]
           # Add once added view on map to apartments
-          # if "apartments" in response["data"]:
-          #   locations = [
-          #     {"lat": apartment["latitude"], "lng": apartment["longitude"]}
-          #     for apartment in response["data"]["apartments"]
-          #     if "latitude" in apartment and "longitude" in apartment
-          #   ]
+          if "apartments" in response["data"]:
+            locations = [
+              {"lat": apartment["latitude"], "lng": apartment["longitude"]}
+              for apartment in response["data"]["apartments"]
+              if "latitude" in apartment and "longitude" in apartment
+            ]
+          
+          if "houses" in response["data"]:
+            locations = [
+              {"lat": house["latitude"], "lng": house["longitude"]}
+              for house in response["data"]["houses"]
+              if "latitude" in house and "longitude" in house
+            ]
+            # print("Locations: ", locations)
+            # print("Response: ", response)
 
         if not locations:
           locations = [
@@ -491,7 +511,7 @@ def search_response(request, city, reason, topic):
             "loading": False,
             "text": text,
             "additional_data": additional_data,
-            "locations_json": json.dumps(locations),
+            "locations": json.dumps(locations),
             "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
           },
         )

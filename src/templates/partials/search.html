@@ -109,6 +109,7 @@
 <script>
   function handleTopicChange() {
     const topic = document.querySelector("#topic").value;
+    console.log("Topic: ", topic)
     const origin = document.querySelector("#origin-container");
     const flight_date = document.querySelector("#flight-date-container");
 
@@ -130,7 +131,8 @@
     const topic = document.querySelector("#topic").value;
     const propertyType = document.querySelector("#propertyType").value;
     document.querySelector("#search-btn").disabled = true;
-    let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
+    // let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
+    let searchUrl = `/search_response/${city}/${reason}/${topic}`;
 
     if (topic === "Flights") {
       const origin = document.querySelector("#origin")?.value;

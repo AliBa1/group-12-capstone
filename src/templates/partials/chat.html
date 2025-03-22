@@ -68,12 +68,24 @@
               </div>
             </div>
             {% endif %}
-            <button
-              class="btn btn-primary"
-              onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
-            >
-              View Details
-            </button>
+            <div class="flex gap-4 justify-center w-full">
+              <button
+                class="btn btn-primary w-1/2"
+                {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
+              >
+                View Details
+              </button>
+  
+              <button 
+                class="btn btn-primary toggle-map-btn w-1/2"
+                data-title='{{ house.propertyType }}, {{ house.formattedAddress }}'
+                data-description='{{ house.squareFootage }} sq. ft, {{house.bathrooms}} Bathroom(s), {{house.bedrooms}} Bedrooms(s)' 
+                data-lat='{{ house.latitude }}' 
+                data-lng='{{ house.longitude }}'
+              >
+                View on Map
+              </button>
+            </div>
           </div>
         </div>
       </div>
