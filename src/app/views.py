@@ -33,6 +33,7 @@ travel_factory.register_strategy(ApartmentSearchStrategy())
 def display_home(request):
   return render(request, "home.html")
 
+
 @login_required
 def chatbot_page(request):
   latest_conversation = Conversation.objects.filter(user=request.user.id).order_by("-created_at").first()
@@ -44,24 +45,24 @@ def chatbot_page(request):
     )
 
     if latest_message and latest_message.additional_data:
-        try:
-            data = latest_message.additional_data
-            if "hotels" in data:
-                hotels = data.get("hotels", [])
-                locations = [
-                    {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-                    for hotel in hotels
-                    if "details" in hotel and "location" in hotel["details"]
-                ]
-            elif "apartments" in data or "houses" in data:
-                property_list = data.get("apartments", []) or data.get("houses", [])
-                locations = [
-                    {"lat": prop["latitude"], "lng": prop["longitude"]}
-                    for prop in property_list
-                    if "latitude" in prop and "longitude" in prop
-                ]
-        except Exception as e:
-            print(f"Error extracting locations: {e}")
+      try:
+        data = latest_message.additional_data
+        if "hotels" in data:
+          hotels = data.get("hotels", [])
+          locations = [
+            {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+            for hotel in hotels
+            if "details" in hotel and "location" in hotel["details"]
+          ]
+        elif "apartments" in data or "houses" in data:
+          property_list = data.get("apartments", []) or data.get("houses", [])
+          locations = [
+            {"lat": prop["latitude"], "lng": prop["longitude"]}
+            for prop in property_list
+            if "latitude" in prop and "longitude" in prop
+          ]
+      except Exception as e:
+        print(f"Error extracting locations: {e}")
 
   if not locations:
     locations = [
@@ -91,59 +92,56 @@ def fetch_conversation(request, conversation_id):
   houses = []
   apartments = []
   latest_message = (
-      Message.objects.filter(
-          conversation=conversation,
-          is_from_user=False,
-          additional_data__isnull=False,
-      )
-      .order_by("-timestamp")
-      .first()
+    Message.objects.filter(
+      conversation=conversation,
+      is_from_user=False,
+      additional_data__isnull=False,
+    )
+    .order_by("-timestamp")
+    .first()
   )
 
   if latest_message and latest_message.additional_data:
-        try:
-            if isinstance(latest_message.additional_data, str):
-                data = json.loads(latest_message.additional_data)
-            else:
-                data = latest_message.additional_data
+    try:
+      if isinstance(latest_message.additional_data, str):
+        data = json.loads(latest_message.additional_data)
+      else:
+        data = latest_message.additional_data
 
-            if 'hotels' in data:
-                locations = [
-                    {
-                        'lat': hotel['details']['location']['lat'],
-                        'lng': hotel['details']['location']['lng']
-                    }
-                    for hotel in data['hotels']
-                    if 'details' in hotel and 'location' in hotel['details']
-                ]
-            if 'flights' in data:
-                flights = data['flights']
-            if 'houses' in data:
-                houses = data['houses']
-            if 'apartments' in data:
-                apartments = data['apartments']
-        except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
-        except Exception as e:
-            print(f"Error processing additional_data: {e}")
+      if "hotels" in data:
+        locations = [
+          {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+          for hotel in data["hotels"]
+          if "details" in hotel and "location" in hotel["details"]
+        ]
+      if "flights" in data:
+        flights = data["flights"]
+      if "houses" in data:
+        houses = data["houses"]
+      if "apartments" in data:
+        apartments = data["apartments"]
+    except json.JSONDecodeError as e:
+      print(f"Error decoding JSON: {e}")
+    except Exception as e:
+      print(f"Error processing additional_data: {e}")
   return render(
-        request,
-        "partials/chat.html",
-        {
-        "chat_messages": chat_messages,
-        "conversation_id": conversation_id,
-        "bot_typing": False,
-        "prompt": None,
-        "premade_prompts": choose_premade_prompts(conversation),
-        "city": conversation.city,
-        "reason": conversation.reason,
-        "locations": json.dumps(locations),
-        "flights": flights,
-        "houses": houses,
-        "apartments": apartments,
-        # "map_center": json.dumps(map_center) if map_center else None,
-        },
-    )
+    request,
+    "partials/chat.html",
+    {
+      "chat_messages": chat_messages,
+      "conversation_id": conversation_id,
+      "bot_typing": False,
+      "prompt": None,
+      "premade_prompts": choose_premade_prompts(conversation),
+      "city": conversation.city,
+      "reason": conversation.reason,
+      "locations": json.dumps(locations),
+      "flights": flights,
+      "houses": houses,
+      "apartments": apartments,
+      # "map_center": json.dumps(map_center) if map_center else None,
+    },
+  )
 
 
 @login_required
@@ -222,107 +220,91 @@ def send_prompt(request, conversation_id):
 
 @login_required
 def send_response(request, conversation_id, prompt):
-    if request.method == "POST":
-        try:
-            conversation = get_object_or_404(Conversation, id=conversation_id)
+  if request.method == "POST":
+    try:
+      conversation = get_object_or_404(Conversation, id=conversation_id)
 
-            request.POST = request.POST.copy()
-            request.POST["conversation_id"] = conversation_id
+      request.POST = request.POST.copy()
+      request.POST["conversation_id"] = conversation_id
 
-            response = chatbot_response(request, prompt)
+      response = chatbot_response(request, prompt)
 
-            if isinstance(response, JsonResponse):
-                Message.objects.create(
-                    is_from_user=False,
-                    text="An error occurred processing your request. Please refresh and try again.",
-                    conversation=conversation,
-                )
+      if isinstance(response, JsonResponse):
+        Message.objects.create(
+          is_from_user=False,
+          text="An error occurred processing your request. Please refresh and try again.",
+          conversation=conversation,
+        )
+      else:
+        response_text = response.get("response", "No response generated")
+        message = Message.objects.create(is_from_user=False, text=response_text, conversation=conversation)
+
+        flights = []
+        locations = []
+        houses = []
+        apartments = []
+        if "data" in response:
+          try:
+            if isinstance(response["data"], str):
+              parts = response["data"].split(",", 1)
+              if len(parts) > 1:
+                raw_json = parts[1].strip()
+                raw_json = raw_json.replace("'", '"')
+                data = json.loads(raw_json)
+              else:
+                raise ValueError("No dictionary part found in the data string")
             else:
-                response_text = response.get('response', 'No response generated')
-                message = Message.objects.create(
-                    is_from_user=False, 
-                    text=response_text, 
-                    conversation=conversation
-                )
-                
-                flights = []
-                locations = []
-                houses = []
-                apartments = []
-                if 'data' in response:
-                    try:
-                        if isinstance(response['data'], str):
-                            parts = response['data'].split(',', 1)
-                            if len(parts) > 1:
-                                raw_json = parts[1].strip()
-                                raw_json = raw_json.replace("'", '"')
-                                data = json.loads(raw_json)
-                            else:
-                                raise ValueError("No dictionary part found in the data string")
-                        else:
-                            data = response['data']
+              data = response["data"]
 
-                        message.additional_data = data
-                        message.save()
+            message.additional_data = data
+            message.save()
 
-                        if 'flights' in data:
-                            flights = data.get('flights', [])
-                            message.additional_data = {
-                                "flights": flights,
-                                "type": "flight_search"
-                            }
-                            message.save()
+            if "flights" in data:
+              flights = data.get("flights", [])
+              message.additional_data = {"flights": flights, "type": "flight_search"}
+              message.save()
 
-                        if 'houses' in data:
-                            houses = data.get('houses', [])
-                            message.additional_data = {
-                                "houses": houses,
-                                "type": "house_search"
-                            }
-                            message.save()
-                        if 'apartments' in data:
-                            apartments = data.get('apartments', [])
-                            message.additional_data = {
-                                "apartments": apartments,
-                                "type": "apartment_search"
-                            }
-                            message.save()
+            if "houses" in data:
+              houses = data.get("houses", [])
+              message.additional_data = {"houses": houses, "type": "house_search"}
+              message.save()
+            if "apartments" in data:
+              apartments = data.get("apartments", [])
+              message.additional_data = {"apartments": apartments, "type": "apartment_search"}
+              message.save()
 
-                    except (json.JSONDecodeError, TypeError) as e:
-                        print(f"Error decoding response['data']: {e}")
-                    if 'hotels' in response['data']:
-                        locations = [
-                            {
-                                'lat': hotel['details']['location']['lat'],
-                                'lng': hotel['details']['location']['lng']
-                            }
-                            for hotel in response['data']['hotels']
-                            if 'details' in hotel and 'location' in hotel['details']
-                        ]                
+          except (json.JSONDecodeError, TypeError) as e:
+            print(f"Error decoding response['data']: {e}")
+          if "hotels" in response["data"]:
+            locations = [
+              {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+              for hotel in response["data"]["hotels"]
+              if "details" in hotel and "location" in hotel["details"]
+            ]
 
-            chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
-            return render(
-                request,
-                "partials/chat.html",
-                {
-                    "chat_messages": chat_messages,
-                    "conversation_id": conversation_id,
-                    "bot_typing": False,
-                    "prompt": None,
-                    "premade_prompts": choose_premade_prompts(conversation),
-                    "city": conversation.city,
-                    "reason": conversation.reason,
-                    "locations": json.dumps(locations),
-                    "flights": flights,
-                    "houses": houses,
-                    "apartments": apartments,
-                },
-            )
-        except Exception as e:
-            print("Error in send_response:", e)
-            return JsonResponse({"error": "An error occurred processing your request."}, status=500)
-            
-    return redirect("chatbot")
+      chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
+      return render(
+        request,
+        "partials/chat.html",
+        {
+          "chat_messages": chat_messages,
+          "conversation_id": conversation_id,
+          "bot_typing": False,
+          "prompt": None,
+          "premade_prompts": choose_premade_prompts(conversation),
+          "city": conversation.city,
+          "reason": conversation.reason,
+          "locations": json.dumps(locations),
+          "flights": flights,
+          "houses": houses,
+          "apartments": apartments,
+        },
+      )
+    except Exception as e:
+      print("Error in send_response:", e)
+      return JsonResponse({"error": "An error occurred processing your request."}, status=500)
+
+  return redirect("chatbot")
 
 
 # colter's function below
@@ -375,6 +357,7 @@ def chatbot_response(request, prompt):
     except Exception as e:
       print(f"Error in chatbot_response: {str(e)}")
       return JsonResponse({"error": f"Error: {str(e)}"}, status=500)
+
 
 @require_http_methods(["GET"])
 @cache_page(60 * 60 * 24)  # 24 hours
@@ -440,6 +423,7 @@ def send_search(request):
       },
     )
 
+
 @login_required
 def search_response(request, city, reason, topic):
   if request.method == "POST":
@@ -495,29 +479,31 @@ def search_response(request, city, reason, topic):
         )
     except Exception as e:
       print("Error:", e)
-      return JsonResponse({'error': 'An error occurred processing your request.'}, status=500)
-    
+      return JsonResponse({"error": "An error occurred processing your request."}, status=500)
+
+
 def load_model_and_data():
   try:
-    model_path = os.path.join(settings.ML_MODELS_DIR, 'random_forest_model.joblib')
-    encoder_path = os.path.join(settings.ML_MODELS_DIR, 'label_encoder.joblib')
-    data_path = os.path.join(settings.ML_MODELS_DIR, 'processed_metro_heat_index.csv')
-    
+    model_path = os.path.join(settings.ML_MODELS_DIR, "random_forest_model.joblib")
+    encoder_path = os.path.join(settings.ML_MODELS_DIR, "label_encoder.joblib")
+    data_path = os.path.join(settings.ML_MODELS_DIR, "processed_metro_heat_index.csv")
+
     print(f"Loading model from: {model_path}")
-    
+
     model = joblib.load(model_path)
     label_encoder = joblib.load(encoder_path)
     data = pd.read_csv(data_path)
-    
+
     return model, data, label_encoder
-  
+
   except Exception as e:
     print(f"Error loading model files: {str(e)}")
     raise
 
+
 def predict_heat_index(request):
   try:
-    location = request.GET.get('location', 'Houston, TX')
+    location = request.GET.get("location", "Houston, TX")
     print(f"Predicting for location: {location}")
 
     model, data, label_encoder = load_model_and_data()
@@ -527,35 +513,29 @@ def predict_heat_index(request):
     try:
       state_encoded = label_encoder.transform([state])[0]
     except ValueError:
-      return JsonResponse({
-        'error': f"State '{state}' not found in training data.",
-        'available_states': label_encoder.classes_.tolist()
-      }, status=400)
+      return JsonResponse(
+        {"error": f"State '{state}' not found in training data.", "available_states": label_encoder.classes_.tolist()},
+        status=400,
+      )
 
     location_data = data[(data["RegionName"] == location) & (data["StateName"] == state_encoded)]
 
     if location_data.empty:
-      return JsonResponse({
-        'error': f'Location not found: {location}',
-        'available_locations': data["RegionName"].unique().tolist()
-      }, status=404)
-    
+      return JsonResponse(
+        {"error": f"Location not found: {location}", "available_locations": data["RegionName"].unique().tolist()},
+        status=404,
+      )
+
     features = location_data[["RegionID", "SizeRank", "StateName"]]
     prediction = model.predict(features)[0]
 
-    return JsonResponse({
-      'location': location,
-      'predicted_heat_index': float(prediction),
-      'state': state
-    })
+    return JsonResponse({"location": location, "predicted_heat_index": float(prediction), "state": state})
 
   except Exception as e:
     print(f"Prediction error: {str(e)}")
-    return JsonResponse({
-      'error': 'Failed to make prediction',
-      'details': str(e)
-    }, status=500)
-  
+    return JsonResponse({"error": "Failed to make prediction", "details": str(e)}, status=500)
+
+
 @login_required
 def update_preferences(request, property_type):
   if request.method == "POST":
