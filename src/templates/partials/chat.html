@@ -115,22 +115,24 @@
                 {{apartment.bedrooms}} Bedrooms(s)
               </div>
             </div>
-            <button
-              class="btn btn-primary"
-              onclick="showHotelDetails('{{ apartment.details|escapejs }}')"
-            >
-              View Details
-            </button>
-
-            <button 
-              class="btn btn-primary toggle-map-btn"
-              data-title='{{ apartment.formattedAddress }}'
-              data-description='{{ apartment.squareFootage }} sq. ft, {{apartment.bathrooms}} Bathroom(s), {{apartment.bedrooms}} Bedrooms(s)' 
-              data-lat='{{ apartment.latitude }}' 
-              data-lng='{{ apartment.longitude }}'
-            >
-              View on Map
-            </button>
+            <div class="flex gap-4 justify-center w-full">
+              <button
+                class="btn btn-primary w-1/2"
+                onclick="showHotelDetails('{{ apartment.details|escapejs }}')"
+              >
+                View Details
+              </button>
+  
+              <button 
+                class="btn btn-primary toggle-map-btn w-1/2"
+                data-title='{{ apartment.formattedAddress }}'
+                data-description='{{ apartment.squareFootage }} sq. ft, {{apartment.bathrooms}} Bathroom(s), {{apartment.bedrooms}} Bedrooms(s)' 
+                data-lat='{{ apartment.latitude }}' 
+                data-lng='{{ apartment.longitude }}'
+              >
+                View on Map
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -171,13 +173,13 @@
             <p>{{ hotel.details.dupe_id }}</p>
             <p>{{ hotel.details.iata_code }}</p>
           </div>
-          <div class="card-actions justify-end mt-auto">
-            <button class="btn btn-primary btn-sm toggle-details-btn">
+          <div class="flex gap-4 justify-center w-full">
+            <button class="btn btn-primary toggle-details-btn w-1/2">
               View Details
             </button>
 
             <button 
-              class="btn btn-primary btn-sm toggle-map-btn"
+              class="btn btn-primary toggle-map-btn w-1/2"
               data-title='{{ hotel.title }}'
               data-description='{{ hotel.description }}'
               data-lat='{{ hotel.details.location.lat }}'
@@ -403,12 +405,13 @@
         let title = this.getAttribute("data-title");
         let description = this.getAttribute("data-description");
         console.log("Info: ", lat, lng, title, description);
-
+        
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: Number(lat), lng: Number(lng) },
           zoom: 19
         });
         const mapLocations = JSON.parse('{{ locations|safe }}');
+        console.log("Map Locations: ", mapLocations);
         readMarkers(lat, lng, mapLocations, title, description)
     });
   });
