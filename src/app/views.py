@@ -120,6 +120,11 @@ def fetch_conversation(request, conversation_id):
         houses = data["houses"]
       if "apartments" in data:
         apartments = data["apartments"]
+        locations = [
+          {"lat": apartment["latitude"], "lng": apartment["longitude"]}
+          for apartment in data["apartments"]
+          if "latitude" in apartment and "longitude" in apartment
+        ]
     except json.JSONDecodeError as e:
       print(f"Error decoding JSON: {e}")
     except Exception as e:
@@ -280,6 +285,12 @@ def send_response(request, conversation_id, prompt):
               {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
               for hotel in response["data"]["hotels"]
               if "details" in hotel and "location" in hotel["details"]
+            ]
+          elif "apartments" in response["data"]:
+            locations = [
+              {"lat": apartment["latitude"], "lng": apartment["longitude"]}
+              for apartment in response["data"]["apartments"]
+              if "latitude" in apartment and "longitude" in apartment
             ]
 
       chat_messages = Message.objects.filter(conversation=conversation).order_by("timestamp")
@@ -459,6 +470,13 @@ def search_response(request, city, reason, topic):
               for hotel in response["data"]["hotels"]
               if "details" in hotel and "location" in hotel["details"]
             ]
+          # Add once added view on map to apartments
+          # if "apartments" in response["data"]:
+          #   locations = [
+          #     {"lat": apartment["latitude"], "lng": apartment["longitude"]}
+          #     for apartment in response["data"]["apartments"]
+          #     if "latitude" in apartment and "longitude" in apartment
+          #   ]
 
         if not locations:
           locations = [
