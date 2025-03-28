@@ -1,0 +1,43 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 1vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 35px;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
+}
+
+.home-header {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+}
+
+section {
+  margin: 10px 0;
+  padding: 20px 0;
+}
+
+.video {
+  justify-items: center;
+}
