@@ -14,18 +14,19 @@ body {
   padding: 35px;
 }
 
-@media (max-width: 768px) {
-  body {
-    padding: 25px;
-  }
+nav {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
-@media (max-width: 480px) {
-  body {
-    padding: 15px;
-  }
+section {
+  margin: 10px 0;
+  padding: 20px 0;
 }
-
 .home-header {
   display: flex;
   flex-direction: column;
@@ -33,11 +34,59 @@ body {
   width: 100%;
 }
 
-section {
-  margin: 10px 0;
-  padding: 20px 0;
-}
-
 .video {
   justify-items: center;
+}
+
+.docs-page {
+  display: flex;
+  flex-direction: row;
+  gap: 35px;
+}
+
+menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
+  height: 100%;
+  border-right: 1px gray solid;
+  padding-top: 20px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+}
+
+main {
+  width: 950px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+ul {
+  list-style-position: inside;
+}
+
+@media (max-width: 768px) {
+  .docs-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    width: 100%;
+  }
+
+  menu {
+    width: 100%;
+    padding-bottom: 15px;
+    border-right: none;
+    border-bottom: 1px gray solid;
+    position: relative;
+  }
+}
+
+@media (max-width: 480px) {
 }
