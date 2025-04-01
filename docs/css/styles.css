@@ -1,3 +1,7 @@
+:root {
+  color-scheme: light dark;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -30,6 +34,15 @@ nav a {
   font-size: large;
   font-weight: bold;
   color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  nav {
+    border-bottom: 1px white solid;
+  }
+  nav a {
+    color: white;
+  }
 }
 
 nav a:hover {
@@ -71,7 +84,6 @@ menu {
   padding-top: 20px;
   position: sticky;
   top: 0;
-  background-color: white;
 }
 
 main {
