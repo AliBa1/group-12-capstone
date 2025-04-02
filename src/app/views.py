@@ -175,15 +175,15 @@ def edit_conversation(request, conversation_id):
   if request.method == "POST":
     conversation = get_object_or_404(Conversation, id=conversation_id)
     new_title = request.POST.get("updated-title")
-    new_city = request.POST.get("updated-city")
-    new_reason = request.POST.get("updated-reason")
+    # new_city = request.POST.get("updated-city")
+    # new_reason = request.POST.get("updated-reason")
 
     is_valid = is_title_valid(request, new_title)
 
     if is_valid:
       conversation.title = new_title
-      conversation.city = new_city
-      conversation.reason = new_reason
+      # conversation.city = new_city
+      # conversation.reason = new_reason
       conversation.save()
 
   return redirect("chatbot")

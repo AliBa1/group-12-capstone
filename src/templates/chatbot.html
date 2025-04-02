@@ -35,7 +35,7 @@
               <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
                 <li>
                   <a class="px-4" href="#"
-                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Rename</a>
                 </li>
                 <li>
                   <a class="text-error px-4" href="#"
@@ -149,7 +149,7 @@
   <input type="checkbox" id="edit-conversation" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box">
-      <h3 class="text-lg font-bold pb-4">Edit Your Conversation</h3>
+      <h3 class="text-lg font-bold pb-4">Rename Your Conversation</h3>
       <form id="edit-conversation-form" method="POST" action="" hx-target="#messages-container">
         <!-- prettier-ignore -->
         {% csrf_token %}
@@ -158,7 +158,7 @@
           <input type="text" id="updated-title" name="updated-title" class="input input-bordered" required />
         </div>
 
-        <label class="form-control mt-2">
+        {% comment %} <label class="form-control mt-2">
           <label class="label label-text" for="updated-city">City</label>
           <select id="updated-city" name="updated-city" class="select select-bordered" required>
             <option value="" disabled selected>Pick one</option>
@@ -177,7 +177,7 @@
             <option value="Travel">Travel</option>
             <option value="Moving">Moving</option>
           </select>
-        </label>
+        </label> {% endcomment %}
 
         <div class="modal-action">
           <label for="edit-conversation" class="btn btn-error">Cancel</label>
@@ -224,8 +224,8 @@
       "#edit-conversation-form"
     ).action = `/edit_conversation/${conversationId}/`;
     document.querySelector("#updated-title").value = currentTitle;
-    document.querySelector("#updated-city").value = currentCity;
-    document.querySelector("#updated-reason").value = currentReason;
+    // document.querySelector("#updated-city").value = currentCity;
+    // document.querySelector("#updated-reason").value = currentReason;
     // document.querySelector("#updated-title").focus();
     document.querySelector("#edit-conversation").checked = true;
   }
