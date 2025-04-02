@@ -145,12 +145,21 @@
     }
 
     if (topic == "Housing") {
-      htmx.ajax("POST", `/update_preferences/${propertyType}/`, {
+      // htmx.ajax("POST", `/update_preferences/${propertyType}`, {
+      //   target: "#search-results",
+      //   swap: "none",
+      //   headers: {
+      //     "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+      //   },
+      // });
+
+      fetch(`/update_preferences/${encodeURIComponent(propertyType)}`, {
+        method: "POST",
         headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-            .value,
-        },
-      });
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+          "Content-Type": "application/json"
+        }
+      }).then(response => response.text()).then(console.log);      
     }
 
     htmx
