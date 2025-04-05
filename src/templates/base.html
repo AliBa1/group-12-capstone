@@ -33,7 +33,7 @@
     />
   </head>
 
-  <body class="flex flex-col font-sans min-h-screen relative overflow-x-hidden text-white">
+  <body class="flex flex-col font-sans min-h-screen relative overflow-x-hidden text-base-content">
     <!-- prettier-ignore -->
     {% include 'includes/header.html' %}
     <!-- prettier-ignore -->
@@ -48,5 +48,28 @@
       {% endblock %}
     </main>
     <footer>{% include 'includes/footer.html' %}</footer>
+
+    <script>
+      const themeToggle = document.getElementById("theme-toggle");
+      const htmlElement = document.documentElement;
+      
+      document.addEventListener("beforeunload", function() {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+          htmlElement.setAttribute("data-theme", savedTheme);
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function() {
+        themeToggle.addEventListener("click", function() {
+          const currentTheme = htmlElement.getAttribute("data-theme");
+          const newTheme = currentTheme === "night" ? "winter" : "night";
+
+          htmlElement.setAttribute("data-theme", newTheme);
+          localStorage.setItem("theme", newTheme);
+        });
+      });
+  </script>
+  
   </body>
 </html>

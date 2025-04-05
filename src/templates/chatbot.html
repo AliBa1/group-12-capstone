@@ -7,7 +7,7 @@
 <body>
   <div class="flex w-full" style="height: calc(100vh - 64px)">
     <ul id="conversation-menu" class="flex flex-col justify-between menu bg-base-200 w-56 md:w-64 lg:w-72 flex-none flex-nowrap overflow-y-scroll overflow-x-hidden transition-all duration-300 ease-in-out">
-      <div class="menu-title text-white text-xl sticky top-0 px-0 bg-base-200">Conversations</div>
+      <div class="menu-title text-base-content text-xl sticky top-0 px-0 bg-base-200">Conversations</div>
       <div class="overflow-y-scroll h-full">
         <!-- prettier-ignore -->
         {% for c in conversations %}
@@ -35,7 +35,7 @@
               <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow overflow-visible">
                 <li>
                   <a class="px-4" href="#"
-                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Edit</a>
+                    onclick="openEditModal({{ c.id }}, '{{ c.title|escapejs }}', '{{ c.city|escapejs }}', '{{ c.reason|escapejs }}')">Rename</a>
                 </li>
                 <li>
                   <a class="text-error px-4" href="#"
@@ -69,7 +69,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" class="btn btn-primary px-1" id="toggle-menu" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
 
     <div class="flex-1 flex flex-col items-center py-4">
-      <div id="no-active" class="px-2 text-white font-bold text-xl">
+      <div id="no-active" class="px-2 font-bold text-xl">
         Select a conversation to begin
       </div>
       <div id="chat" class="w-full px-4 flex flex-col h-full justify-end"
@@ -149,7 +149,7 @@
   <input type="checkbox" id="edit-conversation" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box">
-      <h3 class="text-lg font-bold pb-4">Edit Your Conversation</h3>
+      <h3 class="text-lg font-bold pb-4">Rename Your Conversation</h3>
       <form id="edit-conversation-form" method="POST" action="" hx-target="#messages-container">
         <!-- prettier-ignore -->
         {% csrf_token %}
@@ -158,7 +158,7 @@
           <input type="text" id="updated-title" name="updated-title" class="input input-bordered" required />
         </div>
 
-        <label class="form-control mt-2">
+        {% comment %} <label class="form-control mt-2">
           <label class="label label-text" for="updated-city">City</label>
           <select id="updated-city" name="updated-city" class="select select-bordered" required>
             <option value="" disabled selected>Pick one</option>
@@ -177,7 +177,7 @@
             <option value="Travel">Travel</option>
             <option value="Moving">Moving</option>
           </select>
-        </label>
+        </label> {% endcomment %}
 
         <div class="modal-action">
           <label for="edit-conversation" class="btn btn-error">Cancel</label>
@@ -224,8 +224,8 @@
       "#edit-conversation-form"
     ).action = `/edit_conversation/${conversationId}/`;
     document.querySelector("#updated-title").value = currentTitle;
-    document.querySelector("#updated-city").value = currentCity;
-    document.querySelector("#updated-reason").value = currentReason;
+    // document.querySelector("#updated-city").value = currentCity;
+    // document.querySelector("#updated-reason").value = currentReason;
     // document.querySelector("#updated-title").focus();
     document.querySelector("#edit-conversation").checked = true;
   }
@@ -335,18 +335,6 @@
     const mapDiv = document.getElementById('map');
     const mapContainer = document.getElementById('map-container');
 
-    // toggleButton.addEventListener('click', () => {
-    //   if (mapDiv.style.display === 'none') {
-    //     mapDiv.style.display = 'block';
-    //     mapContainer.style.width = '';
-    //     toggleButton.textContent = 'Hide Map';
-    //     google.maps.event.trigger(map, 'resize');
-    //   } else {
-    //     mapDiv.style.display = 'none';
-    //     toggleButton.textContent = 'Show Map';
-    //   }
-    // });
-
     toggleButton.addEventListener('click', () => {
       if (mapContainer.classList.contains('hidden')) {
         toggleButton.textContent = 'Hide Map';
@@ -358,15 +346,14 @@
       }
     });
   }
+  
   const toggleConversation = document.getElementById('toggle-menu');
   const conversationMenu = document.getElementById('conversation-menu');
   toggleConversation.addEventListener('click', () => {
     if (conversationMenu.style.display === 'none') {
       conversationMenu.style.display = 'flex';
-      toggleButton.textContent = 'Hide Conversations';
     } else {
       conversationMenu.style.display = 'none';
-      toggleButton.textContent = 'Show Conversations';
     }
 
   })

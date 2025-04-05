@@ -3,26 +3,28 @@
   {% for message in chat_messages %}
   <div class="flex flex-col gap-4 mb-4">
     <div class="chat {% if message.is_from_user %}chat-end{% else %}chat-start{% endif %}">
-      <div class="chat-bubble text-white">
+      <div class="chat-bubble bg-slate-500 text-white">
         {{ message.text }}
       </div>
     </div>
 
     <!-- <pre>{{ flights|safe }}</pre> -->
     {% if message.additional_data and message.additional_data.type == 'flight_search' and not message.is_from_user %}
-    <div class="grid grid-cols-1 lg: grid-cols-2 xl:grid-cols-3 gap-6 text-white">
+    <div class="flex flex-col gap-6 text-white">
       {% for flight in message.additional_data.flights %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble    shadow-xl flex flex-col">
         <div class="card-body">
           <h2 class="card-title">{{ flight.iata }}</h2>
-          <p><strong>Airline: </strong>{{ flight.airline.name }}</p>
-          <p><strong>Flight Date: </strong>{{ flight.flight_date }}</p>
-          <p><strong>Departure Airport: </strong>{{ flight.departure.airport_iata }}</p>
-          <p><strong>Departure Time: </strong>{{ flight.departure.time }}</p>
-          <p><strong>Arrival Airport: </strong>{{ flight.arrival.airport_iata }}</p>
-          <p><strong>Arrival Time: </strong>{{ flight.arrival.time }}</p>
-          <p><strong>Price: $</strong>{{ flight.flight_price }}</p>
-          <a href={{ flight.booking_url }} target="_blank"><strong><u>Book This Flight</u></strong></a>
+          <p><strong>Airline:</strong>{{ flight.airline.name }}</p>
+          <p><strong>Flight Date:</strong>{{ flight.flight_date }}</p>
+          <p><strong>Departure Airport:</strong>{{ flight.departure.airport_name }}</p>
+          <p><strong>Terminal:</strong>{{ flight.departure.terminal }} | <strong>Gate:</strong> {{ flight.departure.gate
+            }}</p>
+          <p><strong>Time:</strong>{{ flight.departure.time }}</p>
+          <p><strong>Arrival Airport:</strong>{{ flight.arrival.airport_name }}</p>
+          <p><strong>Terminal:</strong>{{ flight.arrival.terminal }} | <strong>Gate:</strong>{{ flight.arrival.gate }}
+          </p>
+          <p><strong>Time:</strong>{{ flight.arrival.time }}</p>
         </div>
       </div>
       {% endfor %}
@@ -31,7 +33,7 @@
     {% if message.additional_data and message.additional_data.type == 'house_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for house in message.additional_data.houses %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure>
           <img
             class="w-full object-cover object-center"
@@ -66,12 +68,24 @@
               </div>
             </div>
             {% endif %}
-            <button
-              class="btn btn-primary"
-              onclick="showHotelDetails('{{ hotel.details|escapejs }}')"
-            >
-              View Details
-            </button>
+            <div class="flex gap-4 justify-center w-full">
+              <button
+                class="btn btn-primary w-1/2"
+                {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
+              >
+                View Details
+              </button>
+  
+              <button 
+                class="btn btn-primary toggle-map-btn w-1/2"
+                data-title='{{ house.propertyType }}, {{ house.formattedAddress }}'
+                data-description='{{ house.squareFootage }} sq. ft, {{house.bathrooms}} Bathroom(s), {{house.bedrooms}} Bedrooms(s)' 
+                data-lat='{{ house.latitude }}' 
+                data-lng='{{ house.longitude }}'
+              >
+                View on Map
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -82,7 +96,7 @@
     {% if message.additional_data and message.additional_data.type == 'apartment_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for apartment in message.additional_data.apartments %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure>
           <img
             class="w-full object-cover object-center"
@@ -113,12 +127,24 @@
                 {{apartment.bedrooms}} Bedrooms(s)
               </div>
             </div>
-            <button
-              class="btn btn-primary"
-              onclick="showHotelDetails('{{ apartment.details|escapejs }}')"
-            >
-              View Details
-            </button>
+            <div class="flex gap-4 justify-center w-full">
+              <button
+                class="btn btn-primary w-1/2"
+                onclick="showHotelDetails('{{ apartment.details|escapejs }}')"
+              >
+                View Details
+              </button>
+  
+              <button 
+                class="btn btn-primary toggle-map-btn w-1/2"
+                data-title='{{ apartment.formattedAddress }}'
+                data-description='{{ apartment.squareFootage }} sq. ft, {{apartment.bathrooms}} Bathroom(s), {{apartment.bedrooms}} Bedrooms(s)' 
+                data-lat='{{ apartment.latitude }}' 
+                data-lng='{{ apartment.longitude }}'
+              >
+                View on Map
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -129,7 +155,7 @@
     {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for hotel in message.additional_data.hotels %}
-      <div class="chat chat-start chat-bubble shadow-xl flex flex-col">
+      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <figure class="w-full">
           <div class="carousel w-full h-full">
             {% for image in hotel.images %}
@@ -141,10 +167,8 @@
                    class="w-full h-full object-cover" />
               {% if hotel.images|length > 1 %}
               <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" 
-                   class="btn btn-circle">❮</a>
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" 
-                   class="btn btn-circle">❯</a>
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" class="btn btn-circle">❮</a>
+                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" class="btn btn-circle">❯</a>
               </div>
               {% endif %}
             </div>
@@ -161,9 +185,19 @@
             <p>{{ hotel.details.dupe_id }}</p>
             <p>{{ hotel.details.iata_code }}</p>
           </div>
-          <div class="card-actions justify-end mt-auto">
-            <button class="btn btn-primary btn-sm toggle-details-btn">
+          <div class="flex gap-4 justify-center w-full">
+            <button class="btn btn-primary toggle-details-btn w-1/2">
               View Details
+            </button>
+
+            <button 
+              class="btn btn-primary toggle-map-btn w-1/2"
+              data-title='{{ hotel.title }}'
+              data-description='{{ hotel.description }}'
+              data-lat='{{ hotel.details.location.lat }}'
+              data-lng='{{ hotel.details.location.lng }}'
+            >
+              View on Map
             </button>
           </div>
         </div>
@@ -176,7 +210,7 @@
 
   {% if bot_typing %}
   <div class="chat chat-start">
-    <div class="chat-bubble">
+    <div class="chat-bubble bg-slate-500 text-white">
       <span class="loading loading-dots loading-sm"></span>
     </div>
   </div>
@@ -293,5 +327,105 @@
     }
   });
 
+
+
+  function clearMarkers() {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function readMarkers(curLat, curLng, locations, title, description) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach(location => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map
+      });
+      markers.push(marker);
+
+      // code below styled by ChatGPT
+      const content = `
+        <div style="
+          padding: 15px;
+          background-color: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          max-width: 250px;
+          font-family: Arial, sans-serif;
+          color: #333;
+        ">
+          <h1 style="
+            font-size: 18px;
+            margin: 0 0 8px 0;
+          ">
+            ${title}
+          </h1>
+          <p style="
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            color: #555;
+          ">
+            ${description}
+          </p>
+        </div>
+      `;
+
+
+      marker.addListener('click', () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+
+      if (curLat == location.lat && curLng == location.lng) {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: true,
+        });
+      }
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15
+      })
+    });
+  }
+
+
+  document.querySelectorAll(".toggle-map-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let lat = this.getAttribute("data-lat");
+        let lng = this.getAttribute("data-lng");
+        let title = this.getAttribute("data-title");
+        let description = this.getAttribute("data-description");
+        console.log("Info: ", lat, lng, title, description);
+        
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: Number(lat), lng: Number(lng) },
+          zoom: 19
+        });
+        const mapLocations = JSON.parse('{{ locations|safe }}');
+        console.log("Map Locations: ", mapLocations);
+        readMarkers(lat, lng, mapLocations, title, description)
+    });
+  });
 
 </script>

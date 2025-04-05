@@ -7,11 +7,10 @@
   hx-swap="innerHTML"
 >
   {% csrf_token %}
-  <!-- Topic Selection -->
   <label class="form-control w-full">
-    <label class="label label-text text-lg text-white" for="topic">Topic</label>
+    <label class="label label-text text-lg" for="topic">Topic</label>
     <select id="topic" name="topic" class="select select-primary" required>
-      <option value="" disabled selected>Select one</option>
+      <option value="" disabled selected>Pick one</option>
       {% for prompt in premade_prompts %}
       <option value="{{ prompt }}">{{ prompt }}</option>
       {% endfor %}
@@ -19,7 +18,7 @@
   </label>
 
   <div id="propertyTypeSelect" class="hidden form-control w-full">
-    <label class="label label-text text-lg text-white" for="propertyType"
+    <label class="label label-text text-lg" for="propertyType"
       >Property Type</label
     >
     <select
@@ -110,6 +109,7 @@
 <script>
   function handleTopicChange() {
     const topic = document.querySelector("#topic").value;
+    console.log("Topic: ", topic)
     const origin = document.querySelector("#origin-container");
     const flight_date = document.querySelector("#flight-date-container");
 
@@ -131,7 +131,8 @@
     const topic = document.querySelector("#topic").value;
     const propertyType = document.querySelector("#propertyType").value;
     document.querySelector("#search-btn").disabled = true;
-    let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
+    // let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
+    let searchUrl = `/search_response/${city}/${reason}/${topic}`;
 
     if (topic === "Flights") {
       const origin = document.querySelector("#origin")?.value;
@@ -144,12 +145,21 @@
     }
 
     if (topic == "Housing") {
-      htmx.ajax("POST", `/update_preferences/${propertyType}/`, {
+      // htmx.ajax("POST", `/update_preferences/${propertyType}`, {
+      //   target: "#search-results",
+      //   swap: "none",
+      //   headers: {
+      //     "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+      //   },
+      // });
+
+      fetch(`/update_preferences/${encodeURIComponent(propertyType)}`, {
+        method: "POST",
         headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-            .value,
-        },
-      });
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+          "Content-Type": "application/json"
+        }
+      }).then(response => response.text()).then(console.log);      
     }
 
     htmx
