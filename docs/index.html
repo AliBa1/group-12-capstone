@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend:wght@100..900&family=Schoolbell&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>Embarkr</title>
+  </head>
+  <body>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="about.html">About</a>
+      <a href="resources.html">Resources</a>
+    </nav>
+
+    <section class="home-header">
+      <h1>Embarkr</h1>
+      <p>Start Your Journey Today by Navigating New Locations with Our App</p>
+    </section>
+
+    <section class="video">
+      <p></p>
+      <iframe
+        width="560"
+        height="315"
+        src="https://www.youtube-nocookie.com/embed/u31qwQUeGuM?si=4lJxmsTkcz4AUw8f&amp;controls=0"
+        title="Demo Video"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </section>
+
+    <section>
+      <h2>What is Embarkr?</h2>
+      <br />
+      <p>
+        Embarkr is a web application with a smart AI-driven tour guide, capable
+        of helping users with travel planning and relocation. Embarkr’s goal is
+        to create a system that addresses the pain and inconveniences faced by
+        people when planning trips or moving ,through an interactive interface.
+        The AI assistant will be able to guide users through finding the best
+        flights for them, a budget friendly accommodation, or the demographics
+        of an area. By using our dropdowns or writing prompts to the chatbot,
+        users can receive personalized recommendations such as travel
+        itineraries, nearby activities, and safety insights. These features will
+        be great for both tourists and potential new residents.
+      </p>
+      <br />
+      <p>
+        Our site has two main ways for users to interact with it to get the
+        information they need. The first way is by using our dropdowns to get
+        the most common terms people will look for such as schools in a certain
+        area or hotels in a city. This makes sure that we return the best data
+        for the users needs especially if we add more dropdowns for the user to
+        be more specific about what they want which we plan on adding. The other
+        way is through the chatbot where the user can ask more specific
+        questions such as how many gas stations are in an area then we return a
+        message with information on it and a map showing them what they are
+        looking for. This way we can cover anything the user needs.
+      </p>
+      <br />
+      <p>
+        To develop the site we are using the Django framework since it will keep
+        the backend more consistent with the machine learning elements of it so
+        it will all be in Python. For the frontend we are using HTMX to add
+        interactivity to the site and Tailwind to make it look nice. As for the
+        data we are returning to the user we are using APIs from many different
+        services for things like hotels, housing, etc.
+      </p>
+      <br />
+      <p>
+        To make sure the site is dependable and secure we took steps to prevent
+        issues such as SQL injections by making sure user inputs are validated.
+        We also run unit tests to make sure functions in the backend are running
+        as expected which keeps the reliability of the site high while
+        developing it. We plan on running more tests by using the site more and
+        letting others use it to find vulnerabilities and improve on them.
+      </p>
+    </section>
+
+    <section>
+      <h2>Going Forward...</h2>
+      <br />
+      <p>
+        In the future Embarkr may be able to include real-time data on weather,
+        local public transportation, or even language translation for
+        international travel. There have not been significant changes to the
+        project scope or features. The team is focused on implementing more
+        services through APIs such as flight booking, safety, and walkability.
+        We are also focused on processing our own datasets through machine
+        learning to give the user better results. We have also talked about
+        adding a feature to save details for trips or moving in a cart like
+        system that we may add once the app is more polished.
+      </p>
+    </section>
+  </body>
+</html>
