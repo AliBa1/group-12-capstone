@@ -373,6 +373,8 @@ def chatbot_response(request, prompt):
             return {"response": assistant_message, "data": strategy_response.get("data")}
           else:
             assistant_message = f"{assistant_message} {strategy_response}"
+        else:
+          return {"response": "An error occured when processing yor request. Ask me for something else and I will be happy to help!", "data": {}}
 
       return {"response": assistant_message}
 

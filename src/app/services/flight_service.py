@@ -88,8 +88,8 @@ class FlightSearchStrategy(SearchStrategy):
                 "arr_iata": dest,
             }
             flights_data = self._make_request("flights", params)
-            '''for flight in flights_data:
-                print(flight)'''
+            # for flight in flights_data:
+            #     print(flight)
             cache.set(cache_key, flights_data, timeout=86400)
 
             return flights_data
