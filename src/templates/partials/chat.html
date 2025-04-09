@@ -134,7 +134,9 @@
           </div>
           <div>
             <p>{{ apartment.formattedAddress }}</p>
-            <p>{{ apartment.squareFootage }} sq. ft</p>
+            {% if apartment.squareFootage > 0 %}
+              <p>{{ apartment.squareFootage }} sq. ft</p>
+            {% endif %}
           </div>
           <div class="flex flex-col w-full gap-2 mt-2">
             <div class="card-actions items-center">
@@ -402,6 +404,7 @@
           <h1 style="
             font-size: 18px;
             margin: 0 0 8px 0;
+            line-height: 1.5;
           ">
             ${title}
           </h1>
@@ -415,17 +418,6 @@
           </p>
         </div>
       `;
-
-
-      marker.addListener('click', () => {
-        infoWindow.close();
-        infoWindow.setContent(content);
-        infoWindow.open({
-          anchor: marker,
-          map,
-          shouldFocus: false,
-        });
-      });
 
       if (curLat == location.lat && curLng == location.lng) {
         infoWindow.close();

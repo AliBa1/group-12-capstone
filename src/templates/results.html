@@ -46,26 +46,6 @@
                 map: map
             });
             markers.push(marker);
-            
-            // Create the info window content
-            const content = `
-                <div style="padding: 10px;">
-                    <h3>Location Details</h3>
-                    <p><strong>Latitude:</strong> ${location.lat.toFixed(6)}</p>
-                    <p><strong>Longitude:</strong> ${location.lng.toFixed(6)}</p>
-                </div>
-            `;
-            
-            // Add click event listener to marker
-            marker.addListener('click', () => {
-                infoWindow.close();
-                infoWindow.setContent(content);
-                infoWindow.open({
-                    anchor: marker,
-                    map,
-                    shouldFocus: false,
-                });
-            });
         });
 
         // Create cluster manager
