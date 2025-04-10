@@ -193,6 +193,9 @@
     const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
     const propertyType = document.querySelector("#propertyType").value;
 
+    const origin = document.querySelector("#origin").value;
+    const flightDate = document.querySelector("#flight-date").value;
+
     const searchBtn = document.querySelector("#search-btn");
 
     if (!topic) {
@@ -207,13 +210,20 @@
       }
     }
 
+    if (topic === "Flights") {
+      if (!origin || !flightDate) {
+        searchBtn.disabled = true;
+        return;
+      }
+    }
+
     searchBtn.disabled = false;
   }
 
   document.querySelector("#topic").addEventListener("change", () => {
     const topic = document.querySelector("#topic").value;
-    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
 
+    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
     if (topic === "Housing") {
       propertyTypeSelect.style.display = "block";
     } else {
@@ -224,6 +234,14 @@
   });
 
   document.querySelector("#propertyType").addEventListener("change", () => {
+    validateSearchButton();
+  });
+
+  document.querySelector("#origin").addEventListener("change", () => {
+    validateSearchButton();
+  });
+
+  document.querySelector("#flight-date").addEventListener("change", () => {
     validateSearchButton();
   });
 
