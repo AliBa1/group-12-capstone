@@ -72,7 +72,7 @@ urlpatterns = [
   path("update_city_reason/", update_city_reason, name="update_city_reason"),
   # path("send_search/<str:city>/<str:reason>", send_search, name="send_search"),
   path("send_search/", send_search, name="send_search"),
-  path("search_response/<str:city>/<str:reason>/<str:topic>", search_response, name="search_response"),
+  path("search_response/<str:city>/<str:topic>", search_response, name="search_response"),
   path('heat_index/', predict_heat_index, name='predict_heat_index'),
   path('update_preferences/<str:property_type>', update_preferences, name='update_preferences'),
 ]

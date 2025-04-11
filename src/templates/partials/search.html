@@ -7,54 +7,53 @@
   hx-swap="innerHTML"
 >
   {% csrf_token %}
-  <label class="form-control w-full">
-    <label class="label label-text text-lg" for="topic">Topic</label>
-    <select id="topic" name="topic" class="select select-primary" required>
-      <option value="" disabled selected>Pick one</option>
-      {% for prompt in premade_prompts %}
-      <option value="{{ prompt }}">{{ prompt }}</option>
-      {% endfor %}
-    </select>
-  </label>
+  <div class="form-control w-full">
+    <label class="label label-text text-lg" for="topic">Pick a Topic? 👀</label>
 
-  <div id="propertyTypeSelect" class="hidden form-control w-full">
-    <label class="label label-text text-lg" for="propertyType"
-      >Property Type</label
-    >
-    <select
-      id="propertyType"
-      name="propertyType"
-      class="select select-primary truncate w-full"
-    >
-      <option value="" disabled selected>Pick one</option>
-      <option value="any">Any</option>
-      <option value="Single%20Family">
-        Single Family: A detached, single-family property
-      </option>
-      <option value="Condo">
-        Condo: A single unit in a condominium development or building, which is
-        part of a homeowner’s association (HOA)
-      </option>
-      <option value="Townhouse">
-        Townhouse: A single-family property that shares walls with other
-        adjacent homes, and is typically part of a homeowner’s association (HOA)
-      </option>
-      <option value="Manufactured">
-        Manufactured: A pre-fabricated or mobile home, typically constructed at
-        a factory
-      </option>
-      <option value="Multi-Family">
-        Multi-Family: A residential multi-family building (2-4 units)
-      </option>
-      <option value="Apartment">
-        Apartment: A commercial multi-family building or apartment complex (5+
-        units)
-      </option>
-      <option value="Land">
-        Land: A single parcel of vacant, undeveloped land
-      </option>
-    </select>
+    <div id="topicOptions" class="flex flex-wrap gap-4">
+      {% for prompt in premade_prompts %}
+      <button type="button" data-value="{{ prompt }}" class="btn btn-outline">
+        {{ prompt }}
+      </button>
+      {% endfor %}
+    </div>
   </div>
+  <input type="hidden" id="topic" name="topic" required />
+
+  <div id="property-type-container" class="hidden form-control w-full">
+    <label class="label label-text text-lg" for="propertyType"
+      >Property Type? 🏠</label
+    >
+
+    <div id="propertyOptions" class="flex flex-wrap gap-4">
+      <button type="button" data-value="any" class="btn btn-outline">
+        Any
+      </button>
+      <button
+        type="button"
+        data-value="Single%20Family"
+        class="btn btn-outline"
+      >
+        Single Family
+      </button>
+      <button type="button" data-value="Townhouse" class="btn btn-outline">
+        Townhouse
+      </button>
+      <button type="button" data-value="Manufactured" class="btn btn-outline">
+        Manufactured
+      </button>
+      <button type="button" data-value="Multi-Family" class="btn btn-outline">
+        Multi-Family
+      </button>
+      <button type="button" data-value="Apartment" class="btn btn-outline">
+        Apartment
+      </button>
+      <button type="button" data-value="Land" class="btn btn-outline">
+        Land
+      </button>
+    </div>
+  </div>
+  <input type="hidden" id="propertyType" name="propertyType" required />
 
   <!-- Origin Selection (Hidden by Default)-->
   <div id="origin-container" class="w-full" style="display: none">
@@ -93,23 +92,36 @@
     Search
   </button>
 </form>
-{% comment %} {% comment %}
-<p class="text-center mt-4 font-bold">
-  Do you want to learn more about the city? (neighborhood security of an
-  specific address, stays near gas stations) Go to the
-  <a class="link" href="{% url 'chatbot' %}">chat page</a> for futher assistance
-</p>
-{% endcomment %}
 
-<div
-  id="search-results"
-  class="flex flex-col w-full min-h-full mt-4"
-></div>
+<div id="search-results" class="flex flex-col w-full min-h-full mt-4"></div>
 
 <script>
+  document.querySelectorAll("#topicOptions button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document
+        .querySelectorAll("#topicOptions button")
+        .forEach((b) => b.classList.remove("btn-active"));
+      btn.classList.add("btn-active");
+      document.getElementById("topic").value = btn.dataset.value;
+      handleTopicChange();
+      validateSearchButton();
+    });
+  });
+
+  document.querySelectorAll("#propertyOptions button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document
+        .querySelectorAll("#propertyOptions button")
+        .forEach((b) => b.classList.remove("btn-active"));
+      btn.classList.add("btn-active");
+      document.getElementById("propertyType").value = btn.dataset.value;
+      validateSearchButton();
+    });
+  });
+
   function handleTopicChange() {
     const topic = document.querySelector("#topic").value;
-    console.log("Topic: ", topic)
+    console.log("Topic: ", topic);
     const origin = document.querySelector("#origin-container");
     const flight_date = document.querySelector("#flight-date-container");
 
@@ -120,19 +132,24 @@
       origin.style.display = "none";
       flight_date.style.display = "none";
     }
+
+    const propertyTypeContainer = document.querySelector(
+      "#property-type-container"
+    );
+    if (topic === "Housing") {
+      propertyTypeContainer.style.display = "flex";
+    } else {
+      propertyTypeContainer.style.display = "none";
+    }
   }
-  document
-    .querySelector("#topic")
-    .addEventListener("change", handleTopicChange);
 
   function afterSendSearch() {
     const city = "{{ city }}";
-    const reason = "{{ reason }}";
     const topic = document.querySelector("#topic").value;
     const propertyType = document.querySelector("#propertyType").value;
     document.querySelector("#search-btn").disabled = true;
-    // let searchUrl = `/search_response/${city}/${reason}/${topic}/`;
-    let searchUrl = `/search_response/${city}/${reason}/${topic}`;
+    // let searchUrl = `/search_response/${city}/${topic}/`;
+    let searchUrl = `/search_response/${city}/${topic}`;
 
     if (topic === "Flights") {
       const origin = document.querySelector("#origin")?.value;
@@ -156,10 +173,13 @@
       fetch(`/update_preferences/${encodeURIComponent(propertyType)}`, {
         method: "POST",
         headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-          "Content-Type": "application/json"
-        }
-      }).then(response => response.text()).then(console.log);      
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+            .value,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.text())
+        .then(console.log);
     }
 
     htmx
@@ -190,7 +210,6 @@
 
   function validateSearchButton() {
     const topic = document.querySelector("#topic").value;
-    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
     const propertyType = document.querySelector("#propertyType").value;
 
     const origin = document.querySelector("#origin").value;
@@ -219,23 +238,6 @@
 
     searchBtn.disabled = false;
   }
-
-  document.querySelector("#topic").addEventListener("change", () => {
-    const topic = document.querySelector("#topic").value;
-
-    const propertyTypeSelect = document.querySelector("#propertyTypeSelect");
-    if (topic === "Housing") {
-      propertyTypeSelect.style.display = "block";
-    } else {
-      propertyTypeSelect.style.display = "none";
-    }
-
-    validateSearchButton();
-  });
-
-  document.querySelector("#propertyType").addEventListener("change", () => {
-    validateSearchButton();
-  });
 
   document.querySelector("#origin").addEventListener("change", () => {
     validateSearchButton();

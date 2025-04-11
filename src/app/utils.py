@@ -15,6 +15,9 @@ def choose_topics(reason):
     return topics_travel
   else:
     return topics_moving
+  
+def get_all_topics():
+  return topics_moving + topics_travel
 
 def is_title_valid(request, title):
   if request.method == "POST":
