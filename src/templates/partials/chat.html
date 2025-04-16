@@ -70,7 +70,7 @@
             {% endif %}
             <div class="flex gap-4 justify-center w-full">
               <button
-                class="btn btn-primary w-1/2"
+                class="btn btn-primary w-1/2 toggle-details-btn"
                 {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
               >
                 View Details
@@ -86,6 +86,24 @@
                 View on Map
               </button>
             </div>
+          </div>
+          <div class="extra-details hidden text-sm">
+            {% if house.yearBuilt %}
+              <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
+              <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
+              <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
+              <p><span class="font-bold">Year Built: </span>{{ house.yearBuilt }}</p>
+              <br/>
+              <p><span class="font-bold">Listing Agent Name: </span>{{ house.listingAgent.name }}</p>
+              <p><span class="font-bold">Listing Agent Email: </span>{{ house.listingAgent.email }}</p>
+              <p><span class="font-bold">Listing Agent Website: </span>{{ house.listingAgent.website }}</p>
+              <br/>
+              <p><span class="font-bold">Listing Office Name: </span>{{ house.listingOffice.name }}</p>
+              <p><span class="font-bold">Listing Office Email: </span>{{ house.listingOffice.email }}</p>
+              <p><span class="font-bold">Listing Office Website: </span>{{ house.listingOffice.website }}</p>
+            {% else %}
+              <p>No additional details</p>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -116,7 +134,9 @@
           </div>
           <div>
             <p>{{ apartment.formattedAddress }}</p>
-            <p>{{ apartment.squareFootage }} sq. ft</p>
+            {% if apartment.squareFootage > 0 %}
+              <p>{{ apartment.squareFootage }} sq. ft</p>
+            {% endif %}
           </div>
           <div class="flex flex-col w-full gap-2 mt-2">
             <div class="card-actions items-center">
@@ -129,8 +149,9 @@
             </div>
             <div class="flex gap-4 justify-center w-full">
               <button
-                class="btn btn-primary w-1/2"
-                onclick="showHotelDetails('{{ apartment.details|escapejs }}')"
+                {% comment %} class="btn btn-primary w-1/2"
+                onclick="showHotelDetails('{{ apartment.details|escapejs }}')" {% endcomment %}
+                class="btn btn-primary w-1/2 toggle-details-btn"
               >
                 View Details
               </button>
@@ -144,7 +165,25 @@
               >
                 View on Map
               </button>
+
             </div>
+          </div>
+          <div class="extra-details hidden text-sm">
+            {% if apartment.yearBuilt %}
+              <p><span class="font-bold">Year Built: </span>{{ apartment.yearBuilt }}</p>
+              <p><span class="font-bold">Listing Type: </span>{{ apartment.listingType }}</p>
+              <p><span class="font-bold">Days on Market: </span>{{ apartment.daysOnMarket }}</p>
+              <br/>
+              <p><span class="font-bold">Listing Agent Name: </span>{{ apartment.listingAgent.name }}</p>
+              <p><span class="font-bold">Listing Agent Email: </span>{{ apartment.listingAgent.email }}</p>
+              <p><span class="font-bold">Listing Agent Website: </span>{{ apartment.listingAgent.website }}</p>
+              <br/>
+              <p><span class="font-bold">Listing Office Name: </span>{{ apartment.listingOffice.name }}</p>
+              <p><span class="font-bold">Listing Office Email: </span>{{ apartment.listingOffice.email }}</p>
+              <p><span class="font-bold">Listing Office Website: </span>{{ apartment.listingOffice.website }}</p>
+            {% else %}
+              <p>No additional details</p>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -181,9 +220,11 @@
           {% if hotel.google_rating %}<p class="text-sm">Rating: {{ hotel.google_rating }}</p>{% endif %}
     
           <div class="extra-details hidden text-sm">
-            <p>{{ hotel.details.chain_code }}</p>
-            <p>{{ hotel.details.dupe_id }}</p>
-            <p>{{ hotel.details.iata_code }}</p>
+            {% if hotel.details.google_rating %}
+              <p><span class="font-bold">Rating out of 5 (Google): </span> {{ hotel.details.google_rating }}</p>
+            {% else %}
+              <p>No additional details</p>
+            {% endif %}
           </div>
           <div class="flex gap-4 justify-center w-full">
             <button class="btn btn-primary toggle-details-btn w-1/2">
@@ -311,22 +352,25 @@
       }
     }
   });
-  document.addEventListener('click', function (e) {
-    if (e.target.matches('.toggle-details-btn')) {
-      const card = e.target.closest('.card-body');
-      const details = card.querySelector('.extra-details');
-      const button = e.target;
 
-      if (details.classList.contains('hidden')) {
-        details.classList.remove('hidden');
-        button.textContent = 'Hide Details';
-      } else {
-        details.classList.add('hidden');
-        button.textContent = 'View Details';
+  if (!window.toggleDetailsListenerAdded) {
+    document.addEventListener('click', function (e) {
+      if (e.target.matches('.toggle-details-btn')) {
+        const card = e.target.closest('.card-body');
+        const details = card.querySelector('.extra-details');
+        const button = e.target;
+
+        if (details.classList.contains('hidden')) {
+          details.classList.remove('hidden');
+          button.textContent = 'Hide Details';
+        } else {
+          details.classList.add('hidden');
+          button.textContent = 'View Details';
+        }
       }
-    }
-  });
-
+    });
+    window.toggleDetailsListenerAdded = true;
+  }
 
 
   function clearMarkers() {
@@ -363,6 +407,7 @@
           <h1 style="
             font-size: 18px;
             margin: 0 0 8px 0;
+            line-height: 1.5;
           ">
             ${title}
           </h1>
@@ -376,17 +421,6 @@
           </p>
         </div>
       `;
-
-
-      marker.addListener('click', () => {
-        infoWindow.close();
-        infoWindow.setContent(content);
-        infoWindow.open({
-          anchor: marker,
-          map,
-          shouldFocus: false,
-        });
-      });
 
       if (curLat == location.lat && curLng == location.lng) {
         infoWindow.close();

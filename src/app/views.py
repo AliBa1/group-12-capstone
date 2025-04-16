@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
-from app.utils import choose_premade_prompts, choose_topics, is_title_valid
+from app.utils import choose_premade_prompts, choose_topics, is_title_valid, get_all_topics
 from .services.travel_service_factory import TravelServiceFactory
 from .services.hotel_service import HotelSearchStrategy
 from .services.flight_service import FlightSearchStrategy
@@ -373,6 +373,8 @@ def chatbot_response(request, prompt):
             return {"response": assistant_message, "data": strategy_response.get("data")}
           else:
             assistant_message = f"{assistant_message} {strategy_response}"
+        else:
+          return {"response": "An error occured when processing yor request. Ask me for something else and I will be happy to help!", "data": {}}
 
       return {"response": assistant_message}
 
@@ -419,16 +421,13 @@ def explore_page(request):
 def update_city_reason(request):
   if request.method == "POST":
     city = request.POST.get("city")
-    reason = request.POST.get("reason")
-
-    if city and reason:
+    if city:
       return render(
         request,
         "partials/search.html",
         {
-          "premade_prompts": choose_topics(reason),
+          "premade_prompts": get_all_topics(),
           "city": city,
-          "reason": reason,
         },
       )
 
@@ -447,7 +446,7 @@ def send_search(request):
 
 
 @login_required
-def search_response(request, city, reason, topic):
+def search_response(request, city, topic):
   if request.method == "POST":
     try:
       prompt = f"I want to learn more about {topic} in {city}"

@@ -41,9 +41,16 @@
               <div class="card-body">
                 <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
                 <p class="text-base mb-6">{{ hotel.description }}</p>
+                <div class="extra-details hidden text-sm">
+                  {% if hotel.details.google_rating %}
+                    <p><span class="font-bold">Rating out of 5 (Google): </span> {{ hotel.details.google_rating }}</p>
+                  {% else %}
+                    <p>No additional details</p>
+                  {% endif %}
+                </div>
                 <div class="flex gap-4 justify-center w-full">
                   <button
-                    class="btn btn-primary w-1/2"
+                    class="btn btn-primary w-1/2 toggle-details-btn"
                     {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
                   >
                     View Details
@@ -177,9 +184,29 @@
                 </div>
               </div>
               {% endif %}
+
+              <div class="extra-details hidden text-sm">
+                {% if house.yearBuilt %}
+                  <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
+                  <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
+                  <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
+                  <p><span class="font-bold">Year Built: </span>{{ house.yearBuilt }}</p>
+                  <br/>
+                  <p><span class="font-bold">Listing Agent Name: </span>{{ house.listingAgent.name }}</p>
+                  <p><span class="font-bold">Listing Agent Email: </span>{{ house.listingAgent.email }}</p>
+                  <p><span class="font-bold">Listing Agent Website: </span>{{ house.listingAgent.website }}</p>
+                  <br/>
+                  <p><span class="font-bold">Listing Office Name: </span>{{ house.listingOffice.name }}</p>
+                  <p><span class="font-bold">Listing Office Email: </span>{{ house.listingOffice.email }}</p>
+                  <p><span class="font-bold">Listing Office Website: </span>{{ house.listingOffice.website }}</p>
+                {% else %}
+                  <p>No additional details</p>
+                {% endif %}
+              </div>
+              
               <div class="flex gap-4 justify-center w-full">
                 <button
-                  class="btn btn-primary w-1/2"
+                  class="btn btn-primary w-1/2 toggle-details-btn"
                   {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
                 >
                   View Details
@@ -442,6 +469,7 @@
               <h1 style="
                 font-size: 18px;
                 margin: 0 0 8px 0;
+                line-height: 1.5;
               ">
                 ${title}
               </h1>
@@ -455,17 +483,6 @@
               </p>
             </div>
           `;
-    
-    
-          marker.addListener('click', () => {
-            infoWindow.close();
-            infoWindow.setContent(content);
-            infoWindow.open({
-              anchor: marker,
-              map,
-              shouldFocus: false,
-            });
-          });
     
           if (curLat == location.lat && curLng == location.lng) {
             infoWindow.close();
@@ -505,6 +522,22 @@
           const mapLocations = JSON.parse(document.getElementById("locations").dataset.locations);
           console.log("Map Locations: ", mapLocations);
           readMarkers(lat, lng, mapLocations, title, description);
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        if (e.target.matches('.toggle-details-btn')) {
+          const card = e.target.closest('.card-body');
+          const details = card.querySelector('.extra-details');
+          const button = e.target;
+    
+          if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            button.textContent = 'Hide Details';
+          } else {
+            details.classList.add('hidden');
+            button.textContent = 'View Details';
+          }
         }
       });
       

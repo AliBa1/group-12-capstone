@@ -11,6 +11,12 @@
   font-style: normal;
 }
 
+@media (prefers-color-scheme: dark) {
+  * {
+    background-color: #262626;
+  }
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -36,21 +42,31 @@ nav a {
   color: black;
 }
 
+nav a:hover {
+  color: #2563eb;
+}
+
+nav a.active {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
 @media (prefers-color-scheme: dark) {
   nav {
     border-bottom: 1px white solid;
   }
+
   nav a {
     color: white;
   }
-}
 
-nav a:hover {
-  color: cornflowerblue;
-}
+  nav a:hover {
+    color: #60a5fa;
+  }
 
-nav a.active {
-  color: blue;
+  nav a.active {
+    color: #3b82f6;
+  }
 }
 
 section {
@@ -85,6 +101,44 @@ menu {
   position: sticky;
   top: 0;
 }
+
+/* ChatGPT styled below */
+menu a {
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111;
+  transition: color 0.2s ease;
+  padding: 5px 10px;
+  border-left: 3px solid transparent;
+}
+
+menu a:hover {
+  color: #2563eb;
+  border-left: 3px solid #2563eb;
+}
+
+menu a.active {
+  color: #1d4ed8;
+  border-left: 3px solid #1d4ed8;
+}
+
+@media (prefers-color-scheme: dark) {
+  menu a {
+    color: #f3f4f6;
+  }
+
+  menu a:hover {
+    color: #60a5fa;
+    border-left: 3px solid #60a5fa;
+  }
+
+  menu a.active {
+    color: #3b82f6;
+    border-left: 3px solid #3b82f6;
+  }
+}
+/* ChatGPT styled above */
 
 main {
   width: 950px;
