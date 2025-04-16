@@ -144,8 +144,8 @@
   }
 
   function afterSendSearch() {
-    const city = "{{ city }}";
-    const topic = document.querySelector("#topic").value;
+    const city = encodeURIComponent("{{ city }}");
+    const topic = encodeURIComponent(document.querySelector("#topic").value);
     const propertyType = document.querySelector("#propertyType").value;
     document.querySelector("#search-btn").disabled = true;
     // let searchUrl = `/search_response/${city}/${topic}/`;

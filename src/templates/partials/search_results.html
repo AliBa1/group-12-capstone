@@ -81,13 +81,10 @@
           class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
         >
 					<p class="text-sm text-gray-500 font-semibold">
-						Departure {{ flight.flight_date }}
+						Departing {{ flight.flight_date }}
 					</p>
           <div class="flex w-full gap-4 justify-between items-center">
             <div>
-              {% comment %} <p class="text-sm text-gray-500 font-semibold">
-                Departure {{ flight.flight_date }}
-              </p> {% endcomment %}
               <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
               <p class="text-gray-500">
                 {{ flight.departure.airport_iata }} {{ flight.departure.city }}
@@ -102,8 +99,23 @@
                 <span class="h-1 w-6 bg-gray-500"></span>
               </div>
               <p class="text-gray-500 text-sm">
-                {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+                {% if flight.stops == 0 %}
+                  Non-stop
+                {% else %}
+                  {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+                {% endif %}
               </p>
+
+              {% if flight.layovers %}
+                <div class="flex gap-2 mt-1 flex-wrap">
+                  {% for l in flight.layovers %}
+                    <div class="tooltip tooltip-bottom"
+                        data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}">
+                      <span class="badge badge-outline px-2 py-1">{{ l.airport_iata }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
 
             <div>

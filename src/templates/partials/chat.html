@@ -10,26 +10,92 @@
 
     <!-- <pre>{{ flights|safe }}</pre> -->
     {% if message.additional_data and message.additional_data.type == 'flight_search' and not message.is_from_user %}
-    <div class="flex flex-col gap-6 text-white">
-      {% for flight in message.additional_data.flights %}
-      <div class="chat chat-start chat-bubble    shadow-xl flex flex-col">
-        <div class="card-body">
-          <h2 class="card-title">{{ flight.iata }}</h2>
-          <p><strong>Airline:</strong>{{ flight.airline.name }}</p>
-          <p><strong>Flight Date:</strong>{{ flight.flight_date }}</p>
-          <p><strong>Departure Airport:</strong>{{ flight.departure.airport_name }}</p>
-          <p><strong>Terminal:</strong>{{ flight.departure.terminal }} | <strong>Gate:</strong> {{ flight.departure.gate
-            }}</p>
-          <p><strong>Time:</strong>{{ flight.departure.time }}</p>
-          <p><strong>Arrival Airport:</strong>{{ flight.arrival.airport_name }}</p>
-          <p><strong>Terminal:</strong>{{ flight.arrival.terminal }} | <strong>Gate:</strong>{{ flight.arrival.gate }}
-          </p>
-          <p><strong>Time:</strong>{{ flight.arrival.time }}</p>
+			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full">
+        {% for flight in message.additional_data.flights %}
+        <pre style="display:none;">{{ flight|json_script:"dbg" }}</pre>
+
+        <div
+          class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
+        >
+					<p class="text-sm text-gray-500 font-semibold">
+						Departing {{ flight.flight_date }}
+					</p>
+          <div class="flex w-full gap-4 justify-between items-center">
+            <div>
+              {% comment %} <p class="text-sm text-gray-500 font-semibold">
+                Departure {{ flight.flight_date }}
+              </p> {% endcomment %}
+              <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
+              <p class="text-gray-500">
+                {{ flight.departure.airport_iata }} {{ flight.departure.city }}
+              </p>
+            </div>
+
+            <div class="flex flex-col items-center">
+              <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
+              <div class="flex items-center">
+                <span class="h-1 w-6 bg-gray-500"></span>
+                <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
+                <span class="h-1 w-6 bg-gray-500"></span>
+              </div>
+              <p class="text-gray-500 text-sm">
+                {% if flight.stops == 0 %}
+                  Non-stop
+                {% else %}
+                  {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+                {% endif %}
+              </p>
+
+              {% if flight.layovers %}
+                <div class="flex gap-2 mt-1 flex-wrap">
+                  {% for l in flight.layovers %}
+                    <div class="tooltip tooltip-bottom"
+                        data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}">
+                      <span class="badge badge-outline px-2 py-1">{{ l.airport_iata }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div>
+              <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
+              <p class="text-gray-500">
+                {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-2 justify-between items-center mt-4">
+            <div class="flex items-center space-x-2">
+							{% comment %} Logo url not in data yet {% endcomment %}
+              {% comment %} <img
+                src="{{ flight.airline.logo_url }}"
+                alt="{{ flight.airline.name }}"
+                class="h-6 w-6"
+              /> {% endcomment %}
+              <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
+            </div>
+            <p class="text-gray-500 text-sm">Economy</p>
+          </div>
+
+          <div class="flex justify-between items-center mt-4">
+            <p class="text-lg font-bold">
+              US${{ flight.flight_price }}
+            </p>
+            <a
+              href="{{ flight.booking_url }}"
+              target="_blank"
+              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              View trip
+            </a>
+          </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% endif %}
+
     {% if message.additional_data and message.additional_data.type == 'house_search' and not message.is_from_user %}
     <div class="flex flex-col gap-6 text-white">
       {% for house in message.additional_data.houses %}
