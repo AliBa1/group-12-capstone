@@ -45,16 +45,17 @@ class Hotel(models.Model):
 class Flight(models.Model):
     flight_iata_num = models.CharField(max_length=10, null=True)
     flight_date = models.DateField(max_length=10, null=True)
-    airline = models.CharField(max_length=25, null=True)
+    airline = models.CharField(max_length=50, null=True)
     airline_code = models.CharField(max_length=3, null=True)
     departure_city = models.CharField(max_length=50, null=True)
-    departure_time = models.DateTimeField(max_length=20, null=True)
+    departure_time = models.TimeField(max_length=20, null=True)
     departure_terminal = models.CharField(max_length=2, null=True)
     departure_gate = models.CharField(max_length=3, null=True)
     arrival_city = models.CharField(max_length=50, null=True)
-    arrival_time = models.DateTimeField(max_length=20, null=True)
+    arrival_time = models.TimeField(max_length=20, null=True)
     arrival_terminal = models.CharField(max_length=2, null=True)
     arrival_gate = models.CharField(max_length=3, null=True)
+    flight_price = models.CharField(max_length=15, null=True)
 
    
 class ListingAgent(models.Model):

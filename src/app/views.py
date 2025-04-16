@@ -428,6 +428,7 @@ def update_city_reason(request):
         {
           "premade_prompts": get_all_topics(),
           "city": city,
+          "cities": cities,
         },
       )
 
@@ -449,7 +450,12 @@ def send_search(request):
 def search_response(request, city, topic):
   if request.method == "POST":
     try:
-      prompt = f"I want to learn more about {topic} in {city}"
+      origin = request.GET.get("origin")
+      flight_date = request.GET.get("flight_date")
+      if topic == "Flights" and origin and flight_date:
+        prompt = f"Find me flights between {origin} and {city} on {flight_date}"
+      else:
+        prompt = f"I want to learn more about {topic} in {city}"
       response = chatbot_response(request, prompt)
       # response = "Test Response"
       additional_data = None

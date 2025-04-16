@@ -3,16 +3,19 @@ from django.conf import settings
 from ..models import Flight
 import openai
 import json
+import re
 import requests
 from django.core.cache import cache
+from datetime import datetime, timedelta
+from copy import deepcopy
 
 
 class FlightSearchStrategy(SearchStrategy):
     KEYWORDS = ['flights', 'airplane', 'fly', 'airport']
-    BASE_URL = "https://api.aviationstack.com/v1"
+    BASE_URL = "https://booking-com18.p.rapidapi.com/flights"
 
     def __init__(self):
-        self.api_key = settings.AVIATIONSTACK_API_KEY
+        self.api_key = settings.FLIGHTS_API_KEY
     
 
     def should_handle(self, prompt):
@@ -25,34 +28,52 @@ class FlightSearchStrategy(SearchStrategy):
 
     def process_query(self, prompt, city=None, reason=None, user=None):
         try:
-            origin_iata, destination_iata = self._query_location_info(prompt)
+            origin_iata, destination_iata, date, stops = self._query_location_info(prompt)
 
-            if not origin_iata or not destination_iata:
-                print("Incomplete flight search parameters.")
+            if not origin_iata:
+                print("Missing origin city.")
                 return None
+            if not destination_iata:
+                print("Missing dest_iata")
+            if not date:
+                print("Missing flight date")
             origin = origin_iata.get('origin_city', '')
             destination = destination_iata.get('destination_city', '')
+            date = date.get('date', '')
+            stops = stops.get('stops', '')
             
-            flights_data = self._search_flights(origin, destination)
+            flights_data = self._search_flights(origin, destination, date, stops)
             if not flights_data:
                 return None
             
-            formatted_data = self._format_flight_response(flights_data)
+            json_payload, flights = self._format_flight_response(flights_data)
             # print("Flight data: ", formatted_data)
-            flights = formatted_data['flights']
             
-
-
             self._store_flights(flights)
+            dt = datetime.strptime(date, "%Y-%m-%d")
+            pretty_date = dt.strftime("%B %d, %Y")
+            if stops == 'nonstop_flights':
+                response_text = f"I found {len(flights)} nonstop flights between {origin} and {destination} departing on {pretty_date}."
+                if len(flights) == 0:
+                    response_text += "By default, I search for nonstop flights. Please specify the number of stops you are willing to take in your query."
 
-            response_text = f"I found {len(flights_data)} flights from {origin} to {destination} departing today."
-
+            else:
+                response_text = f"I found {len(flights)} flights including flights with stops between {origin} and {destination} departing on {pretty_date}."
             return {
                 'text': response_text,
-                'data': formatted_data
+                'data': json_payload
             }
         except Exception as e:
             print(f"Error in process_query: {e}")
+
+    def _clean_json_response(self, response):
+    # Remove leading and trailing whitespace
+        response = response.strip()
+    # Remove code fences if present
+    # Matches either triple backticks or triple single quotes with optional 'json' after opening fence
+        pattern = r"^(?:```json|'''json|```|''')\s*|\s*(?:```|''')$"
+        cleaned = re.sub(pattern, "", response)
+        return cleaned
 
     def _query_location_info(self, query):
         try:
@@ -60,37 +81,43 @@ class FlightSearchStrategy(SearchStrategy):
                 model="gpt-4o-mini",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the origin city and destination city from this query: '{query}'. "
-                               f"If either city name is misspelled, correct it and use the proper nearest airport's IATA code "
-                               f"Return ONLY a SINGLE JSON object in this EXACT format: "
-                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}]"
+                    "content": f"Extract the origin city, destination city, desired flight date, and whether stops are tolerable "
+                               f"from this query: '{query}'. If either city name is misspelled, correct it and use "
+                               f"the proper nearest airport's IATA code. Default to all unless user specifies nonstop flights "
+                               f"Options for stops are 'all' or 'nonstop_flights' Return ONLY a SINGLE JSON object in this EXACT format: "
+                               f"[{{\"origin_city\": \"JFK\"}}, {{\"destination_city\": \"LAX\"}}, {{\"date\": \"YYYY-MM-DD\"}}, {{\"stops\": \"nonstop_flights\"}}]"
                                f"(Replace placeholders with actual values from the query)."
                 }]
             )
-            content = response.choices[0].message.content
-            result = json.loads(content.strip())
+            mess = response.choices[0].message.content
+            mess.strip()
+            print(f"content: {mess}")
+            clean = self._clean_json_response(mess)
+            result = json.loads(clean)
 
-            return result[0], result[1]
+            return result[0], result[1], result[2], result[3]
         except Exception as e:
             print(f"Error in query_location_info: {e}")
-            return {},{}
+            return {},{},{},{}
         
-    def _search_flights(self, origin, dest):
-        cache_key = self.getcache_key('flights', origin)
-        cached_data = cache.get(cache_key)
+    def _search_flights(self, origin, dest, date, stops):
+#        cache_key = self.getcache_key('flights', origin)
+#        cached_data = cache.get(cache_key)
 
-        if cached_data:
-            return cached_data
+#        if cached_data:
+#            return cached_data
         try:
             params = {
-                "access_key": self.api_key,
-                "dep_iata": origin,
-                "arr_iata": dest,
+                # "access_key": self.api_key,
+                "fromId": origin,
+                "toId": dest,
+                "departureDate": date,
+                "cabinClass": "ECONOMY",
+                "numberOfStops": stops,
             }
-            flights_data = self._make_request("flights", params)
-            for flight in flights_data:
-                print(flight)
-            cache.set(cache_key, flights_data, timeout=86400)
+            flights_data = self._make_request("search-oneway", params)
+            print(f"flights found: {len(flights_data['flights'])}")
+#            cache.set(cache_key, flights_data, timeout=86400)
 
             return flights_data
         except Exception as e:
@@ -98,52 +125,104 @@ class FlightSearchStrategy(SearchStrategy):
             return []
 
     
-    def _make_request(self, endpoint, params):
+    def _make_request(self, endpoint, querystring):
         url = f"{self.BASE_URL}/{endpoint}"
         try:
             # querystring = {"access_key": self.api_key, "iataCode": "LAS", "type": "departure"}
-            api_result = requests.get(url, params)
+            headers = {
+                "x-rapidapi-key": self.api_key,
+                "x-rapidapi-host": "booking-com18.p.rapidapi.com"
+            }
+            api_result = requests.get(url, headers=headers, params=querystring)
             api_result.raise_for_status()
             response = api_result.json().get("data", [])
             return response
         except requests.exceptions.RequestException as e:
             print(f"Error making request to {url}: {e}")
             return []
+        
+    def _summarise_bound(self, bound):
+        segments = bound['segments']
+        legs = [s for s in segments if s["__typename"] == "TripSegment"]
+        first, last = legs[0], legs[-1]
+
+        dep = datetime.fromisoformat(first["departuredAt"])
+        arr = datetime.fromisoformat(last["arrivedAt"])
+        total_duration = arr - dep
+
+        layovers = []
+        for i in range(1, len(legs)):
+            prev = legs[i - 1]           # leg we just finished
+            curr = legs[i]               # leg we’re about to start
+
+            start = datetime.fromisoformat(prev["arrivedAt"])
+            end   = datetime.fromisoformat(curr["departuredAt"])
+            gap   = end - start
+            hrs, mins = divmod(gap.seconds // 60, 60)
+
+            layovers.append({
+                "airport_iata": prev["destination"]["code"],    # stop *between* legs
+                "city":         prev["destination"]["cityName"],
+                "duration":     f"{hrs} h {mins} m",
+                "arrive": start.strftime("%I:%M %p"),
+                "depart": end.strftime("%I:%M %p"),
+            })
+        return {
+            "departure": {
+                "airport_iata": first["origin"]["code"],
+                "city": first["origin"]["cityName"],
+                "time": dep.time(),
+            },
+            "arrival": {
+                "airport_iata": last["destination"]["code"],
+                "city": last["destination"]["cityName"],
+                "time": arr.time(),
+            },
+            "stops": len(legs) - 1,
+            "layovers": layovers,
+            "duration": f"{total_duration.total_seconds()//3600:.0f} h " +
+                        f"{(total_duration.total_seconds()%3600)//60:.0f} m",
+        }
     
     def _format_flight_response(self, flights_data):
         try:
+            flights_list = flights_data.get("flights", []) \
+                           if isinstance(flights_data, dict) else flights_data
             formatted_flights = []
-            for flight in flights_data:
-                formatted_flight = {
-                    'flight_date': flight.get('flight_date'),
-                    # 'aircraft_model': flight['aircraft'].get('iata'),
-                    'iata': flight['flight'].get('iata'),
+            for trip in flights_list:
+                bound0 = trip['bounds'][0]
+                summary = self._summarise_bound(bound0)
+                formatted_flights.append({
+                    'flight_date': datetime.fromisoformat(bound0['segments'][0]['departuredAt']).date(),
+                    'iata': bound0['segments'][0]['flightNumber'],
+                    'duration': summary['duration'],
+                    'stops': summary['stops'],
+                    'layovers': summary['layovers'],
                     'airline': {
-                        'name': flight['airline'].get('name'),
-                        'iata_code': flight['airline'].get('iataCode', 'N/A')
+                        'name': bound0['segments'][0]['marketingCarrier']['name'],
+                        'iata_code': bound0['segments'][0]['marketingCarrier']['code'],
                     },
                     'departure': {
-                        'airport_name': flight['departure'].get('airport'),
-                        'airport_iata': flight['departure'].get('iata'),
-                        'terminal': flight['departure'].get('terminal'),
-                        'gate': flight['departure'].get('gate'),
-                        'time': flight['departure'].get('estimated')
+                        **summary['departure'],
                     },
                     'arrival': {
-                        'airport_name': flight['arrival'].get('airport'),
-                        'airport_iata': flight['arrival'].get('iata'),
-                        'terminal': flight['arrival'].get('terminal'),
-                        'gate': flight['arrival'].get('gate'),
-                        'time': flight['arrival'].get('estimated')
-                    }
-                }
-                formatted_flights.append(formatted_flight)
+                        **summary['arrival'],
+                    },
+                    'booking_url': trip["shareableUrl"],
+                    'flight_price': trip['travelerPrices'][0]['price']['price']['value'] / 100,
+                })
+            json_safe = deepcopy(formatted_flights)
+            for curr in json_safe:
+                curr['departure']['time'] = curr['departure']['time'].strftime("%I:%M %p")
+                curr['arrival']['time'] = curr['arrival']['time'].strftime("%I:%M %p")
+                curr['flight_date'] = curr['flight_date'].isoformat()
             return {
-                'flights': formatted_flights,
+                'flights': json_safe,
                 'type': 'flight_search'
-            }
+            }, formatted_flights
         except Exception as e:
             print(f"Error in format_flight_response: {e}")
+            return None, None
 
     def _store_flights(self, flights_data):
         for flight in flights_data:
@@ -151,22 +230,17 @@ class FlightSearchStrategy(SearchStrategy):
                 Flight.objects.update_or_create(
                     flight_iata_num=flight['iata'],
                     flight_date=flight['flight_date'],
+                    flight_price=flight['flight_price'],
                     defaults={
                         'airline': flight['airline'].get('name', 'Unknown Airline'),
                         'airline_code': flight['airline'].get('iata_code'),
-                        'departure_city': flight['departure'].get('airport_name'),
+                        'departure_city': flight['departure'].get('airport_iata'),
                         'departure_time': flight['departure'].get('time'),
-                        'departure_terminal': flight['departure'].get('terminal'),
-                        'departure_gate': flight['departure'].get('gate'),
-                        'arrival_city': flight['arrival'].get('airport_name'),
+                        'arrival_city': flight['arrival'].get('airport_iata'),
                         'arrival_time': flight['arrival'].get('time'),
-                        'arrival_terminal': flight['arrival'].get('terminal'),
-                        'arrival_gate': flight['arrival'].get('gate'),
                     }
                 )
             except Exception as e:
                 print(f"Error creating flight record: {str(e)}")
                 continue
-
-
 
