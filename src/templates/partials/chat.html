@@ -352,22 +352,25 @@
       }
     }
   });
-  document.addEventListener('click', function (e) {
-    if (e.target.matches('.toggle-details-btn')) {
-      const card = e.target.closest('.card-body');
-      const details = card.querySelector('.extra-details');
-      const button = e.target;
 
-      if (details.classList.contains('hidden')) {
-        details.classList.remove('hidden');
-        button.textContent = 'Hide Details';
-      } else {
-        details.classList.add('hidden');
-        button.textContent = 'View Details';
+  if (!window.toggleDetailsListenerAdded) {
+    document.addEventListener('click', function (e) {
+      if (e.target.matches('.toggle-details-btn')) {
+        const card = e.target.closest('.card-body');
+        const details = card.querySelector('.extra-details');
+        const button = e.target;
+
+        if (details.classList.contains('hidden')) {
+          details.classList.remove('hidden');
+          button.textContent = 'Hide Details';
+        } else {
+          details.classList.add('hidden');
+          button.textContent = 'View Details';
+        }
       }
-    }
-  });
-
+    });
+    window.toggleDetailsListenerAdded = true;
+  }
 
 
   function clearMarkers() {
