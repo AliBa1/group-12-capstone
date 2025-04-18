@@ -5,29 +5,47 @@ import json
 from .base import SearchStrategy
 from ..models import Hotel
 import time
-import googlemaps
+from google.maps import places_v1
 from django.core.cache import cache
+import traceback
+import requests
 
 class HotelSearchStrategy(SearchStrategy):
     KEYWORDS = ['hotels', 'place to stay', 'accommodation', 'resort', 'motel', 'hotel']
 
     def __init__(self):
-        self.amadeus = Client(
-            client_id=settings.AMADEUS_API_KEY,
-            client_secret=settings.AMADEUS_API_SECRET
-        )
-        self.gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
+        #self.amadeus = Client(
+        #    client_id=settings.AMADEUS_API_KEY,
+        #    client_secret=settings.AMADEUS_API_SECRET
+        #)
+        self.places = places_v1.PlacesClient()
 
     @staticmethod
     def get_cache_key(prefix, identifier):
         safe_identifier = str(identifier).replace(' ', '_').lower()
         return f'hotel_search_{prefix}_{safe_identifier}'
+    
+    def get_access_token(self):
+        token_url = "https://test.api.amadeus.com/v1/security/oauth2/token"
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": settings.AMADEUS_API_KEY,
+            "client_secret": settings.AMADEUS_API_SECRET
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        response = requests.post(token_url, data=payload, headers=headers)
+        response.raise_for_status()
+        token_data = response.json()
+        return token_data["access_token"], token_data.get("expires_in", 0)
 
     def should_handle(self, prompt):
         return any(keyword in prompt.lower() for keyword in self.KEYWORDS)
 
     def process_query(self, prompt, city=None, reason=None, user=None):
         try:
+            access_token, expires_in = self.get_access_token()
+            print(f"Access token expires in {expires_in / 60} minutes.")
             prompt_location_info = self._query_location_info(prompt)
             
             if prompt_location_info and 'city' in prompt_location_info:
@@ -42,11 +60,13 @@ class HotelSearchStrategy(SearchStrategy):
             if not location_info or 'city' not in location_info:
                 return None
 
-            hotels_data = self._search_hotels(location_info['city'])
+            hotels_data = self._search_hotels(location_info['city'], access_token)
             if not hotels_data:
                 return None
+            
+            hotels_list = hotels_data.get("data", [])
 
-            enhanced_hotels = self.hotel_details(hotels_data)
+            enhanced_hotels = self.hotel_details(hotels_list)
             
             self._store_hotels(enhanced_hotels)
             formatted_data = self._format_hotel_response(enhanced_hotels)
@@ -109,31 +129,45 @@ class HotelSearchStrategy(SearchStrategy):
             return cached_data
 
         try:
-            places_result = self.gmaps.places(
-                query=f"{hotel['name']} hotel",
-                location=(hotel['geoCode']['latitude'], hotel['geoCode']['longitude'])
+            # Just to initialize request arguments
+            request = places_v1.SearchTextRequest(
+                text_query=hotel['name'],
             )
+            field_mask = "places.displayName,places.name,places.formattedAddress,places.location,places.photos,places.rating,places.priceRange,places.priceLevel"
+            metadata = (("x-goog-fieldmask", field_mask),)
+            places_result = self.places.search_text(request=request, metadata=metadata)
+            # print(f"Places Result: {places_result}")
 
-            if places_result['status'] != 'OK' or not places_result['results']:
+            if not places_result.places:
                 return hotel
+            place = places_result.places[0]
+            hotel['google_place_id'] = place.name
+            hotel['google_address'] = place.formatted_address
+            hotel['name'] = place.display_name
+            hotel['location'] = place.location
+            if place.photos:
+                photo_references = [photo.name for photo in place.photos]
+                hotel['photo_references'] = photo_references
+            else:
+                hotel['photo_references'] = []
 
-            place = places_result['results'][0]
-            hotel['google_place_id'] = place.get('place_id')
-            hotel['google_address'] = place.get('formatted_address')
 
-            details_result = self.gmaps.place(
-                place_id=hotel['google_place_id'],
-                fields=['photo', 'rating']
-            )
+            # details_result = self.gmaps.place(
+            #     place_id=hotel['google_place_id'],
+            #     fields=['photo', 'rating']
+            # )
 
-            if 'result' in details_result:
-                if 'photos' in details_result['result']:
-                    photos = details_result['result']['photos'][:3]
-                    photo_references = [photo['photo_reference'] for photo in photos]
-                    hotel['photo_references'] = photo_references
+            # if 'result' in details_result:
+            #     if 'photos' in details_result['result']:
+            #         photos = details_result['result']['photos'][:3]
+            #         photo_references = [photo['photo_reference'] for photo in photos]
+            #         hotel['photo_references'] = photo_references
 
-                if 'rating' in details_result['result']:
-                    hotel['google_rating'] = details_result['result']['rating']
+            #     if 'rating' in details_result['result']:
+            #         hotel['google_rating'] = details_result['result']['rating']
+            
+            # else: 
+            #     print("No photo found")
 
             cache.set(cache_key, hotel, timeout=86400)  # 24 hrs
             
@@ -148,29 +182,40 @@ class HotelSearchStrategy(SearchStrategy):
         
     def hotel_details(self, hotels_data):
         enhanced_hotels = []
-        for hotel in hotels_data:
+        for hotel in hotels_data[:5]:
             enhanced_hotel = self._get_place_details(hotel)
             enhanced_hotels.append(enhanced_hotel)
         return enhanced_hotels
 
-    def _search_hotels(self, city_code, limit=5):
-        cache_key = self.get_cache_key('hotels', city_code)
-        cached_data = cache.get(cache_key)
+    def _search_hotels(self, city_code, access_token, limit=5):
+        # cache_key = self.get_cache_key('hotels', city_code)
+        # cached_data = cache.get(cache_key)
         
-        if cached_data:
-            return cached_data
+        # if cached_data:
+        #     return cached_data
 
         try:
-            hotel_response = self.amadeus.reference_data.locations.hotels.by_city.get(
-                cityCode=city_code
-            )
-            result = hotel_response.data[:limit]
+            endpoint = "https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-city"
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+            params = {
+                "cityCode": city_code
+            }
+            hotel_response = requests.get(endpoint, headers=headers, params=params)
+            hotel_response.raise_for_status()
+            result = hotel_response.json()
+            #print("Hotel response type: ", type(result))
+            #print("Hotel response content: ", result)
+
             
-            cache.set(cache_key, result, timeout=86400)
+            #cache.set(cache_key, result, timeout=86400)
             
             return result
         except Exception as e:
-            print(f"Error in search_hotels: {e}")
+            print(f"Error in _search_hotels: {e}")
+            traceback.print_exc()
             return []
 
     def _store_hotels(self, hotels_data):
