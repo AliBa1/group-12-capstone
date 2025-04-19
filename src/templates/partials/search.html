@@ -1,97 +1,99 @@
-<form
-  id="send-search"
-  class="flex flex-col w-full items-center gap-4"
-  method="POST"
-  hx-post="{% url 'send_search' %}"
-  hx-target="#search-results"
-  hx-swap="innerHTML"
->
-  {% csrf_token %}
-  <div class="form-control w-full">
-    <label class="label label-text text-lg" for="topic">Pick a Topic? 👀</label>
-
-    <div id="topicOptions" class="flex flex-wrap gap-4">
-      {% for prompt in premade_prompts %}
-      <button type="button" data-value="{{ prompt }}" class="btn btn-outline">
-        {{ prompt }}
-      </button>
-      {% endfor %}
-    </div>
-  </div>
-  <input type="hidden" id="topic" name="topic" required />
-
-  <div id="property-type-container" class="hidden form-control w-full">
-    <label class="label label-text text-lg" for="propertyType"
-      >Property Type? 🏠</label
-    >
-
-    <div id="propertyOptions" class="flex flex-wrap gap-4">
-      <button type="button" data-value="any" class="btn btn-outline">
-        Any
-      </button>
-      <button
-        type="button"
-        data-value="Single%20Family"
-        class="btn btn-outline"
-      >
-        Single Family
-      </button>
-      <button type="button" data-value="Townhouse" class="btn btn-outline">
-        Townhouse
-      </button>
-      <button type="button" data-value="Manufactured" class="btn btn-outline">
-        Manufactured
-      </button>
-      <button type="button" data-value="Multi-Family" class="btn btn-outline">
-        Multi-Family
-      </button>
-      <button type="button" data-value="Apartment" class="btn btn-outline">
-        Apartment
-      </button>
-      <button type="button" data-value="Land" class="btn btn-outline">
-        Land
-      </button>
-    </div>
-  </div>
-  <input type="hidden" id="propertyType" name="propertyType" required />
-
-  <!-- Origin Selection (Hidden by Default)-->
-  <div id="origin-container" class="w-full" style="display: none">
-    <label class="form-control w-full">
-      <label class="label label-text text-lg">Origin</label>
-      <select id="origin" name="origin" class="select select-primary">
-        <option value="" disabled selected>Select One</option>
-        {% for location in cities %}
-        <option value="{{ location }}">{{ location }}</option>
-        {% endfor %}
-      </select>
-    </label>
-  </div>
-
-  <!-- Flight Date Selection (Hidden by Default)-->
-  <div id="flight-date-container" class="w-full" style="display: none">
-    <label class="form-control w-full">
-      <label class="label label-text text-lg" for="flight-date"
-        >Flight Date</label
-      >
-      <input
-        type="date"
-        id="flight-date"
-        name="flight-date"
-        class="input input-primary"
-      />
-    </label>
-  </div>
-
-  <button
-    type="submit"
-    id="search-btn"
-    class="btn btn-secondary w-1/2"
-    disabled
+<div class="w-full lg:w-1/2 mx-auto px-4 py-6">
+  <form
+    id="send-search"
+    class="flex flex-col w-full gap-4"
+    method="POST"
+    hx-post="{% url 'send_search' %}"
+    hx-target="#search-results"
+    hx-swap="innerHTML"
   >
-    Search
-  </button>
-</form>
+    {% csrf_token %}
+    <div class="form-control w-full">
+      <label class="label label-text text-lg" for="topic">Pick a Topic? 👀</label>
+
+      <div id="topicOptions" class="flex flex-wrap gap-4">
+        {% for prompt in premade_prompts %}
+        <button type="button" data-value="{{ prompt }}" class="btn btn-outline">
+          {{ prompt }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+    <input type="hidden" id="topic" name="topic" required />
+
+    <div id="property-type-container" class="hidden form-control w-full">
+      <label class="label label-text text-lg" for="propertyType"
+        >Property Type? 🏠</label
+      >
+
+      <div id="propertyOptions" class="flex flex-wrap gap-4">
+        <button type="button" data-value="any" class="btn btn-outline">
+          Any
+        </button>
+        <button
+          type="button"
+          data-value="Single%20Family"
+          class="btn btn-outline"
+        >
+          Single Family
+        </button>
+        <button type="button" data-value="Townhouse" class="btn btn-outline">
+          Townhouse
+        </button>
+        <button type="button" data-value="Manufactured" class="btn btn-outline">
+          Manufactured
+        </button>
+        <button type="button" data-value="Multi-Family" class="btn btn-outline">
+          Multi-Family
+        </button>
+        <button type="button" data-value="Apartment" class="btn btn-outline">
+          Apartment
+        </button>
+        <button type="button" data-value="Land" class="btn btn-outline">
+          Land
+        </button>
+      </div>
+    </div>
+    <input type="hidden" id="propertyType" name="propertyType" required />
+
+    <!-- Origin Selection (Hidden by Default)-->
+    <div id="origin-container" class="w-full" style="display: none">
+      <label class="form-control w-full">
+        <label class="label label-text text-lg">Origin</label>
+        <select id="origin" name="origin" class="select select-primary">
+          <option value="" disabled selected>Select One</option>
+          {% for location in cities %}
+          <option value="{{ location }}">{{ location }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <!-- Flight Date Selection (Hidden by Default)-->
+    <div id="flight-date-container" class="w-full" style="display: none">
+      <label class="form-control w-full">
+        <label class="label label-text text-lg" for="flight-date"
+          >Flight Date</label
+        >
+        <input
+          type="date"
+          id="flight-date"
+          name="flight-date"
+          class="input input-primary"
+        />
+      </label>
+    </div>
+
+    <button
+      type="submit"
+      id="search-btn"
+      class="btn btn-secondary w-1/2 mx-auto"
+      disabled
+    >
+      Search
+    </button>
+  </form>
+</div>
 
 <div id="search-results" class="flex flex-col w-full min-h-full mt-4"></div>
 
@@ -249,3 +251,4 @@
 
   validateSearchButton();
 </script>
+

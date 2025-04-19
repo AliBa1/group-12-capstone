@@ -3,14 +3,8 @@
 
 <section>
   {% comment %} For hotels, map shows up below results when using this vvvvv {% endcomment %}
-  {% comment %} <div
-    class="w-full lg:w-1/2 mx-auto flex flex-col px-4"
-    style="height: calc(100vh - 128px)"
-  > {% endcomment %}
-  <div
-    class="w-full lg:w-1/2 mx-auto flex flex-col px-4 min-h-screen"
-  >
-    <form class="flex gap-8 my-4" method="POST">
+  <div class="w-full mx-auto px-4 py-6">
+    <form class="w-full lg:w-1/2 mx-auto gap-8 my-4" method="POST">
       {% csrf_token %}
       <label class="form-control w-full">
         {% comment %} <label class="label label-text text-lg" for="city">Destination</label> {% endcomment %}
@@ -42,4 +36,9 @@
     </div>
   </div>
 </section>
+
+<div 
+  id="search-results" 
+  class="flex flex-col w-full mt-4 px-4"
+></div>
 {%endblock%}

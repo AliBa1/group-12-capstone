@@ -250,7 +250,7 @@ class HotelSearchStrategy(SearchStrategy):
                 photo_references = [None, None, None]  
                 
             formatted_hotel = {
-                'title': hotel['name'],
+                'title': hotel['name'].text,
                 'description': hotel.get('google_address', f"Located in {hotel['iataCode']}, {hotel['address']['countryCode']}"),
                 'location': f"{hotel['iataCode']}, {hotel['address']['countryCode']}",
                 'images': [ref for ref in photo_references if ref], 
