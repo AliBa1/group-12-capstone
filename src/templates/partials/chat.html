@@ -257,61 +257,82 @@
     </div>
     {% endif %}
 
-    {% if message.additional_data and message.additional_data.type == 'hotel_search' and not message.is_from_user %}
-    <div class="flex flex-col gap-6 text-white">
+    {% if message.additional_data and message.additional_data.type == 'hotel_search' %}
+    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-full">
       {% for hotel in message.additional_data.hotels %}
-      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
-        <figure class="w-full">
-          <div class="carousel w-full h-full">
-            {% for image in hotel.images %}
-            <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" 
-                 class="carousel-item relative w-full h-full">
-              <img src="{% url 'proxy_hotel_photo' photo_reference=image %}" 
-                   alt="{{ hotel.title }}"
-                   onerror="this.src='/static/images/genhotel.jpg'"
-                   class="w-full h-full object-cover" />
+        <div class="card w-full bg-base-100 shadow-xl border border-primary">
+          <figure class="w-full">
+            {% if hotel.images %}
               {% if hotel.images|length > 1 %}
-              <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:"-1" }}{% endif %}" class="btn btn-circle">❮</a>
-                <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:"1" }}{% endif %}" class="btn btn-circle">❯</a>
-              </div>
+                <div class="carousel w-full h-48 overflow-hidden">
+                  {% for image in hotel.images %}
+                    <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                         class="carousel-item relative w-full h-full">
+                      <img
+                        class="w-full h-full object-cover object-center"
+                        src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+                        alt="{{ hotel.title }}"
+                        onerror="this.src='/static/images/genhotel.jpg'"/>
+
+                      <div
+                        class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+                        <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
+                           class="btn btn-circle">❮</a>
+                        <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
+                           class="btn btn-circle">❯</a>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <img
+                  class="w-full h-48 object-cover object-center"
+                  src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0|urlencode %}"
+                  alt="{{ hotel.title }}"
+                  onerror="this.src='/static/images/genhotel.jpg'"/>
+              {% endif %}
+            {% else %}
+              <img
+                class="w-full h-48 object-cover object-center"
+                src="/static/images/genhotel.jpg"
+                alt="{{ hotel.title }}"/>
+            {% endif %}
+          </figure>
+
+          <div class="card-body">
+            <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+            <p class="text-base mb-6">{{ hotel.description }}</p>
+
+            <div class="extra-details hidden text-sm">
+              {% if hotel.details.google_rating %}
+                <p>
+                  <span class="font-bold">Rating out of 5 (Google): </span>
+                  {{ hotel.details.google_rating }}
+                </p>
+              {% else %}
+                <p>No additional details</p>
               {% endif %}
             </div>
-            {% endfor %}
-          </div>
-        </figure>
-        <div class="card-body w-full p-4">
-          <h2 class="card-title text-lg">{{ hotel.title }}</h2>
-          <p class="text-sm">{{ hotel.description }}</p>
-          {% if hotel.google_rating %}<p class="text-sm">Rating: {{ hotel.google_rating }}</p>{% endif %}
-    
-          <div class="extra-details hidden text-sm">
-            {% if hotel.details.google_rating %}
-              <p><span class="font-bold">Rating out of 5 (Google): </span> {{ hotel.details.google_rating }}</p>
-            {% else %}
-              <p>No additional details</p>
-            {% endif %}
-          </div>
-          <div class="flex gap-4 justify-center w-full">
-            <button class="btn btn-primary toggle-details-btn w-1/2">
-              View Details
-            </button>
 
-            <button 
-              class="btn btn-primary toggle-map-btn w-1/2"
-              data-title='{{ hotel.title }}'
-              data-description='{{ hotel.description }}'
-              data-lat='{{ hotel.details.location.lat }}'
-              data-lng='{{ hotel.details.location.lng }}'
-            >
-              View on Map
-            </button>
+            <div class="flex gap-4 justify-center w-full mt-auto">
+              <button class="btn btn-primary w-1/2 toggle-details-btn">
+                View Details
+              </button>
+
+              <button
+                class="btn btn-primary toggle-map-btn w-1/2"
+                data-title="{{ hotel.title }}"
+                data-description="{{ hotel.description }}"
+                data-lat="{{ hotel.details.location.lat }}"
+                data-lng="{{ hotel.details.location.lng }}">
+                View on Map
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       {% endfor %}
     </div>
-    {% endif %}
+  {% endif %}
   </div>
   {% endfor %}
 

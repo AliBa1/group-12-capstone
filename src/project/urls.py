@@ -67,7 +67,7 @@ urlpatterns = [
   path("accounts/", include("allauth.socialaccount.urls")),
   path("api/chatbot/", chatbot_response, name="chatbot_response"),
   path('heat_index/', predict_heat_index, name='predict_heat_index'),
-  path("hotel-photo/<str:photo_reference>/", proxy_hotel_photo, name="proxy_hotel_photo"),
+  path("hotel-photo/<path:photo_reference>/", proxy_hotel_photo, name="proxy_hotel_photo"),
   path("explore/", explore_page, name="explore"),
   path("update_city_reason/", update_city_reason, name="update_city_reason"),
   # path("send_search/<str:city>/<str:reason>", send_search, name="send_search"),

@@ -255,16 +255,41 @@ def send_response(request, conversation_id, prompt):
         apartments = []
         if "data" in response:
           try:
-            if isinstance(response["data"], str):
-              parts = response["data"].split(",", 1)
-              if len(parts) > 1:
-                raw_json = parts[1].strip()
-                raw_json = raw_json.replace("'", '"')
-                data = json.loads(raw_json)
-              else:
-                raise ValueError("No dictionary part found in the data string")
-            else:
-              data = response["data"]
+            raw = response['data']
+            def normalize(o):
+              # 1) If it’s a dict or list, recurse
+              if isinstance(o, dict):
+                  return {k: normalize(v) for k, v in o.items()}
+              if isinstance(o, (list, tuple)):
+                  return [normalize(v) for v in o]
+
+              # 2) If it has to_dict(), use that
+              if hasattr(o, "to_dict") and callable(o.to_dict):
+                  return normalize(o.to_dict())
+
+              # 3) If it looks like LocalizedText (has .text.value), unwrap
+              text_attr = getattr(o, "text", None)
+              if text_attr and hasattr(text_attr, "value"):
+                  return text_attr.value
+
+              # 4) Primitives pass through
+              if isinstance(o, (str, int, float, bool)) or o is None:
+                  return o
+
+              # 5) Fallback: convert to string
+              return str(o)
+
+            data = normalize(raw)
+            # if isinstance(response["data"], str):
+            #   parts = response["data"].split(",", 1)
+            #   if len(parts) > 1:
+            #     raw_json = parts[1].strip()
+            #     raw_json = raw_json.replace("'", '"')
+            #     data = json.loads(raw_json)
+            #   else:
+            #     raise ValueError("No dictionary part found in the data string")
+            # else:
+            #   data = response["data"]
 
             message.additional_data = data
             message.save()
@@ -390,11 +415,10 @@ def proxy_hotel_photo(request, photo_reference):
     return HttpResponseNotFound("No photo reference provided")
 
   try:
-    gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
-    base_url = "https://maps.googleapis.com/maps/api/place/photo"
-    params = {"maxwidth": 400, "photoreference": photo_reference, "key": settings.GOOGLE_PLACES_API_KEY}
+    # gmaps = googlemaps.Client(key=settings.GOOGLE_PLACES_API_KEY)
+    base_url = f"https://places.googleapis.com/v1/{photo_reference}/media"
 
-    response = requests.get(base_url, params=params, stream=True)
+    response = requests.get(base_url, params={"maxWidthPx": 800, "maxHeightPx": 600, "key": settings.GOOGLE_PLACES_API_KEY}, timeout=10)
 
     if response.status_code == 200:
       return HttpResponse(response.content, content_type=response.headers.get("Content-Type", "image/jpeg"))
