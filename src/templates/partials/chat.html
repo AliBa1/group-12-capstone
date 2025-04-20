@@ -264,7 +264,8 @@
           <figure class="w-full">
             {% if hotel.images %}
               {% if hotel.images|length > 1 %}
-                <div class="carousel w-full h-48 overflow-hidden">
+                {% comment %} <div class="carousel w-full h-48 overflow-hidden"> {% endcomment %}
+                <div class="carousel overflow-hidden aspect-[16/9]">
                   {% for image in hotel.images %}
                     <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
                          class="carousel-item relative w-full h-full">

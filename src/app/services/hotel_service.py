@@ -18,7 +18,9 @@ class HotelSearchStrategy(SearchStrategy):
         #    client_id=settings.AMADEUS_API_KEY,
         #    client_secret=settings.AMADEUS_API_SECRET
         #)
-        self.places = places_v1.PlacesClient()
+        self.places = places_v1.PlacesClient(
+            client_options = {"api_key": settings.GOOGLE_PLACES_API_KEY}
+        )
 
     @staticmethod
     def get_cache_key(prefix, identifier):
