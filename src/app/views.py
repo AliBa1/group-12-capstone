@@ -399,7 +399,7 @@ def chatbot_response(request, prompt):
           else:
             assistant_message = f"{assistant_message} {strategy_response}"
         else:
-          return {"response": "An error occured when processing yor request. Ask me for something else and I will be happy to help!", "data": {}}
+          return {"response": "An error occured when processing your request. Ask me for something else and I will be happy to help!", "data": {}}
 
       return {"response": assistant_message}
 
@@ -545,7 +545,7 @@ def search_response(request, city, topic):
           },
         )
     except Exception as e:
-      print("Error:", e)
+      print("En rror:", e)
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
 
 
@@ -566,6 +566,27 @@ def load_model_and_data():
   except Exception as e:
     print(f"Error loading model files: {str(e)}")
     raise
+
+def last_heat_index(request):
+  try:
+    location = request.GET.get("location", "Houston, TX")
+    dataset = pd.read_csv(os.path.join(settings.ML_MODELS_DIR, "processed_metro_heat_index.csv"))
+    # Get the data for the given location
+    location_data = dataset[dataset["RegionName"] == location]
+
+    # Get the last heat index
+    location_last_heat_index = location_data.iloc[:, -1].values[0]
+
+    if pd.isna(location_last_heat_index):
+      return JsonResponse({"error": "No heat index data available for this location"}, status=404)
+    
+    return JsonResponse({"location": location, "last_heat_index": float(location_last_heat_index)})
+
+  except Exception as e:
+    print(f"Error fetching last heat index: {str(e)}")
+    return JsonResponse({"error": "Failed to fetch last heat index", "details": str(e)}, status=500)
+
+
 
 
 def predict_heat_index(request):
