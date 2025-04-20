@@ -154,11 +154,10 @@
             </div>
           </div>
           <div class="extra-details hidden text-sm">
-            {% if house.yearBuilt %}
+            {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
               <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
               <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
               <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
-              <p><span class="font-bold">Year Built: </span>{{ house.yearBuilt }}</p>
               <br/>
               <p><span class="font-bold">Listing Agent Name: </span>{{ house.listingAgent.name }}</p>
               <p><span class="font-bold">Listing Agent Email: </span>{{ house.listingAgent.email }}</p>
@@ -258,9 +257,8 @@
     {% endif %}
 
     {% if message.additional_data and message.additional_data.type == 'hotel_search' %}
-      <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full">
-        {% for hotel in message.additional_data.hotels %}
-
+    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-full">
+      {% for hotel in message.additional_data.hotels %}
           <input
             type="checkbox"
             id="hotel-modal-{{ forloop.counter }}"
