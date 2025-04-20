@@ -339,6 +339,16 @@
     }
 
   })
+  document.body.addEventListener('change', e => {
+    if (e.target.matches('input[id^="hotel-modal-"]')) {
+      const mapCont = document.getElementById('map-container');
+      if (e.target.checked) {
+        mapCont.classList.add('hidden');
+      } else {
+        mapCont.classList.remove('hidden');
+      }
+    }
+  });
 </script>
 
 <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
