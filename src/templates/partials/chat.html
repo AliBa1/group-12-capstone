@@ -598,7 +598,7 @@
         
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: Number(lat), lng: Number(lng) },
-          zoom: 19
+          zoom: 15
         });
         const mapLocations = JSON.parse('{{ locations|safe }}');
         console.log("Map Locations: ", mapLocations);

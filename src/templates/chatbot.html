@@ -293,7 +293,7 @@
 
     map = new google.maps.Map(document.getElementById("map"), {
       center: { lat: -33.8688, lng: 151.2093 },
-      zoom: 3
+      zoom: 6
     });
 
 
@@ -346,6 +346,7 @@
         mapCont.classList.add('hidden');
       } else {
         mapCont.classList.remove('hidden');
+        google.maps.event.trigger(map, 'resize');
       }
     }
   });
