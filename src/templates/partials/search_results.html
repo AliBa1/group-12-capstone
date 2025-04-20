@@ -233,7 +233,7 @@
               {% endif %}
 
               <div class="extra-details hidden text-sm">
-                {% if house.yearBuilt %}
+                {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
                   <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
                   <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
                   <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
