@@ -253,4 +253,4 @@ AUTHENTICATION_BACKENDS = [
   "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-ML_MODELS_DIR = os.path.join(BASE_DIR, 'ml_models')
+ML_MODELS_DIR = os.path.join(BASE_DIR, 'app', 'ml_models')
