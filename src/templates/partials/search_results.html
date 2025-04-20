@@ -1,18 +1,21 @@
 {% load humanize %}
 <link rel="stylesheet" href="/static/stylesheets/map.css" />
 
-{% block content %} {% if error %}
-<h3 class="text-center text-error text-lg">{{ error }}</h3>
-{% endif %} {% if loading %}
-<div class="flex flex-col items-center">
-  <h3 class="text-center my-4 text-xl">Getting you answers</h3>
-  <span class="loading loading-spinner loading-lg"></span>
-</div>
-{% else %} {% if text %}
-<h3 class="text-center my-4 text-xl">{{ text }}</h3>
-{% endif %}
+{% block content %} 
+  {% if error %}
+    <h3 class="text-center text-error text-lg">{{ error }}</h3>
+  {% endif %} 
+  
+  {% if loading %}
+    <div class="flex flex-col items-center">
+      <h3 class="text-center my-4 text-xl">Getting you answers</h3>
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+  {% else %} 
+    {% if text %}
+      <h3 class="text-center my-4 text-xl">{{ text }}</h3>
+    {% endif %}
 
-<div class="w-full px-4 pb-8">
   {% if additional_data %}
     <div class="flex w-full items-center my-2">
       <button id="toggleMap" class="btn btn-info mx-auto w-full md:w-1/2">
@@ -23,297 +26,323 @@
 
   <div class="flex flex-col md:flex-row gap-6 w-full"
        style="height: calc(100vh - 16rem)">
-       {% if additional_data and additional_data.type == 'hotel_search' %}
-       <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
-         {% for hotel in additional_data.hotels %}
-           <input
-             type="checkbox"
-             id="hotel-modal-{{ forloop.counter }}"
-             class="modal-toggle"
-           />
-     
-           <div class="modal modal-middle p-0">
-             <div
-               class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black"
-             >
-               <label
-                 for="hotel-modal-{{ forloop.counter }}"
-                 class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
-               >✕</label>
-     
-               <div class="carousel w-full h-full">
-                 {% for image in hotel.images %}
-                   <div
-                     id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
-                     class="carousel-item relative w-full h-full"
-                   >
-                     <div class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1">
-                      {{ forloop.counter }} of {{ hotel.images|length }}
-                     </div>
-                     <img
-                       class="w-full h-full object-cover object-center"
-                       src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                       onerror="this.src='/static/images/genhotel.jpg'"
-                     />
-                     {% if hotel.images|length > 1 %}
-                       <div
-                         class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-                       >
-                         <a
-                           href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
-                           class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                         >❮</a>
-                         <a
-                           href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
-                           class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                         >❯</a>
-                       </div>
-                     {% endif %}
-                   </div>
-                 {% endfor %}
-               </div>
-             </div>
-           </div>
-     
-           <div class="card w-full bg-base-100 shadow-xl border border-primary">
-             <figure class="w-full">
-               {% if hotel.images %}
-                 {% if hotel.images|length > 1 %}
-                   <label
-                     for="hotel-modal-{{ forloop.counter }}"
-                     class="carousel w-full h-48 overflow-hidden cursor-pointer"
-                   >
-                     {% for image in hotel.images %}
-                       <div
-                         id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-                         class="carousel-item relative w-full h-full"
-                       >
-                         <div 
-                           class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
-                         >
-                           {{ forloop.counter }} of {{ hotel.images|length }}
-                         </div>
-                         <img
-                           class="w-full h-full object-cover object-center"
-                           src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                           alt="{{ hotel.title }}"
-                           onerror="this.src='/static/images/genhotel.jpg'"
-                         />
-                         {% if hotel.images|length > 1 %}
-                           <div
-                             class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-                           >
-                             <a
-                               href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
-                               class="btn btn-circle"
-                             >❮</a>
-                             <a
-                               href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
-                               class="btn btn-circle"
-                             >❯</a>
-                           </div>
-                         {% endif %}
-                       </div>
-                     {% endfor %}
-                   </label>
-                 {% else %}
-                   <label
-                     for="hotel-modal-{{ forloop.counter }}"
-                     class="block cursor-pointer"
-                   >
-                     <img
-                       class="w-full h-48 object-cover object-center"
-                       src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0|urlencode %}"
-                       alt="{{ hotel.title }}"
-                       onerror="this.src='/static/images/genhotel.jpg'"
-                     />
-                   </label>
-                 {% endif %}
-               {% endif %}
-             </figure>
-     
-             <div class="card-body">
-               <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
-               <p class="text-base mb-6">{{ hotel.description }}</p>
-     
-               <div class="extra-details hidden text-sm">
-                 {% if hotel.details.google_rating %}
-                   <p>
-                     <span class="font-bold">Rating out of 5 (Google): </span>
-                     {{ hotel.details.google_rating }}
-                   </p>
-                 {% else %}
-                   <p>No additional details</p>
-                 {% endif %}
-               </div>
-     
-               <div class="flex gap-4 justify-center w-full mt-auto">
-                 <button class="btn btn-primary w-1/2 toggle-details-btn">
-                   View Details
-                 </button>
-                 <button
-                   class="btn btn-primary w-1/2 toggle-map-btn"
-                   data-title="{{ hotel.title }}"
-                   data-description="{{ hotel.description }}"
-                   data-lat="{{ hotel.details.location.lat }}"
-                   data-lng="{{ hotel.details.location.lng }}"
-                 >
-                   View on Map
-                 </button>
-               </div>
-             </div>
-           </div>
-         {% endfor %}
-       </div>
-     {% endif %}
-     
 
-    <div id="mapSection" class="w-full md:w-1/2 h-full">
-      <div id="map" class="w-full h-full rounded-lg"></div>
-    </div>
-  </div>
-</div> 
-
-
-
-      <!-- prettier-ignore -->
-      {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
-			<div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full">
-        {% for flight in additional_data.flights %}
-        <div
-          class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
-        >
-					<p class="text-sm text-gray-500 font-semibold">
-						Departing {{ flight.flight_date }}
-					</p>
-          <div class="flex w-full gap-4 justify-between items-center">
-            <div>
-              <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
-              <p class="text-gray-500">
-                {{ flight.departure.airport_iata }} {{ flight.departure.city }}
-              </p>
-            </div>
-
-            <div class="flex flex-col items-center">
-              <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
-              <div class="flex items-center">
-                <span class="h-1 w-6 bg-gray-500"></span>
-                <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
-                <span class="h-1 w-6 bg-gray-500"></span>
-              </div>
-              <p class="text-gray-500 text-sm">
-                {% if flight.stops == 0 %}
-                  Non-stop
-                {% else %}
-                  {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
-                {% endif %}
-              </p>
-
-              {% if flight.layovers %}
-                <div class="flex gap-2 mt-1 flex-wrap">
-                  {% for l in flight.layovers %}
-                    <div class="tooltip tooltip-bottom"
-                        data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}">
-                      <span class="badge badge-outline px-2 py-1">{{ l.airport_iata }}</span>
-                    </div>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </div>
-
-            <div>
-              <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
-              <p class="text-gray-500">
-                {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
-              </p>
-            </div>
-          </div>
-
-          <div class="flex gap-2 justify-between items-center mt-4">
-            <div class="flex items-center space-x-2">
-							{% comment %} Logo url not in data yet {% endcomment %}
-              {% comment %} <img
-                src="{{ flight.airline.logo_url }}"
-                alt="{{ flight.airline.name }}"
-                class="h-6 w-6"
-              /> {% endcomment %}
-              <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
-            </div>
-            <p class="text-gray-500 text-sm">Economy</p>
-          </div>
-
-          <div class="flex justify-between items-center mt-4">
-            <p class="text-lg font-bold">
-              US${{ flight.flight_price }}
-            </p>
-            <a
-              href="{{ flight.booking_url }}"
-              target="_blank"
-              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+    <div id="cardsColumn" class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2"> 
+      {% if additional_data and additional_data.type == 'hotel_search' %}
+        {% for hotel in additional_data.hotels %}
+          <input
+            type="checkbox"
+            id="hotel-modal-{{ forloop.counter }}"
+            class="modal-toggle"
+          />
+    
+          <div class="modal modal-middle p-0">
+            <div
+              class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black"
             >
-              View trip
-            </a>
+              <label
+                for="hotel-modal-{{ forloop.counter }}"
+                class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
+              >✕</label>
+    
+              <div class="carousel w-full h-full">
+                {% for image in hotel.images %}
+                  <div
+                    id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+                    class="carousel-item relative w-full h-full"
+                  >
+                    <div class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1">
+                      {{ forloop.counter }} of {{ hotel.images|length }}
+                    </div>
+                    <img
+                      class="w-full h-full object-cover object-center"
+                      src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                    />
+                    {% if hotel.images|length > 1 %}
+                      <div
+                        class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+                      >
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                          class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                        >❮</a>
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                          class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                        >❯</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
           </div>
-        </div>
+    
+          <div class="card w-full bg-base-100 shadow-xl border border-primary">
+            <figure class="w-full">
+              {% if hotel.images %}
+                {% if hotel.images|length > 1 %}
+                  <label
+                    for="hotel-modal-{{ forloop.counter }}"
+                    class="carousel w-full h-48 overflow-hidden cursor-pointer"
+                  >
+                    {% for image in hotel.images %}
+                      <div
+                        id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                        class="carousel-item relative w-full h-full"
+                      >
+                        <div 
+                          class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
+                        >
+                          {{ forloop.counter }} of {{ hotel.images|length }}
+                        </div>
+                        <img
+                          class="w-full h-full object-cover object-center"
+                          src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+                          alt="{{ hotel.title }}"
+                          onerror="this.src='/static/images/genhotel.jpg'"
+                        />
+                        {% if hotel.images|length > 1 %}
+                          <div
+                            class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+                          >
+                            <a
+                              href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
+                              class="btn btn-circle"
+                            >❮</a>
+                            <a
+                              href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
+                              class="btn btn-circle"
+                            >❯</a>
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </label>
+                {% else %}
+                  <label
+                    for="hotel-modal-{{ forloop.counter }}"
+                    class="block cursor-pointer"
+                  >
+                    <img
+                      class="w-full h-48 object-cover object-center"
+                      src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0|urlencode %}"
+                      alt="{{ hotel.title }}"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                    />
+                  </label>
+                {% endif %}
+              {% endif %}
+            </figure>
+    
+            <div class="card-body">
+              <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+              <p class="text-base mb-6">{{ hotel.description }}</p>
+    
+              <div class="extra-details hidden text-sm">
+                {% if hotel.details.google_rating %}
+                  <p>
+                    <span class="font-bold">Rating out of 5 (Google): </span>
+                    {{ hotel.details.google_rating }}
+                  </p>
+                {% else %}
+                  <p>No additional details</p>
+                {% endif %}
+              </div>
+    
+              <div class="flex gap-4 justify-center w-full mt-auto">
+                <button class="btn btn-primary w-1/2 toggle-details-btn">
+                  View Details
+                </button>
+                <button
+                  class="btn btn-primary w-1/2 toggle-map-btn"
+                  data-title="{{ hotel.title }}"
+                  data-description="{{ hotel.description }}"
+                  data-lat="{{ hotel.details.location.lat }}"
+                  data-lng="{{ hotel.details.location.lng }}"
+                >
+                  View on Map
+                </button>
+              </div>
+            </div>
+          </div>
         {% endfor %}
-      </div>
+      {% endif %}
+
+      {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
+        {% for flight in additional_data.flights %}
+          <div
+            class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
+          >
+            <p class="text-sm text-gray-500 font-semibold">
+              Departing {{ flight.flight_date }}
+            </p>
+            <div class="flex w-full gap-4 justify-between items-center">
+              <div>
+                <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
+                <p class="text-gray-500">
+                  {{ flight.departure.airport_iata }} {{ flight.departure.city }}
+                </p>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
+                <div class="flex items-center">
+                  <span class="h-1 w-6 bg-gray-500"></span>
+                  <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
+                  <span class="h-1 w-6 bg-gray-500"></span>
+                </div>
+                <p class="text-gray-500 text-sm">
+                  {% if flight.stops == 0 %}
+                    Non-stop
+                  {% else %}
+                    {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+                  {% endif %}
+                </p>
+
+                {% if flight.layovers %}
+                  <div class="flex gap-2 mt-1 flex-wrap">
+                    {% for l in flight.layovers %}
+                      <div class="tooltip tooltip-bottom"
+                          data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}">
+                        <span class="badge badge-outline px-2 py-1">{{ l.airport_iata }}</span>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <div>
+                <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
+                <p class="text-gray-500">
+                  {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-2 justify-between items-center mt-4">
+              <div class="flex items-center space-x-2">
+                {% comment %} Logo url not in data yet {% endcomment %}
+                {% comment %} <img
+                  src="{{ flight.airline.logo_url }}"
+                  alt="{{ flight.airline.name }}"
+                  class="h-6 w-6"
+                /> {% endcomment %}
+                <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
+              </div>
+              <p class="text-gray-500 text-sm">Economy</p>
+            </div>
+
+            <div class="flex justify-between items-center mt-4">
+              <p class="text-lg font-bold">
+                US${{ flight.flight_price }}
+              </p>
+              <a
+                href="{{ flight.booking_url }}"
+                target="_blank"
+                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                View trip
+              </a>
+            </div>
+          </div>
+        {% endfor %}
       {% endif %}
 
       <!-- prettier-ignore -->
       {% if additional_data and additional_data.type == 'house_search' %}
-      <div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
-        <!-- prettier-ignore -->
         {% for house in additional_data.houses %}
-        <div class="card bg-base-100 shadow-xl border border-primary">
-          <figure>
-            <img
-              class="w-full object-cover object-center"
-              src="/static/images/genhotel.jpg"
-              alt="{{ house.formattedAddress }}"
-              onerror="this.src='/static/images/genhotel.jpg'"
-            />
-          </figure>
-          <div class="card-body">
-            <div class="flex flex-row justify-between gap-4 w-full">
-              <h2 class="card-title text-xl max-w-3/4 text-wrap">
-                {{ house.propertyType }}
-              </h2>
-              <h2 class="card-title text-xl text-wrap">
-                ${{ house.price|intcomma }}
-              </h2>
-            </div>
-            <div class="mt-2">
-              {% if house.rating == 'good' %}
-                <span class="flex items-center gap-2 text-green-500 font-bold">
-                  <i class="fas fa-thumbs-up"></i>
-                  {{ house.confidence }}
-                </span>
-              {% else %}
-                <span class="flex items-center gap-2 text-yellow-500 font-bold">
-                  <i class="fas fa-thumbs-down"></i>
-                  {{ house.confidence }}
-                </span>
-              {% endif %}
-            </div>
-            <div>
-              <p>{{ house.formattedAddress }}</p>
-              {% if house.propertyType != "Land" %}
-              <p>{{ house.squareFootage }} sq. ft</p>
-              {% endif %}
-            </div>
-            <div class="flex flex-col w-full gap-2 mt-2">
-              {% if house.propertyType != "Land" %}
-              <div class="card-actions items-center">
-                <div class="badge badge-outline">
-                  {{house.bathrooms}} Bathroom(s)
-                </div>
-                <div class="badge badge-outline">
-                  {{house.bedrooms}} Bedrooms(s)
-                </div>
+          <input type="checkbox" id="house-modal-{{ forloop.counter }}" class="modal-toggle" />
+          <div class="modal modal-middle p-0">
+            <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+              <label 
+                for="house-modal-{{ forloop.counter }}"
+                class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50">✕
+              </label>
+              <div class="carousel w-full h-full">
+                {% for image in house.photos %}
+                  <div 
+                    id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+                    class="carousel-item relative w-full h-full"
+                  >
+                    <div class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1">
+                      {{ forloop.counter }} / {{ house.photos|length }}
+                    </div>
+                    <img src="{{ image }}"
+                      class="w-full h-full object-cover object-center"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                      alt="Photo {{ forloop.counter }}" />
+                    {% if house.photos|length > 1 %}
+                      <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                          class="btn btn-circle">❮</a>
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                          class="btn btn-circle">❯</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
               </div>
+            </div>
+          </div>
+  
+          <div class="card w-full bg-base-100 shadow-xl border border-primary">
+            <figure class="relative w-full h-48 overflow-hidden">
+              <div class="carousel w-full h-full">
+                {% for image in house.photos %}
+                  <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                      class="carousel-item relative w-full h-full">
+                    <div class="absolute top-2 right-2 z-50 bg-black bg-opacity-50
+                                text-white text-sm px-2 py-1">
+                      {{ forloop.counter }} / {{ house.photos|length }}
+                    </div>
+                    <img src="{{ image }}"
+                        class="w-full h-full object-cover object-center"
+                        onerror="this.src='/static/images/genhotel.jpg'"
+                        alt="Thumb {{ forloop.counter }}" />
+                    {% if house.photos|length > 1 %}
+                      <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                          class="btn btn-circle">❮</a>
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                          class="btn btn-circle">❯</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+              {# clicking anywhere on the figure pops open the modal #}
+              <label for="house-modal-{{ forloop.counter }}"
+                    class="absolute inset-0 cursor-pointer"></label>
+            </figure>
+    
+            <div class="card-body">
+              <div class="flex justify-between items-center">
+                <h2 class="card-title">{{ house.propertyType }}</h2>
+                <span class="text-lg font-bold">${{ house.price|intcomma }}</span>
+              </div>
+              <p>{{ house.formattedAddress }}</p>
+              {% if house.squareFootage %}
+                <p>{{ house.squareFootage }} sq ft</p>
               {% endif %}
-
-              <div class="extra-details hidden text-sm">
+    
+              <div class="flex gap-4 mt-4">
+                <button class="btn btn-primary w-1/2 toggle-details-btn">View Details</button>
+                <button class="btn btn-primary w-1/2 toggle-map-btn"
+                        data-lat="{{ house.latitude }}"
+                        data-lng="{{ house.longitude }}"
+                        data-title="{{ house.propertyType }}, {{ house.formattedAddress }}"
+                        data-description="{{ house.bedrooms }} beds, {{ house.bathrooms }} baths">
+                  View on Map
+                </button>
+              </div>
+    
+              <div class="extra-details hidden mt-2 text-sm">
                 {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
                   <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
                   <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
@@ -331,366 +360,352 @@
                   <p>No additional details</p>
                 {% endif %}
               </div>
-              
-              <div class="flex gap-4 justify-center w-full">
-                <button
-                  class="btn btn-primary w-1/2 toggle-details-btn"
-                  {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
-                >
-                  View Details
-                </button>
-    
-                <button 
-                  class="btn btn-primary toggle-map-btn w-1/2"
-                  data-title='{{ house.propertyType }}, {{ house.formattedAddress }}'
-                  data-description='{{ house.squareFootage }} sq. ft, {{house.bathrooms}} Bathroom(s), {{house.bedrooms}} Bedrooms(s)' 
-                  data-lat='{{ house.latitude }}' 
-                  data-lng='{{ house.longitude }}'
-                >
-                  View on Map
-                </button>
-              </div>
             </div>
           </div>
-        </div>
-
         {% endfor %}
-      </div>
       {% endif %}
-
-      <div id="mapSection" class="w-full h-full lg:sticky lg:top-4">
-        <div
-          id="map"
-          class="w-full h-full rounded-lg"
-          data-locations='{{ locations|safe }}'
-        ></div>
-      </div>
-      <div id="locations" data-locations='{{ locations|safe }}' class="hidden"></div>
     </div>
-    {% endif %}
-
-    <style>
-      main {
-        min-height: 0 !important;
-        height: calc(100vh - var(--footer-height));
-        overflow-y: auto;
-      }
-
-      :root {
-        --footer-height: 4rem;
-      }
-    </style>
-
-    <script>
-      let map = null;
-      let markerCluster = null;
-      let markers = [];
-      let isInitializing = false;
-
-      async function initMap() {
-        if (isInitializing) return;
-        isInitializing = true;
-
-        try {
-          await cleanupMap();
-
-          const mapElement = document.getElementById("map");
-          if (!mapElement) {
-            isInitializing = false;
-            return;
-          }
-
-          const { Map } = await google.maps.importLibrary("maps");
-          const { AdvancedMarkerElement } = await google.maps.importLibrary(
-            "marker"
-          );
-
-          const locationsData = mapElement.dataset.locations || "[]";
-          console.log("Locations: ", locationsData);
-          let locations = [];
-          try {
-            locations = JSON.parse(locationsData);
-          } catch (e) {
-            console.warn(
-              "Failed to parse locations data, using default location"
-            );
-            locations = [];
-          }
-
-          const initialCenter =
-            locations.length > 0
-              ? { lat: locations[0].lat, lng: locations[0].lng }
-              : { lat: 39.8283, lng: -98.5795 };
-
-          const mapOptions = {
-            center: initialCenter,
-            zoom: locations.length > 0 ? 15 : 4,
-            mapId: "8e0a97af9386fef",
-            useStaticMap: false,
-            minZoom: 2,
-            maxZoom: 18,
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-          };
-
-          map = new Map(mapElement, mapOptions);
-
-          await new Promise((resolve) =>
-            google.maps.event.addListenerOnce(map, "idle", resolve)
-          );
-
-          markers = await Promise.all(
-            locations.map(async (position) => {
-              const marker = new AdvancedMarkerElement({
-                position: {
-                  lat: position.lat,
-                  lng: position.lng,
-                },
-                map: map,
-              });
-              return marker;
-            })
-          );
-
-          if (markers.length > 0) {
-            markerCluster = new markerClusterer.MarkerClusterer({
-              map,
-              markers,
-            });
-          }
-
-          if (locations.length > 1) {
-            const bounds = new google.maps.LatLngBounds();
-            locations.forEach((location) => {
-              bounds.extend({ lat: location.lat, lng: location.lng });
-            });
-            map.fitBounds(bounds);
-            map.setZoom(map.getZoom() - 1);
-          }
-        } catch (error) {
-          console.error("Error initializing map:", error);
-        } finally {
-          isInitializing = false;
-        }
-      }
-
-      function setupMapToggle() {
-        const toggleButton = document.getElementById("toggleMap");
-        const mapDiv = document.getElementById("map");
-        const mapSection = document.getElementById("mapSection");
-
-        if (!toggleButton || !mapDiv) return;
-
-        toggleButton.addEventListener("click", () => {
-          const currentDisplay = window.getComputedStyle(mapSection).display;
-          if (currentDisplay !== "none") {
-            mapSection.style.display = "none";
-            toggleButton.textContent = "Show Map";
-          } else {
-            mapSection.style.display = "block";
-            toggleButton.textContent = "Hide Map";
-            if (typeof google !== "undefined" && google.maps) {
-              google.maps.event.trigger(map, "resize");
-            }
-          }
-        });
-      }
-
-      async function cleanupMap() {
-        return new Promise((resolve) => {
-          if (markers && markers.length) {
-            markers.forEach((marker) => {
-              if (marker) {
-                marker.map = null;
-              }
-            });
-            markers = [];
-          }
-
-          if (markerCluster) {
-            markerCluster.clearMarkers();
-            markerCluster = null;
-          }
-
-          if (map) {
-            google.maps.event.clearInstanceListeners(map);
-            map = null;
-          }
-          setTimeout(resolve, 100);
-        });
-      }
-
-      async function reinitializeMap() {
-        await cleanupMap();
-        if (window.google && window.google.maps) {
-          await initMap();
-        } else {
-          loadMapScripts();
-        }
-      }
-
-      //since the chat's map is different and loads first, we have to clean up the scripts from that one first
-      function loadMapScripts() {
-        if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-          return;
-        }
-
-        const markerClustererScript = document.createElement("script");
-        markerClustererScript.src =
-          "https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js";
-        markerClustererScript.async = true;
-        document.head.appendChild(markerClustererScript);
-
-        const mapsScript = document.createElement("script");
-        mapsScript.src =
-          "https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly";
-        mapsScript.async = true;
-        mapsScript.defer = true;
-        document.head.appendChild(mapsScript);
-      }
-
-      if (!window.google || !window.google.maps) {
-        loadMapScripts();
-      }
-
-      let reinitTimeout;
-      document.body.addEventListener("htmx:afterSwap", function (event) {
-        if (event.detail.target.id === "search-results") {
-          clearTimeout(reinitTimeout);
-          reinitTimeout = setTimeout(() => {
-            reinitializeMap();
-            setupMapToggle();
-          }, 100);
-        }
-      });
-
-      function clearMarkers() {
-        markers.forEach(marker => marker.setMap(null));
-        markers = [];
-        if (markerCluster) {
-          markerCluster.clearMarkers();
-        }
-      }
-
-      function readMarkers(curLat, curLng, locations, title, description) {
-        clearMarkers();
     
-        const infoWindow = new google.maps.InfoWindow();
-    
-        locations.forEach(location => {
-          const marker = new google.maps.Marker({
-            position: { lat: location.lat, lng: location.lng },
-            map: map
+
+    <div id="mapSection" class="w-full md:w-1/2 h-full">
+      <div
+        id="map"
+        class="w-full h-full rounded-lg"
+        data-locations='{{ locations|safe }}'>
+      </div>
+    </div>
+    <div id="locations" data-locations='{{ locations|safe }}' class="hidden"></div>
+  </div>
+{% endif %}
+
+<style>
+  main {
+    min-height: 0 !important;
+    height: calc(100vh - var(--footer-height));
+    overflow-y: auto;
+  }
+
+  :root {
+    --footer-height: 4rem;
+  }
+</style>
+
+<script>
+  let map = null;
+  let markerCluster = null;
+  let markers = [];
+  let isInitializing = false;
+
+  async function initMap() {
+    if (isInitializing) return;
+    isInitializing = true;
+
+    try {
+      await cleanupMap();
+
+      const mapElement = document.getElementById("map");
+      if (!mapElement) {
+        isInitializing = false;
+        return;
+      }
+
+      const { Map } = await google.maps.importLibrary("maps");
+      const { AdvancedMarkerElement } = await google.maps.importLibrary(
+        "marker"
+      );
+
+      const locationsData = mapElement.dataset.locations || "[]";
+      console.log("Locations: ", locationsData);
+      let locations = [];
+      try {
+        locations = JSON.parse(locationsData);
+      } catch (e) {
+        console.warn(
+          "Failed to parse locations data, using default location"
+        );
+        locations = [];
+      }
+
+      const initialCenter =
+        locations.length > 0
+          ? { lat: locations[0].lat, lng: locations[0].lng }
+          : { lat: 39.8283, lng: -98.5795 };
+
+      const mapOptions = {
+        center: initialCenter,
+        zoom: locations.length > 0 ? 15 : 4,
+        mapId: "8e0a97af9386fef",
+        useStaticMap: false,
+        minZoom: 2,
+        maxZoom: 18,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+      };
+
+      map = new Map(mapElement, mapOptions);
+
+      await new Promise((resolve) =>
+        google.maps.event.addListenerOnce(map, "idle", resolve)
+      );
+
+      markers = await Promise.all(
+        locations.map(async (position) => {
+          const marker = new AdvancedMarkerElement({
+            position: {
+              lat: position.lat,
+              lng: position.lng,
+            },
+            map: map,
           });
-          markers.push(marker);
-    
-          // code below styled by ChatGPT
-          const content = `
-            <div style="
-              padding: 15px;
-              background-color: #ffffff;
-              border-radius: 8px;
-              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-              max-width: 250px;
-              font-family: Arial, sans-serif;
-              color: #333;
-            ">
-              <h1 style="
-                font-size: 18px;
-                margin: 0 0 8px 0;
-                line-height: 1.5;
-              ">
-                ${title}
-              </h1>
-              <p style="
-                font-size: 14px;
-                line-height: 1.5;
-                margin: 0;
-                color: #555;
-              ">
-                ${description}
-              </p>
-            </div>
-          `;
-    
-          if (curLat == location.lat && curLng == location.lng) {
-            infoWindow.close();
-            infoWindow.setContent(content);
-            infoWindow.open({
-              anchor: marker,
-              map,
-              shouldFocus: true,
-            });
-          }
-        });
-    
+          return marker;
+        })
+      );
+
+      if (markers.length > 0) {
         markerCluster = new markerClusterer.MarkerClusterer({
           map,
           markers,
-          algorithm: new markerClusterer.SuperClusterAlgorithm({
-            radius: 100,
-            maxZoom: 15
-          })
         });
       }
 
-      document.addEventListener("click", function (event) {
-        if (event.target.classList.contains("toggle-map-btn")) {
-          let lat = event.target.getAttribute("data-lat");
-          let lng = event.target.getAttribute("data-lng");
-          let title = event.target.getAttribute("data-title");
-          let description = event.target.getAttribute("data-description");
-      
-          console.log("Info: ", lat, lng, title, description);
-      
-          map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: Number(lat), lng: Number(lng) },
-            zoom: 19
-          });
-          
-          const mapLocations = JSON.parse(document.getElementById("locations").dataset.locations);
-          console.log("Map Locations: ", mapLocations);
-          readMarkers(lat, lng, mapLocations, title, description);
-        }
-      });
+      if (locations.length > 1) {
+        const bounds = new google.maps.LatLngBounds();
+        locations.forEach((location) => {
+          bounds.extend({ lat: location.lat, lng: location.lng });
+        });
+        map.fitBounds(bounds);
+        map.setZoom(map.getZoom() - 1);
+      }
+    } catch (error) {
+      console.error("Error initializing map:", error);
+    } finally {
+      isInitializing = false;
+    }
+  }
 
-      document.addEventListener('click', function (e) {
-        if (e.target.matches('.toggle-details-btn')) {
-          const card = e.target.closest('.card-body');
-          const details = card.querySelector('.extra-details');
-          const button = e.target;
-    
-          if (details.classList.contains('hidden')) {
-            details.classList.remove('hidden');
-            button.textContent = 'Hide Details';
-          } else {
-            details.classList.add('hidden');
-            button.textContent = 'View Details';
+  function setupMapToggle() {
+    const toggleButton = document.getElementById("toggleMap");
+    const mapDiv = document.getElementById("map");
+    const mapSection = document.getElementById("mapSection");
+    const cardsColumn = document.getElementById("cardsColumn");
+
+    if (!toggleButton || !mapDiv) return;
+    toggleButton.addEventListener("click", () => {
+      const isHidden = window.getComputedStyle(mapSection).display === "none";
+
+      if(!isHidden) {
+        mapSection.style.display = "none";
+        cardsColumn.classList.remove("md:w-1/2");
+        cardsColumn.classList.add("w-full");
+        toggleButton.textContent = "Show Map";
+      } else {
+        mapSection.style.display = "block";
+        cardsColumn.classList.remove("w-full");
+        cardsColumn.classList.add("md:w-1/2");
+        toggleButton.textContent = "Hide Map";
+
+        if (typeof google !== "undefined" && google.maps) {
+            google.maps.event.trigger(map, "resize");
           }
         }
       });
+    }
+
+  async function cleanupMap() {
+    return new Promise((resolve) => {
+      if (markers && markers.length) {
+        markers.forEach((marker) => {
+          if (marker) {
+            marker.map = null;
+          }
+        });
+        markers = [];
+      }
+
+      if (markerCluster) {
+        markerCluster.clearMarkers();
+        markerCluster = null;
+      }
+
+      if (map) {
+        google.maps.event.clearInstanceListeners(map);
+        map = null;
+      }
+      setTimeout(resolve, 100);
+    });
+  }
+
+  async function reinitializeMap() {
+    await cleanupMap();
+    if (window.google && window.google.maps) {
+      await initMap();
+    } else {
+      loadMapScripts();
+    }
+  }
+
+  //since the chat's map is different and loads first, we have to clean up the scripts from that one first
+  function loadMapScripts() {
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      return;
+    }
+
+    const markerClustererScript = document.createElement("script");
+    markerClustererScript.src =
+      "https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js";
+    markerClustererScript.async = true;
+    document.head.appendChild(markerClustererScript);
+
+    const mapsScript = document.createElement("script");
+    mapsScript.src =
+      "https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&loading=async&v=weekly";
+    mapsScript.async = true;
+    mapsScript.defer = true;
+    document.head.appendChild(mapsScript);
+  }
+
+  if (!window.google || !window.google.maps) {
+    loadMapScripts();
+  }
+
+  let reinitTimeout;
+  document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.detail.target.id === "search-results") {
+      clearTimeout(reinitTimeout);
+      reinitTimeout = setTimeout(() => {
+        reinitializeMap();
+        setupMapToggle();
+      }, 100);
+    }
+  });
+
+  function clearMarkers() {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    if (markerCluster) {
+      markerCluster.clearMarkers();
+    }
+  }
+
+  function readMarkers(curLat, curLng, locations, title, description) {
+    clearMarkers();
+
+    const infoWindow = new google.maps.InfoWindow();
+
+    locations.forEach(location => {
+      const marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map
+      });
+      markers.push(marker);
+
+      // code below styled by ChatGPT
+      const content = `
+        <div style="
+          padding: 15px;
+          background-color: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          max-width: 250px;
+          font-family: Arial, sans-serif;
+          color: #333;
+        ">
+          <h1 style="
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            line-height: 1.5;
+          ">
+            ${title}
+          </h1>
+          <p style="
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            color: #555;
+          ">
+            ${description}
+          </p>
+        </div>
+      `;
+
+      if (curLat == location.lat && curLng == location.lng) {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: true,
+        });
+      }
+    });
+
+    markerCluster = new markerClusterer.MarkerClusterer({
+      map,
+      markers,
+      algorithm: new markerClusterer.SuperClusterAlgorithm({
+        radius: 100,
+        maxZoom: 15
+      })
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("toggle-map-btn")) {
+      let lat = event.target.getAttribute("data-lat");
+      let lng = event.target.getAttribute("data-lng");
+      let title = event.target.getAttribute("data-title");
+      let description = event.target.getAttribute("data-description");
+  
+      console.log("Info: ", lat, lng, title, description);
+  
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: Number(lat), lng: Number(lng) },
+        zoom: 19
+      });
       
-    </script>
-    <!-- prettier-ignore -->
-    {% endblock %}
-    <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
-      async
-      defer
-    ></script>
-  </div>
+      const mapLocations = JSON.parse(document.getElementById("locations").dataset.locations);
+      console.log("Map Locations: ", mapLocations);
+      readMarkers(lat, lng, mapLocations, title, description);
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.matches('.toggle-details-btn')) {
+      const card = e.target.closest('.card-body');
+      const details = card.querySelector('.extra-details');
+      const button = e.target;
+
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        button.textContent = 'Hide Details';
+      } else {
+        details.classList.add('hidden');
+        button.textContent = 'View Details';
+      }
+    }
+  });
+  
+</script>
+<!-- prettier-ignore -->
+{% endblock %}
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap"
+  async
+  defer
+></script>
+</div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document
-      .querySelectorAll('.carousel a[href^="#slide-"]')
-      .forEach(link => {
-        link.addEventListener('click', e => {
-          e.preventDefault();                     
-          const hash = link.getAttribute('href'); 
-          history.replaceState(null, '', hash);    
-        });
-      });
+document.addEventListener('DOMContentLoaded', () => {
+document
+  .querySelectorAll('.carousel a[href^="#slide-"]')
+  .forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();                     
+      const hash = link.getAttribute('href'); 
+      history.replaceState(null, '', hash);    
+    });
   });
-  </script>
+});
+</script>
