@@ -515,7 +515,7 @@ def search_response(request, city, topic):
           },
         )
     except Exception as e:
-      print("Error:", e)
+      print("En rror:", e)
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
 
 
@@ -555,6 +555,9 @@ def last_heat_index(request):
   except Exception as e:
     print(f"Error fetching last heat index: {str(e)}")
     return JsonResponse({"error": "Failed to fetch last heat index", "details": str(e)}, status=500)
+
+
+
 
 def predict_heat_index(request):
   try:

@@ -2,6 +2,9 @@ from .base import SearchStrategy
 from django.conf import settings
 import requests
 import json
+import pandas as pd
+from views import load_model_and_data
+import os 
 import openai
 from ..models import Property, ListingAgent, ListingOffice, Preferences
 from django.core.cache import cache
@@ -67,10 +70,11 @@ class HousingSearchStrategy(SearchStrategy):
             return None
             
         houses_data = response.json()
-        
+        houses_data['heatIndex'] = self._heat_index(location_info)
+
         if not houses_data:
             return None
-
+        
         self._store_houses(houses_data)
         formatted_data = self._format_house_response(houses_data)
 
@@ -172,7 +176,8 @@ class HousingSearchStrategy(SearchStrategy):
                         'mls_name': house.get('mlsName', ''),
                         'mls_number': house.get('mlsNumber', ''),
                         'listing_agent': agent,
-                        'listing_office': office
+                        'listing_office': office,
+                        'heat_index': house.get('heatIndex', 0)
                     }
                 )
 
@@ -200,7 +205,9 @@ class HousingSearchStrategy(SearchStrategy):
                     'mlsName': house.get('mlsName', ''),
                     'mlsNumber': house.get('mlsNumber', ''),
                     'listingAgent': house.get('listingAgent', {}),
-                    'listingOffice': house.get('listingOffice', {})
+                    'listingOffice': house.get('listingOffice', {}),
+                    'heatIndex': house.get('heatIndex', 0)
+
                 }
                 formatted_data.append(formatted_house)
             except Exception as e:
@@ -212,3 +219,35 @@ class HousingSearchStrategy(SearchStrategy):
             'total_results': len(formatted_data),
             'type': 'house_search'
         }
+    
+    def house_rating(city, state):
+        location = f"{city}, {state}"
+        dataset = pd.read_csv(os.path.join(settings.ML_MODEL_DIR, "processed_metro_heat_index.csv"))
+        location_data = dataset[dataset["RegionName"] == location]
+
+        location_last_heat_index = location_data.iloc[:, -1].values[0]
+
+        location_last_heat_index = float(location_last_heat_index)
+
+        model, data, label_encoder = load_model_and_data()
+        state_encoded = label_encoder.transform([state])[0]
+        location_data = data[(data["RegionName"] == location) & (data["StateName"] == state_encoded)]
+        features = location_data[["RegionID", "SizeRank", "StateName"]]
+        prediction = model.predict(features)[0]
+        prediction = float(prediction)
+
+        confidance_score = prediction - location_last_heat_index
+    
+        if(prediction > location_last_heat_index):
+          rating = "Good"
+          confidance = "Low"
+          if(confidance_score > 15):
+            confidance = "High"
+          
+        elif(prediction < location_last_heat_index):
+          rating = "Bad"
+          confidance = "Low"
+          if(confidance_score > 15):
+            confidance = "High"
+        return rating, confidance
+    

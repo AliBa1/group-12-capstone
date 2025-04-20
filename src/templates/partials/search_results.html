@@ -167,6 +167,19 @@
                 ${{ house.price|intcomma }}
               </h2>
             </div>
+            <div class="mt-2">
+              {% if house.rating == 'good' %}
+                <span class="flex items-center gap-2 text-green-500 font-bold">
+                  <i class="fas fa-thumbs-up"></i>
+                  {{ house.confidence }}
+                </span>
+              {% else %}
+                <span class="flex items-center gap-2 text-yellow-500 font-bold">
+                  <i class="fas fa-thumbs-down"></i>
+                  {{ house.confidence }}
+                </span>
+              {% endif %}
+            </div>
             <div>
               <p>{{ house.formattedAddress }}</p>
               {% if house.propertyType != "Land" %}
