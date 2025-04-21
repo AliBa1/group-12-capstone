@@ -6,6 +6,7 @@
     hx-post="{% url 'send_search' %}"
     hx-target="#search-results"
     hx-swap="innerHTML"
+    hx-include="propertyType"
   >
     {% csrf_token %}
     <div class="form-control w-full">
@@ -54,7 +55,7 @@
         </button>
       </div>
     </div>
-    <input type="hidden" id="propertyType" name="propertyType" required />
+    <input type="hidden" id="propertyType" name="property_type" required />
 
     <!-- Origin Selection (Hidden by Default)-->
     <div id="origin-container" class="w-full" style="display: none">
@@ -163,27 +164,6 @@
       searchUrl += "?" + params.toString();
     }
 
-    if (topic == "Housing") {
-      // htmx.ajax("POST", `/update_preferences/${propertyType}`, {
-      //   target: "#search-results",
-      //   swap: "none",
-      //   headers: {
-      //     "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-      //   },
-      // });
-
-      fetch(`/update_preferences/${encodeURIComponent(propertyType)}`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-            .value,
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.text())
-        .then(console.log);
-    }
-
     htmx
       .ajax("POST", searchUrl, {
         target: "#search-results",
@@ -192,6 +172,9 @@
           "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
             .value,
         },
+        values: {
+          property_type: propertyType
+        }
       })
       .then(() => {
         reinitializeMap();
