@@ -340,7 +340,7 @@
 
   })
   document.body.addEventListener('change', e => {
-    if (e.target.matches('input[id^="hotel-modal-"]')) {
+    if (e.target.matches('input[id^="hotel-modal-"]') || e.target.matches('input[id^="place-modal-"]')) {
       const mapCont = document.getElementById('map-container');
       if (e.target.checked) {
         mapCont.classList.add('hidden');

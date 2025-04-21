@@ -1,3 +1,5 @@
+from .other_service import OtherSearchStrategy
+
 class TravelServiceFactory:
     def __init__(self):
         self.strategies = []
@@ -9,4 +11,5 @@ class TravelServiceFactory:
         for strategy in self.strategies:
             if strategy.should_handle(prompt):
                 return strategy
-        return None
+        # return None
+        return OtherSearchStrategy()
