@@ -133,8 +133,8 @@
              </figure>
      
              <div class="card-body">
-              <h2 class="card-title text-xl mb-4">{{ place.name }}</h2>
-              <p class="text-base mb-6">{{ place.details.google_address }}</p>
+              <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+              <p class="text-base mb-6">{{ hotel.description }}</p>
      
                <div class="extra-details hidden text-sm">
                  {% if hotel.details.google_rating %}
@@ -538,8 +538,6 @@
           );
 
           const locationsData = mapElement.dataset.locations || "[]";
-          // const locationsData = JSON.parse('{{ locations|safe }}') || "[]";
-          // const locationsData = JSON.parse('{{ locations|safe }}');
           console.log("Locations: ", locationsData);
           let locations = [];
           try {
