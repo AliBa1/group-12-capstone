@@ -21,557 +21,607 @@
 <h3 class="text-center my-4 text-xl">{{ text }}</h3>
 {% endif %}
 
-<div class="w-full px-4 pb-8">
-  {% if additional_data %}
-  <div class="flex w-full items-center my-2">
-    <button id="toggleMap" class="btn btn-info mx-auto w-full md:w-1/2">
-      Hide Map
-    </button>
-  </div>
-  {% endif %}
+<!-- prettier-ignore -->
+{% if additional_data %}
+<div class="flex w-full items-center my-2">
+  <button id="toggleMap" class="btn btn-info mx-auto w-full md:w-1/2">
+    Hide Map
+  </button>
+</div>
+{% endif %}
 
-  <div
-    class="flex flex-col md:flex-row gap-6 w-full justify-center"
-    style="height: calc(100vh - 16rem)"
-  >
-    {% if additional_data and additional_data.type == 'hotel_search' %}
-    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
-      {% for hotel in additional_data.hotels %}
-      <input
-        type="checkbox"
-        id="hotel-modal-{{ forloop.counter }}"
-        class="modal-toggle"
-      />
-      <div class="modal modal-middle p-0">
-        <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
-          <label
-            for="hotel-modal-{{ forloop.counter }}"
-            class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
-            >✕</label
+<div
+  class="flex flex-col md:flex-row gap-6 w-full md:w-3/4 md:mx-auto justify-center"
+  style="height: calc(100vh - 16rem)"
+>
+  {% if additional_data and additional_data.type == 'hotel_search' %}
+  <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
+    {% for hotel in additional_data.hotels %}
+    <input
+      type="checkbox"
+      id="hotel-modal-{{ forloop.counter }}"
+      class="modal-toggle"
+    />
+    <div class="modal modal-middle p-0">
+      <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+        <label
+          for="hotel-modal-{{ forloop.counter }}"
+          class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
+          >✕</label
+        >
+
+        <div class="carousel w-full h-full">
+          {% for image in hotel.images %}
+          <div
+            id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+            class="carousel-item relative w-full h-full"
           >
-
-          <div class="carousel w-full h-full">
-            {% for image in hotel.images %}
             <div
-              id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
-              class="carousel-item relative w-full h-full"
+              class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
             >
-              <div
-                class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
-              >
-                {{ forloop.counter }} of {{ hotel.images|length }}
-              </div>
-              <img
-                class="w-full h-full object-cover object-center"
-                src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                onerror="this.src='/static/images/genhotel.jpg'"
-              />
-              {% if hotel.images|length > 1 %}
-              <div
-                class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-              >
-                <a
-                  href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
-                  class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                  >❮</a
-                >
-                <a
-                  href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
-                  class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                  >❯</a
-                >
-              </div>
-              {% endif %}
+              {{ forloop.counter }} of {{ hotel.images|length }}
             </div>
-            {% endfor %}
+            <img
+              class="w-full h-full object-cover object-center"
+              src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+              onerror="this.src='/static/images/genhotel.jpg'"
+            />
+            {% if hotel.images|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+            >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                >❮</a
+              >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                >❯</a
+              >
+            </div>
+            {% endif %}
           </div>
+          {% endfor %}
         </div>
       </div>
+    </div>
 
-      <div class="card w-full bg-base-100 shadow-xl border border-primary">
-        <figure class="w-full">
+    <div class="card w-full bg-base-100 shadow-xl border border-primary">
+      <figure class="w-full">
+        <!-- prettier-ignore -->
+        {% if hotel.images %}
+        <!-- prettier-ignore -->
+        {% if hotel.images|length > 1 %}
+        <label
+          for="hotel-modal-{{ forloop.counter }}"
+          class="carousel w-full h-48 overflow-hidden cursor-pointer"
+        >
           <!-- prettier-ignore -->
-          {% if hotel.images %}
-          <!-- prettier-ignore -->
-          {% if hotel.images|length > 1 %}
-          <label
-            for="hotel-modal-{{ forloop.counter }}"
-            class="carousel w-full h-48 overflow-hidden cursor-pointer"
+          {% for image in hotel.images %}
+          <div
+            id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+            class="carousel-item relative w-full h-full"
           >
-            <!-- prettier-ignore -->
-            {% for image in hotel.images %}
             <div
-              id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-              class="carousel-item relative w-full h-full"
+              class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
             >
-              <div
-                class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
-              >
-                {{ forloop.counter }} of {{ hotel.images|length }}
-              </div>
-              <img
-                class="w-full h-full object-cover object-center"
-                src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                alt="{{ hotel.title }}"
-                onerror="this.src='/static/images/genhotel.jpg'"
-              />
-              <!-- prettier-ignore -->
-              {% if hotel.images|length > 1 %}
-              <div
-                class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-              >
-                <a
-                  href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
-                  class="btn btn-circle"
-                  >❮</a
-                >
-                <a
-                  href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
-                  class="btn btn-circle"
-                  >❯</a
-                >
-              </div>
-              {% endif %}
+              {{ forloop.counter }} of {{ hotel.images|length }}
             </div>
-            {% endfor %}
-          </label>
-          {% else %}
-          <label
-            for="hotel-modal-{{ forloop.counter }}"
-            class="block cursor-pointer"
-          >
+            <!-- prettier-ignore -->
             <img
-              class="w-full h-48 object-cover object-center"
-              src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0|urlencode %}"
+              class="w-full h-full object-cover object-center"
+              src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
               alt="{{ hotel.title }}"
               onerror="this.src='/static/images/genhotel.jpg'"
             />
-          </label>
-          <!-- prettier-ignore -->
-          {% endif %}
-          <!-- prettier-ignore -->
-          {% endif %}
-        </figure>
-
-        <div class="card-body">
-          <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
-          <p class="text-base mb-6">{{ hotel.description }}</p>
-
-          <div class="extra-details hidden text-sm">
             <!-- prettier-ignore -->
-            {% if hotel.details.google_rating %}
-            <p>
-              <span class="font-bold">Rating out of 5 (Google): </span>
-              {{ hotel.details.google_rating }}
-            </p>
-            {% else %}
-            <p>No additional details</p>
+            {% if hotel.images|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+            >
+              <a
+                href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ hotel.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
+                class="btn btn-circle"
+                >❮</a
+              >
+              <a
+                href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
+                class="btn btn-circle"
+                >❯</a
+              >
+            </div>
             {% endif %}
           </div>
+          {% endfor %}
+        </label>
+        {% else %}
+        <label
+          for="hotel-modal-{{ forloop.counter }}"
+          class="block cursor-pointer"
+        >
+          <img
+            class="w-full h-48 object-cover object-center"
+            src="{% url 'proxy_hotel_photo' photo_reference=hotel.images.0|urlencode %}"
+            alt="{{ hotel.title }}"
+            onerror="this.src='/static/images/genhotel.jpg'"
+          />
+        </label>
+        <!-- prettier-ignore -->
+        {% endif %}
+        <!-- prettier-ignore -->
+        {% endif %}
+      </figure>
 
-          <div class="flex gap-4 justify-center w-full mt-auto">
-            <button class="btn btn-primary w-1/2 toggle-details-btn">
-              View Details
-            </button>
-            <button
-              class="btn btn-primary w-1/2 toggle-map-btn"
-              data-title="{{ hotel.title }}"
-              data-description="{{ hotel.description }}"
-              data-lat="{{ hotel.details.location.lat }}"
-              data-lng="{{ hotel.details.location.lng }}"
-            >
-              View on Map
-            </button>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+      <div class="card-body">
+        <h2 class="card-title text-xl mb-4">{{ hotel.title }}</h2>
+        <p class="text-base mb-6">{{ hotel.description }}</p>
 
-    <!-- prettier-ignore -->
-    {% if additional_data and additional_data.type == 'other_search'%}
-    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
-      {% for place in additional_data.places %}
-      <input
-        type="checkbox"
-        id="place-modal-{{ forloop.counter }}"
-        class="modal-toggle"
-      />
-      <div class="modal modal-middle p-0">
-        <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
-          <label
-            for="place-modal-{{ forloop.counter }}"
-            class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
-            >✕</label
-          >
-
-          <div class="carousel w-full h-full">
-            {% for image in place.images %}
-            <div
-              id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
-              class="carousel-item relative w-full h-full"
-            >
-              <div
-                class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
-              >
-                {{ forloop.counter }} of {{ place.images|length }}
-              </div>
-              <img
-                class="w-full h-full object-cover object-center"
-                src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                onerror="this.src='/static/images/genhotel.jpg'"
-              />
-              {% if place.images|length > 1 %}
-              <div
-                class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-              >
-                <a
-                  href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
-                  class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                  >❮</a
-                >
-                <a
-                  href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
-                  class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
-                  >❯</a
-                >
-              </div>
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <div class="card w-full bg-base-100 shadow-xl border border-primary">
-        <figure class="w-full">
+        <div class="extra-details hidden text-sm">
           <!-- prettier-ignore -->
-          {% if place.images %}
-
-          <!-- prettier-ignore -->
-          {% if place.images|length > 1 %}
-          <label
-            for="place-modal-{{ forloop.counter }}"
-            class="carousel w-full h-48 overflow-hidden cursor-pointer"
-          >
-            {% for image in place.images %}
-            <div
-              id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-              class="carousel-item relative w-full h-full"
-            >
-              <div
-                class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
-              >
-                {{ forloop.counter }} of {{ place.images|length }}
-              </div>
-              <img
-                class="w-full h-full object-cover object-center"
-                src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
-                alt="{{ place.title }}"
-                onerror="this.src='/static/images/genhotel.jpg'"
-              />
-              <!-- prettier-ignore -->
-              {% if place.images|length > 1 %}
-              <div
-                class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
-              >
-                <a
-                  href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
-                  class="btn btn-circle"
-                  >❮</a
-                >
-                <a
-                  href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
-                  class="btn btn-circle"
-                  >❯</a
-                >
-              </div>
-              {% endif %}
-            </div>
-            {% endfor %}
-          </label>
+          {% if hotel.details.google_rating %}
+          <p>
+            <span class="font-bold">Rating out of 5 (Google): </span>
+            {{ hotel.details.google_rating }}
+          </p>
           {% else %}
-          <label
-            for="place-modal-{{ forloop.counter }}"
-            class="block cursor-pointer"
+          <p>No additional details</p>
+          {% endif %}
+        </div>
+
+        <div class="flex gap-4 justify-center w-full mt-auto">
+          <button class="btn btn-primary w-1/2 toggle-details-btn">
+            View Details
+          </button>
+          <button
+            class="btn btn-primary w-1/2 toggle-map-btn"
+            data-title="{{ hotel.title }}"
+            data-description="{{ hotel.description }}"
+            data-lat="{{ hotel.details.location.lat }}"
+            data-lng="{{ hotel.details.location.lng }}"
           >
+            View on Map
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- prettier-ignore -->
+  {% if additional_data and additional_data.type == 'other_search'%}
+  <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
+    {% for place in additional_data.places %}
+    <input
+      type="checkbox"
+      id="place-modal-{{ forloop.counter }}"
+      class="modal-toggle"
+    />
+    <div class="modal modal-middle p-0">
+      <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+        <label
+          for="place-modal-{{ forloop.counter }}"
+          class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
+          >✕</label
+        >
+
+        <div class="carousel w-full h-full">
+          {% for image in place.images %}
+          <div
+            id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+            class="carousel-item relative w-full h-full"
+          >
+            <div
+              class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
+            >
+              {{ forloop.counter }} of {{ place.images|length }}
+            </div>
             <img
-              class="w-full h-48 object-cover object-center"
-              src="{% url 'proxy_hotel_photo' photo_reference=place.images.0|urlencode %}"
+              class="w-full h-full object-cover object-center"
+              src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+              onerror="this.src='/static/images/genhotel.jpg'"
+            />
+            {% if place.images|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+            >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                >❮</a
+              >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                >❯</a
+              >
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card w-full bg-base-100 shadow-xl border border-primary">
+      <figure class="w-full">
+        <!-- prettier-ignore -->
+        {% if place.images %}
+
+        <!-- prettier-ignore -->
+        {% if place.images|length > 1 %}
+        <label
+          for="place-modal-{{ forloop.counter }}"
+          class="carousel w-full h-48 overflow-hidden cursor-pointer"
+        >
+          {% for image in place.images %}
+          <div
+            id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+            class="carousel-item relative w-full h-full"
+          >
+            <div
+              class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
+            >
+              {{ forloop.counter }} of {{ place.images|length }}
+            </div>
+            <img
+              class="w-full h-full object-cover object-center"
+              src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
               alt="{{ place.title }}"
               onerror="this.src='/static/images/genhotel.jpg'"
             />
-          </label>
-          <!-- prettier-ignore -->
-          {% endif %}
-
-          <!-- prettier-ignore -->
-          {% endif %}
-        </figure>
-
-        <div class="card-body">
-          <h2 class="card-title text-xl mb-4">{{ place.name }}</h2>
-          <p class="text-base mb-6">{{ place.details.google_address }}</p>
-
-          <div class="extra-details hidden text-sm">
-            {% if place.details.google_rating %}
-            <p>
-              <span class="font-bold">Rating out of 5 (Google): </span>
-              {{ place.details.google_rating }}
-            </p>
-            {% else %}
-            <p>No additional details</p>
-            {% endif %}
-          </div>
-
-          <div class="flex gap-4 justify-center w-full mt-auto">
-            <button class="btn btn-primary w-1/2 toggle-details-btn">
-              View Details
-            </button>
-            <button
-              class="btn btn-primary w-1/2 toggle-map-btn"
-              data-title="{{ place.name }}"
-              data-description="{{ place.details.google_address }}"
-              data-lat="{{ place.details.latitude }}"
-              data-lng="{{ place.details.longitude }}"
+            <!-- prettier-ignore -->
+            {% if place.images|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
             >
-              View on Map
-            </button>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- prettier-ignore -->
-    {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
-    <div
-      class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full"
-    >
-      {% for flight in additional_data.flights %}
-      <div
-        class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
-      >
-        <p class="text-sm text-gray-500 font-semibold">
-          Departing {{ flight.flight_date }}
-        </p>
-        <div class="flex w-full gap-4 justify-between items-center">
-          <div>
-            <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
-            <p class="text-gray-500">
-              {{ flight.departure.airport_iata }} {{ flight.departure.city }}
-            </p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
-            <div class="flex items-center">
-              <span class="h-1 w-6 bg-gray-500"></span>
-              <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
-              <span class="h-1 w-6 bg-gray-500"></span>
-            </div>
-            <p class="text-gray-500 text-sm">
-              <!-- prettier-ignore -->
-              {% if flight.stops == 0 %}
-                Non-stop
-              <!-- prettier-ignore -->
-              {% else %}
-              <!-- prettier-ignore -->
-              {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
-              <!-- prettier-ignore -->
-              {% endif %}
-            </p>
-
-            <!-- prettier-ignore -->
-            {% if flight.layovers %}
-            <div class="flex gap-2 mt-1 flex-wrap">
-              {% for l in flight.layovers %}
-              <div
-                class="tooltip tooltip-bottom"
-                data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}"
+              <a
+                href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
+                class="btn btn-circle"
+                >❮</a
               >
-                <span class="badge badge-outline px-2 py-1"
-                  >{{ l.airport_iata }}</span
-                >
-              </div>
-              {% endfor %}
+              <a
+                href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
+                class="btn btn-circle"
+                >❯</a
+              >
             </div>
             {% endif %}
           </div>
-
-          <div>
-            <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
-            <p class="text-gray-500">
-              {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
-            </p>
-          </div>
-        </div>
-
-        <div class="flex gap-2 justify-between items-center mt-4">
-          <div class="flex items-center space-x-2">
-            <!-- prettier-ignore -->
-            {% comment %} Logo url not in data yet {% endcomment %}
-            <!-- prettier-ignore -->
-            {% comment %}
-            <img
-              src="{{ flight.airline.logo_url }}"
-              alt="{{ flight.airline.name }}"
-              class="h-6 w-6"
-            />
-            {% endcomment %}
-            <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
-          </div>
-          <p class="text-gray-500 text-sm">Economy</p>
-        </div>
-
-        <div class="flex justify-between items-center mt-4">
-          <p class="text-lg font-bold">US${{ flight.flight_price }}</p>
-          <a
-            href="{{ flight.booking_url }}"
-            target="_blank"
-            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-          >
-            View trip
-          </a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- prettier-ignore -->
-    {% if additional_data and additional_data.type == 'house_search' %}
-    <div class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6">
-      <!-- prettier-ignore -->
-      {% for house in additional_data.houses %}
-      <div class="card bg-base-100 shadow-xl border border-primary">
-        <figure>
+          {% endfor %}
+        </label>
+        {% else %}
+        <label
+          for="place-modal-{{ forloop.counter }}"
+          class="block cursor-pointer"
+        >
           <img
-            class="w-full object-cover object-center"
-            src="/static/images/genhotel.jpg"
-            alt="{{ house.formattedAddress }}"
+            class="w-full h-48 object-cover object-center"
+            src="{% url 'proxy_hotel_photo' photo_reference=place.images.0|urlencode %}"
+            alt="{{ place.title }}"
             onerror="this.src='/static/images/genhotel.jpg'"
           />
-        </figure>
-        <div class="card-body">
-          <div class="flex flex-row justify-between gap-4 w-full">
-            <h2 class="card-title text-xl max-w-3/4 text-wrap">
-              {{ house.propertyType }}
-            </h2>
-            <h2 class="card-title text-xl text-wrap">
-              ${{ house.price|intcomma }}
-            </h2>
+        </label>
+        <!-- prettier-ignore -->
+        {% endif %}
+
+        <!-- prettier-ignore -->
+        {% endif %}
+      </figure>
+
+      <div class="card-body">
+        <h2 class="card-title text-xl mb-4">{{ place.name }}</h2>
+        <p class="text-base mb-6">{{ place.details.google_address }}</p>
+
+        <div class="extra-details hidden text-sm">
+          {% if place.details.google_rating %}
+          <p>
+            <span class="font-bold">Rating out of 5 (Google): </span>
+            {{ place.details.google_rating }}
+          </p>
+          {% else %}
+          <p>No additional details</p>
+          {% endif %}
+        </div>
+
+        <div class="flex gap-4 justify-center w-full mt-auto">
+          <button class="btn btn-primary w-1/2 toggle-details-btn">
+            View Details
+          </button>
+          <button
+            class="btn btn-primary w-1/2 toggle-map-btn"
+            data-title="{{ place.name }}"
+            data-description="{{ place.details.google_address }}"
+            data-lat="{{ place.details.latitude }}"
+            data-lng="{{ place.details.longitude }}"
+          >
+            View on Map
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- prettier-ignore -->
+  {% if additional_data and additional_data.type == 'flight_search' and not message.is_from_user %}
+  <div
+    class="flex flex-col overflow-y-auto h-full gap-4 text-white pb-6 w-full"
+  >
+    {% for flight in additional_data.flights %}
+    <div
+      class="card w-full bg-base-100 shadow-xl p-4 border border-gray-200 rounded-lg flex flex-col justify-between"
+    >
+      <p class="text-sm text-gray-500 font-semibold">
+        Departing {{ flight.flight_date }}
+      </p>
+      <div class="flex w-full gap-4 justify-between items-center">
+        <div>
+          <p class="text-2xl font-bold">{{ flight.departure.time }}</p>
+          <p class="text-gray-500">
+            {{ flight.departure.airport_iata }} {{ flight.departure.city }}
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center">
+          <p class="text-gray-500 text-sm">{{ flight.duration }}</p>
+          <div class="flex items-center">
+            <span class="h-1 w-6 bg-gray-500"></span>
+            <span class="h-2 w-2 bg-gray-700 rounded-full"></span>
+            <span class="h-1 w-6 bg-gray-500"></span>
           </div>
-          <div>
-            <p>{{ house.formattedAddress }}</p>
+          <p class="text-gray-500 text-sm">
             <!-- prettier-ignore -->
-            {% if house.propertyType != "Land" %}
-            <p>{{ house.squareFootage }} sq. ft</p>
+            {% if flight.stops == 0 %}
+                Non-stop
+            <!-- prettier-ignore -->
+            {% else %}
+            <!-- prettier-ignore -->
+            {{ flight.stops }} stop{% if flight.stops > 1 %}s{% endif %}
+            <!-- prettier-ignore -->
             {% endif %}
-          </div>
-          <div class="flex flex-col w-full gap-2 mt-2">
-            {% if house.propertyType != "Land" %}
-            <div class="card-actions items-center">
-              <div class="badge badge-outline">
-                {{house.bathrooms}} Bathroom(s)
-              </div>
-              <div class="badge badge-outline">
-                {{house.bedrooms}} Bedrooms(s)
-              </div>
-            </div>
-            {% endif %}
+          </p>
 
-            <div class="extra-details hidden text-sm">
-              <!-- prettier-ignore -->
-              {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
-              <p>
-                <span class="font-bold">Year Built: </span> {{ house.yearBuilt
-                }}
-              </p>
-              <p>
-                <span class="font-bold">Listing Type: </span>{{
-                house.listingType }}
-              </p>
-              <p>
-                <span class="font-bold">Days on Market: </span>{{
-                house.daysOnMarket }}
-              </p>
-              <p>
-                <span class="font-bold">Year Built: </span>{{ house.yearBuilt }}
-              </p>
-              <br />
-              <p>
-                <span class="font-bold">Listing Agent Name: </span>{{
-                house.listingAgent.name }}
-              </p>
-              <p>
-                <span class="font-bold">Listing Agent Email: </span>{{
-                house.listingAgent.email }}
-              </p>
-              <p>
-                <span class="font-bold">Listing Agent Website: </span>{{
-                house.listingAgent.website }}
-              </p>
-              <br />
-              <p>
-                <span class="font-bold">Listing Office Name: </span>{{
-                house.listingOffice.name }}
-              </p>
-              <p>
-                <span class="font-bold">Listing Office Email: </span>{{
-                house.listingOffice.email }}
-              </p>
-              <p>
-                <span class="font-bold">Listing Office Website: </span>{{
-                house.listingOffice.website }}
-              </p>
-              {% else %}
-              <p>No additional details</p>
-              {% endif %}
-            </div>
-
-            <div class="flex gap-4 justify-center w-full">
-              <button
-                class="btn btn-primary w-1/2 toggle-details-btn"
-                {%
-                comment
-                %}
-                onclick="showHotelDetails('{{ house.details|escapejs }}')"
-                {%
-                endcomment
-                %}
+          <!-- prettier-ignore -->
+          {% if flight.layovers %}
+          <div class="flex gap-2 mt-1 flex-wrap">
+            {% for l in flight.layovers %}
+            <div
+              class="tooltip tooltip-bottom"
+              data-tip="{{ l.city }} • {{ l.duration }} lay-over {{ l.arrive }} → {{ l.depart }}"
+            >
+              <span class="badge badge-outline px-2 py-1"
+                >{{ l.airport_iata }}</span
               >
-                View Details
-              </button>
-
-              <button
-                class="btn btn-primary toggle-map-btn w-1/2"
-                data-title="{{ house.propertyType }}, {{ house.formattedAddress }}"
-                data-description="{{ house.squareFootage }} sq. ft, {{house.bathrooms}} Bathroom(s), {{house.bedrooms}} Bedrooms(s)"
-                data-lat="{{ house.latitude }}"
-                data-lng="{{ house.longitude }}"
-              >
-                View on Map
-              </button>
             </div>
+            {% endfor %}
           </div>
+          {% endif %}
+        </div>
+
+        <div>
+          <p class="text-2xl font-bold">{{ flight.arrival.time }}</p>
+          <p class="text-gray-500">
+            {{ flight.arrival.airport_iata }} {{ flight.arrival.city }}
+          </p>
         </div>
       </div>
 
-      {% endfor %}
-    </div>
-    {% endif %}
+      <div class="flex gap-2 justify-between items-center mt-4">
+        <div class="flex items-center space-x-2">
+          <!-- prettier-ignore -->
+          {% comment %} Logo url not in data yet {% endcomment %}
+          <!-- prettier-ignore -->
+          {% comment %}
+          <img
+            src="{{ flight.airline.logo_url }}"
+            alt="{{ flight.airline.name }}"
+            class="h-6 w-6"
+          />
+          {% endcomment %}
+          <p class="text-gray-500 truncate">{{ flight.airline.name }}</p>
+        </div>
+        <p class="text-gray-500 text-sm">Economy</p>
+      </div>
 
-    <div id="mapSection" class="w-full md:w-1/2 h-full">
-      <!-- prettier-ignore -->
-      <div
-        id="map"
-        class="w-full h-full rounded-lg"
-        data-locations='{{ locations|safe }}'
-      ></div>
+      <div class="flex justify-between items-center mt-4">
+        <p class="text-lg font-bold">US${{ flight.flight_price }}</p>
+        <a
+          href="{{ flight.booking_url }}"
+          target="_blank"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          View trip
+        </a>
+      </div>
     </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- prettier-ignore -->
+  {% if additional_data and additional_data.type == 'house_search' %}
+  <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-1/2">
+    <!-- prettier-ignore -->
+    {% for house in additional_data.houses %}
+    <input
+      type="checkbox"
+      id="house-modal-{{ forloop.counter }}"
+      class="modal-toggle"
+    />
+    <div class="modal modal-middle p-0">
+      <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+        <label
+          for="house-modal-{{ forloop.counter }}"
+          class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
+          >✕
+        </label>
+        <div class="carousel w-full h-full">
+          {% for image in house.photos %}
+          <div
+            id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+            class="carousel-item relative w-full h-full"
+          >
+            <div
+              class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
+            >
+              {{ forloop.counter }} / {{ house.photos|length }}
+            </div>
+            <img
+              src="{{ image }}"
+              class="w-full h-full object-cover object-center"
+              onerror="this.src='/static/images/genhotel.jpg'"
+              alt="Photo {{ forloop.counter }}"
+            />
+            {% if house.photos|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+            >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                class="btn btn-circle"
+                >❮</a
+              >
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                class="btn btn-circle"
+                >❯</a
+              >
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card w-full bg-base-100 shadow-xl border border-primary">
+      <figure class="relative w-full h-48 overflow-hidden">
+        <div class="carousel w-full h-full">
+          <!-- prettier-ignore -->
+          {% for image in house.photos %}
+          <div
+            id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+            class="carousel-item relative w-full h-full"
+          >
+            <div
+              class="absolute top-2 right-2 z-50 bg-black bg-opacity-50 text-white text-sm px-2 py-1"
+            >
+              {{ forloop.counter }} / {{ house.photos|length }}
+            </div>
+            <img
+              src="{{ image }}"
+              class="w-full h-full object-cover object-center"
+              onerror="this.src='/static/images/genhotel.jpg'"
+              alt="Thumb {{ forloop.counter }}"
+            />
+            <!-- prettier-ignore -->
+            {% if house.photos|length > 1 %}
+            <div
+              class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+            >
+              <!-- prettier-ignore -->
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                class="btn btn-circle"
+                >❮</a
+              >
+              <!-- prettier-ignore -->
+              <a
+                href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                class="btn btn-circle"
+                >❯</a
+              >
+            </div>
+            {% endif %}
+          </div>
+          <!-- prettier-ignore -->
+          {% endfor %}
+        </div>
+        {# clicking anywhere on the figure pops open the modal #}
+        <label
+          for="house-modal-{{ forloop.counter }}"
+          class="absolute inset-0 cursor-pointer"
+        ></label>
+      </figure>
+
+      <div class="card-body">
+        <div class="flex justify-between items-center">
+          <h2 class="card-title">{{ house.propertyType }}</h2>
+          <span class="text-lg font-bold">${{ house.price|intcomma }}</span>
+        </div>
+        <!-- prettier-ignore -->
+        <p>{{ house.formattedAddress }}</p>
+        {% if house.squareFootage %}
+        <!-- prettier-ignore -->
+        <p>{{ house.squareFootage }} sq ft</p>
+        {% endif %}
+
+        <div class="flex gap-4 mt-4">
+          <button class="btn btn-primary w-1/2 toggle-details-btn">
+            View Details
+          </button>
+          <button
+            class="btn btn-primary w-1/2 toggle-map-btn"
+            data-lat="{{ house.latitude }}"
+            data-lng="{{ house.longitude }}"
+            data-title="{{ house.propertyType }}, {{ house.formattedAddress }}"
+            data-description="{{ house.bedrooms }} beds, {{ house.bathrooms }} baths"
+          >
+            View on Map
+          </button>
+        </div>
+
+        <div class="extra-details hidden mt-2 text-sm">
+          <!-- prettier-ignore -->
+          {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Year Built: </span>{{ house.yearBuilt }}</p>
+          <!-- prettier-ignore -->
+          <br />
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Agent Name: </span>{{ house.listingAgent.name }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Agent Email: </span>{{ house.listingAgent.email }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Agent Website: </span>{{ house.listingAgent.website }}</p>
+          <!-- prettier-ignore -->
+          <br />
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Office Name: </span>{{ house.listingOffice.name }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Office Email: </span>{{ house.listingOffice.email }}</p>
+          <!-- prettier-ignore -->
+          <p><span class="font-bold">Listing Office Website: </span>{{ house.listingOffice.website }}</p>
+          <!-- prettier-ignore -->
+          {% else %}
+          <p>No additional details</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- prettier-ignore -->
+    {% endfor %}
+  </div>
+  <!-- prettier-ignore -->
+  {% endif %}
+
+  <div id="mapSection" class="w-full md:w-1/2 h-full">
+    <!-- prettier-ignore -->
+    <div
+      id="map"
+      class="w-full h-full rounded-lg"
+      data-locations='{{ locations|safe }}'
+    ></div>
   </div>
 </div>
 
@@ -602,7 +652,6 @@
 
       const mapElement = document.getElementById("map");
       if (!mapElement) {
-        console.log("No map element");
         isInitializing = false;
         return;
       }
@@ -729,12 +778,9 @@
 
   async function reinitializeMap() {
     await cleanupMap();
-    console.log("cleanupMap");
     if (window.google && window.google.maps) {
       await initMap();
-      console.log("init map");
     } else {
-      console.log("load scripts");
       loadMapScripts();
     }
   }
@@ -884,6 +930,7 @@
 
 <script src="https://unpkg.com/@googlemaps/markerclusterer@2.4.0/dist/index.min.js"></script>
 
+<!-- prettier-ignore -->
 {% comment %}
 <script
   src="https://maps.googleapis.com/maps/api/js?key={{google_maps_api_key}}&callback=initMap"

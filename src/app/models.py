@@ -108,9 +108,10 @@ class Property(models.Model):
     mls_number = models.CharField(max_length=255)
     listing_agent = models.ForeignKey(ListingAgent, on_delete=models.CASCADE)
     listing_office = models.ForeignKey(ListingOffice, on_delete=models.CASCADE)
+    house_rating = models.CharField(max_length=5, null=True)
 
     def __str__(self):
-        return self.formatted_address
+      return self.formatted_address
 
 class PropertyHistory(models.Model):
     property = models.ForeignKey(Property, related_name="history", on_delete=models.CASCADE)
