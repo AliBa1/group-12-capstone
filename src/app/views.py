@@ -384,6 +384,7 @@ def chatbot_response(request, prompt):
         return JsonResponse({"error": "No assistant response found."}, status=500)
 
       strategy = travel_factory.get_strategy(prompt)
+      print(f"Strategy: {strategy}")
       if strategy:
         conversation_id = request.POST.get("conversation_id")
         city = None
@@ -476,7 +477,14 @@ def search_response(request, city, topic):
     try:
       origin = request.GET.get("origin")
       flight_date = request.GET.get("flight_date")
-      if topic == "Flights" and origin and flight_date:
+      property_type = request.POST.get("property_type")
+
+      if topic == "Housing":
+        if property_type == "None" or property_type is None:
+          prompt = f"Find me houses in {city}"
+        else:
+          prompt = f"Find me {property_type} properties in {city}"
+      elif topic == "Flights" and origin and flight_date:
         prompt = f"Find me flights between {origin} and {city} on {flight_date}"
       else:
         prompt = f"I want to learn more about {topic} in {city}"

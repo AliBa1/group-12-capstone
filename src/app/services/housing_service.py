@@ -24,7 +24,7 @@ response = requests.get(url, headers=headers)
 
 
 class HousingSearchStrategy(SearchStrategy):
-    KEYWORDS = ['houses', 'housing', 'house']
+    KEYWORDS = ['houses', 'housing', 'house', 'home', 'homes', 'apartment', 'apartments', 'townhouse', 'townhomes', 'condo', 'condos', 'property', 'properties']
 
     def __init__(self):
         self.api_key = settings.RENTCAST_API_KEY
@@ -49,10 +49,12 @@ class HousingSearchStrategy(SearchStrategy):
     def process_query(self, prompt, city=None, state=None, reason=None, user=None):
         prompt_location_info = self._query_location_info(prompt)
         aerial = AerialViewClient()
+        property_type = Preferences.objects.filter(user=user).first().house_property_type or None
 
-        if prompt_location_info and 'city' in prompt_location_info and 'state' in prompt_location_info:
+        if prompt_location_info and 'city' in prompt_location_info and 'state' in prompt_location_info and 'property_type' in prompt_location_info:
             location_info = prompt_location_info
             original_city = prompt
+            property_type = prompt_location_info['property_type']
         elif city and state:
             location_info = {'city': city, 'state': state}
             original_city = city
@@ -63,7 +65,7 @@ class HousingSearchStrategy(SearchStrategy):
         if not location_info or 'city' not in location_info or 'state' not in location_info:
             return None
 
-        property_type = Preferences.objects.filter(user=user).first().house_property_type or None
+        
         response = self._search_houses(location_info['city'], location_info['state'], property_type)
         if not response:
             return None
@@ -74,8 +76,6 @@ class HousingSearchStrategy(SearchStrategy):
         heat_index = self._house_rating(location_info['city'], location_info['state'])
 
         extra_data = []
-        print("houses_data:")
-        print(houses_data)
         for house in houses_data:
             house['heatIndex'] = heat_index 
             address = house['formattedAddress']
@@ -105,10 +105,6 @@ class HousingSearchStrategy(SearchStrategy):
         self._store_houses(extra_data)
         formatted_data = self._format_house_response(extra_data)
 
-        print("Before accessing 'houses'")
-        print(formatted_data)  
-        print(formatted_data.get('houses'))
-        print("After accessing 'houses'")
         response_text = f"I found {len(formatted_data['houses'])} properties in the {location_info['city']}, {location_info['state']} area"
         print(f"Found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area")
         return {
@@ -122,8 +118,9 @@ class HousingSearchStrategy(SearchStrategy):
                 model="gpt-4o-mini",
                 messages=[{
                     "role": "user",
-                    "content": f"Extract the city and state from this query, and if the city name, state name is misspelled, correct it and use the proper city name or state name: '{query}'. "
-                              f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\", \"state\": \"TX\"}} "
+                    "content": f"Extract the city, state, and property type from this query, and if the city name, state name is misspelled, correct it and use the proper city name or state name: '{query}'. "
+                              f"Potential values for property type: Single%20Family, Townhouse, Multi-Family, Apartment, or default to None if none specified"
+                              f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\", \"state\": \"TX\", \"property_type\": \"Single%20Family\"}} "
                               f"(replace Austin and TX with the appropriate city and state)"
                 }]
             )
@@ -138,28 +135,24 @@ class HousingSearchStrategy(SearchStrategy):
         # cache_key = self.get_cache_key('properties', city)
         cache_key = self.get_cache_key('properties', city, property_type)
         cached_data = cache.get(cache_key)
-        print("Search house property type: ", property_type)
 
         #if cached_data:
             #return cached_data
         try:
-            if property_type is None:
+            if property_type is None or property_type == 'None':
                 url = f"{self.base_url}/sale?city={city}&state={state}&status=Active&limit={limit}"
             elif property_type.lower() == 'apartment':
                 url = f"{self.base_url}/rental/long-term?city={city}&state={state}&propertyType={property_type}&status=Active&limit={limit}"
             else:
-                url = f"{self.base_url}?city={city}&state={state}&propertyType={property_type}&status=Active&limit={limit}"
+                url = f"{self.base_url}/sale?city={city}&state={state}&propertyType={property_type}&status=Active&limit={limit}"
             headers = {
                 "accept": "application/json",
                 "X-API-KEY": self.api_key
             }
-            print(url)
-            print(headers)
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             cache.set(cache_key, response, timeout=86400)
 
-            print(response)
             return response
         except Exception as e:
             print(f"Error in search_houses: {e}")
@@ -205,9 +198,7 @@ class HousingSearchStrategy(SearchStrategy):
                         'mls_name': house.get('mlsName', ''),
                         'mls_number': house.get('mlsNumber', ''),
                         'listing_agent': agent,
-                        'listing_office': office,
-                        'heat_index': house.get('heatIndex', 0),
-                        'photos': house.get('photos', []),            
+                        'listing_office': office,           
                     }
                 )
 

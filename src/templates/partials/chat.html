@@ -100,161 +100,206 @@
     <div class="flex flex-col gap-6 text-white">
       {% for house in message.additional_data.houses %}
       <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
-        <figure>
-          <img
-            class="w-full object-cover object-center"
-            src="/static/images/genhotel.jpg"
-            alt="{{ house.formattedAddress }}"
-            onerror="this.src='/static/images/genhotel.jpg'"
-          />
-        </figure>
-        <div class="card-body w-full">
-          <div class="flex flex-row justify-between gap-4 w-full">
-            <h2 class="card-title text-xl max-w-3/4 text-wrap">
-              {{ house.propertyType }}
-            </h2>
-            <h2 class="card-title text-xl text-wrap">
-              ${{ house.price|intcomma }}
-            </h2>
-          </div>
-          <div>
-            <p>{{ house.formattedAddress }}</p>
-            {% if house.propertyType != "Land" %}
-            <p>{{ house.squareFootage }} sq. ft</p>
-            {% endif %}
-          </div>
-          <div class="flex flex-col w-full gap-2 mt-2">
-            {% if house.propertyType != "Land" %}
-            <div class="card-actions items-center">
-              <div class="badge badge-outline">
-                {{house.bathrooms}} Bathroom(s)
+        <input type="checkbox" id="house-modal-{{ forloop.counter }}" class="modal-toggle" />
+        <div class="modal modal-middle p-0">
+          <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+            <label for="house-modal-{{ forloop.counter }}" class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50">✕</label>
+            <div class="carousel w-full h-full">
+              {% for photo in house.photos %}
+              <div id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+                   class="carousel-item relative w-full h-full">
+                <div class="absolute top-2 left-1/2 z-40 -translate-x-1/2
+                            bg-black bg-opacity-50 text-white text-xs px-2 py-1">
+                  {{ forloop.counter }} / {{ house.photos|length }}
+                </div>
+                <img src="{{ photo }}"
+                     class="w-full h-full object-cover object-center"
+                     onerror="this.src='/static/images/genhotel.jpg'"
+                     alt="Photo {{ forloop.counter }}" />
+                {% if house.photos|length > 1 %}
+                <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                  <a href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                     class="btn btn-circle">❮</a>
+                  <a href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                     class="btn btn-circle">❯</a>
+                </div>
+                {% endif %}
               </div>
-              <div class="badge badge-outline">
-                {{house.bedrooms}} Bedrooms(s)
-              </div>
+              {% endfor %}
             </div>
+          </div>
+        </div>
+    
+        <div class="card w-full bg-base-100 shadow-xl border border-primary">
+          <figure class="relative w-full h-48 overflow-hidden">
+            <div class="carousel w-full h-full">
+              {% for photo in house.photos %}
+              <div id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                   class="carousel-item relative w-full h-full">
+                <div class="absolute top-2 right-2 z-40 bg-black bg-opacity-50
+                            text-white text-xs px-2 py-1">
+                  {{ forloop.counter }} / {{ house.photos|length }}
+                </div>
+                <img src="{{ photo }}"
+                     class="w-full h-full object-cover object-center"
+                     onerror="this.src='/static/images/genhotel.jpg'"
+                     alt="Thumb {{ forloop.counter }}" />
+                {% if house.photos|length > 1 %}
+                <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                  <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ house.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}"
+                     class="btn btn-circle">❮</a>
+                  <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}"
+                     class="btn btn-circle">❯</a>
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            <label for="house-modal-{{ forloop.counter }}" class="absolute inset-0 cursor-pointer"></label>
+          </figure>
+          <div class="card-body w-full">
+            <div class="flex justify-between items-center">
+              <h2 class="card-title">{{ house.propertyType }}</h2>
+              <span class="text-lg font-bold">${{ house.price|intcomma }}</span>
+            </div>
+            <p>{{ house.formattedAddress }}</p>
+            {% if house.squareFootage %}
+              <p>{{ house.squareFootage }} sq ft</p>
             {% endif %}
-            <div class="flex gap-4 justify-center w-full">
-              <button
-                class="btn btn-primary w-1/2 toggle-details-btn"
-                {% comment %} onclick="showHotelDetails('{{ house.details|escapejs }}')" {% endcomment %}
-              >
-                View Details
-              </button>
-  
-              <button 
-                class="btn btn-primary toggle-map-btn w-1/2"
-                data-title='{{ house.propertyType }}, {{ house.formattedAddress }}'
-                data-description='{{ house.squareFootage }} sq. ft, {{house.bathrooms}} Bathroom(s), {{house.bedrooms}} Bedrooms(s)' 
-                data-lat='{{ house.latitude }}' 
-                data-lng='{{ house.longitude }}'
-              >
+            <div class="flex gap-4 mt-4">
+              <button class="btn btn-primary w-1/2 toggle-details-btn">View Details</button>
+              <button class="btn btn-primary w-1/2 toggle-map-btn"
+                      data-lat="{{ house.latitude }}"
+                      data-lng="{{ house.longitude }}"
+                      data-title="{{ house.propertyType }}, {{ house.formattedAddress }}"
+                      data-description="{{ house.bedrooms }} beds, {{ house.bathrooms }} baths">
                 View on Map
               </button>
             </div>
-          </div>
-          <div class="extra-details hidden text-sm">
-            {% if house.yearBuilt or house.listingType or house.daysOnMarket or house.listingAgent or house.listingOffice %}
-              <p><span class="font-bold">Year Built: </span> {{ house.yearBuilt }}</p>
-              <p><span class="font-bold">Listing Type: </span>{{ house.listingType }}</p>
-              <p><span class="font-bold">Days on Market: </span>{{ house.daysOnMarket }}</p>
-              <br/>
-              <p><span class="font-bold">Listing Agent Name: </span>{{ house.listingAgent.name }}</p>
-              <p><span class="font-bold">Listing Agent Email: </span>{{ house.listingAgent.email }}</p>
-              <p><span class="font-bold">Listing Agent Website: </span>{{ house.listingAgent.website }}</p>
-              <br/>
-              <p><span class="font-bold">Listing Office Name: </span>{{ house.listingOffice.name }}</p>
-              <p><span class="font-bold">Listing Office Email: </span>{{ house.listingOffice.email }}</p>
-              <p><span class="font-bold">Listing Office Website: </span>{{ house.listingOffice.website }}</p>
-            {% else %}
-              <p>No additional details</p>
-            {% endif %}
+            <div class="extra-details hidden mt-2 text-sm">
+              {% if house.yearBuilt or house.listingType or house.daysOnMarket %}
+                <p><strong>Year Built:</strong> {{ house.yearBuilt }}</p>
+                <p><strong>Listing Type:</strong> {{ house.listingType }}</p>
+                <p><strong>Days on Market:</strong> {{ house.daysOnMarket }}</p>
+              {% endif %}
+              {% if house.listingAgent %}
+                <br/>
+                <p><strong>Agent:</strong> {{ house.listingAgent.name }}</p>
+                <p>{{ house.listingAgent.email }} · {{ house.listingAgent.phone }}</p>
+              {% endif %}
+              {% if house.listingOffice %}
+                <p><strong>Office:</strong> {{ house.listingOffice.name }}</p>
+                <p>{{ house.listingOffice.email }} · {{ house.listingOffice.phone }}</p>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
     {% endif %}
+    
 
     {% if message.additional_data and message.additional_data.type == 'apartment_search' and not message.is_from_user %}
-    <div class="flex flex-col gap-6 text-white">
-      {% for apartment in message.additional_data.apartments %}
-      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
-        <figure>
-          <img
-            class="w-full object-cover object-center"
-            src="/static/images/genhotel.jpg"
-            alt="{{ apartment.formattedAddress }}"
-            onerror="this.src='/static/images/genhotel.jpg'"
-          />
-        </figure>
-        <div class="card-body w-full">
-          <div class="flex flex-row justify-between gap-4 w-full">
-            <h2 class="card-title text-xl max-w-3/4 text-wrap">
-              {{ apartment.propertyType }}
-            </h2>
-            <h2 class="card-title text-xl text-wrap">
-              ${{ apartment.price|intcomma }}+/month
-            </h2>
-          </div>
-          <div>
-            <p>{{ apartment.formattedAddress }}</p>
-            {% if apartment.squareFootage > 0 %}
-              <p>{{ apartment.squareFootage }} sq. ft</p>
-            {% endif %}
-          </div>
-          <div class="flex flex-col w-full gap-2 mt-2">
-            <div class="card-actions items-center">
-              <div class="badge badge-outline">
-                {{apartment.bathrooms}} Bathroom(s)
-              </div>
-              <div class="badge badge-outline">
-                {{apartment.bedrooms}} Bedrooms(s)
-              </div>
+      <div class="flex flex-col gap-6 text-white">
+        {% for apartment in message.additional_data.apartments %}
+          <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
+            <input type="checkbox" id="apt-modal-{{ forloop.counter }}" class="modal-toggle" />
+            <div class="modal modal-middle p-0">
+              <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+                <label for="apt-modal-{{ forloop.counter }}" class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50">✕</label>
+                <div class="carousel w-full h-full">
+                  {% for photo in apartment.photos %}
+                  <div id="modal-apt-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+                      class="carousel-item relative w-full h-full">
+                    <div class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1">
+                      {{ forloop.counter }} / {{ apartment.photos|length }}
+                    </div>
+                    <img src="{{ photo }}"
+                        class="w-full h-full object-cover object-center"
+                        onerror="this.src='/static/images/genhotel.jpg'"
+                        alt="Photo {{ forloop.counter }}" />
+                    {% if apartment.photos|length > 1 %}
+                    <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                      <a href="#modal-apt-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ apartment.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal" class="btn btn-circle">❮</a>
+                      <a href="#modal-apt-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal" class="btn btn-circle">❯</a>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
             </div>
-            <div class="flex gap-4 justify-center w-full">
-              <button
-                {% comment %} class="btn btn-primary w-1/2"
-                onclick="showHotelDetails('{{ apartment.details|escapejs }}')" {% endcomment %}
-                class="btn btn-primary w-1/2 toggle-details-btn"
-              >
-                View Details
-              </button>
-  
-              <button 
-                class="btn btn-primary toggle-map-btn w-1/2"
-                data-title='{{ apartment.formattedAddress }}'
-                data-description='{{ apartment.squareFootage }} sq. ft, {{apartment.bathrooms}} Bathroom(s), {{apartment.bedrooms}} Bedrooms(s)' 
-                data-lat='{{ apartment.latitude }}' 
-                data-lng='{{ apartment.longitude }}'
-              >
-                View on Map
-              </button>
-
-            </div>
-          </div>
-          <div class="extra-details hidden text-sm">
-            {% if apartment.yearBuilt %}
-              <p><span class="font-bold">Year Built: </span>{{ apartment.yearBuilt }}</p>
-              <p><span class="font-bold">Listing Type: </span>{{ apartment.listingType }}</p>
-              <p><span class="font-bold">Days on Market: </span>{{ apartment.daysOnMarket }}</p>
-              <br/>
-              <p><span class="font-bold">Listing Agent Name: </span>{{ apartment.listingAgent.name }}</p>
-              <p><span class="font-bold">Listing Agent Email: </span>{{ apartment.listingAgent.email }}</p>
-              <p><span class="font-bold">Listing Agent Website: </span>{{ apartment.listingAgent.website }}</p>
-              <br/>
-              <p><span class="font-bold">Listing Office Name: </span>{{ apartment.listingOffice.name }}</p>
-              <p><span class="font-bold">Listing Office Email: </span>{{ apartment.listingOffice.email }}</p>
-              <p><span class="font-bold">Listing Office Website: </span>{{ apartment.listingOffice.website }}</p>
-            {% else %}
-              <p>No additional details</p>
-            {% endif %}
           </div>
         </div>
+
+        <!-- inline preview carousel -->
+        <div class="card w-full bg-base-100 shadow-xl border border-primary">
+          <figure class="relative w-full h-48 overflow-hidden">
+            <div class="carousel w-full h-full">
+              {% for photo in apartment.photos %}
+                <div id="slide-apt-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                    class="carousel-item relative w-full h-full">
+                  <div class="absolute top-2 right-2 z-40 bg-black bg-opacity-50 text-white text-xs px-2 py-1">
+                    {{ forloop.counter }} / {{ apartment.photos|length }}
+                  </div>
+                  <img src="{{ photo }}"
+                      class="w-full h-full object-cover object-center"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                      alt="Thumb {{ forloop.counter }}" />
+                  {% if apartment.photos|length > 1 %}
+                    <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+                      <a href="#slide-apt-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ apartment.photos|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}" class="btn btn-circle">❮</a>
+                      <a href="#slide-apt-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}" class="btn btn-circle">❯</a>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            <!-- open modal when clicked -->
+            <label for="apt-modal-{{ forloop.counter }}" class="absolute inset-0 cursor-pointer"></label>
+          </figure>
+
+          <div class="card-body w-full">
+            <div class="flex justify-between items-center">
+              <h2 class="card-title">{{ apartment.propertyType }}</h2>
+              <span class="text-lg font-bold">${{ apartment.price|intcomma }}+/month</span>
+            </div>
+            <p>{{ apartment.formattedAddress }}</p>
+            {% if apartment.squareFootage > 0 %}
+              <p>{{ apartment.squareFootage }} sq ft</p>
+            {% endif %}
+                <div class="flex gap-4 mt-4">
+                  <button class="btn btn-primary w-1/2 toggle-details-btn">View Details</button>
+                  <button class="btn btn-primary w-1/2 toggle-map-btn"
+                          data-lat="{{ apartment.latitude }}"
+                          data-lng="{{ apartment.longitude }}"
+                          data-title="{{ apartment.formattedAddress }}"
+                          data-description="{{ apartment.squareFootage }} sq ft, {{ apartment.bathrooms }} baths, {{ apartment.bedrooms }} beds">
+                    View on Map
+                  </button>
+                </div>
+                <div class="extra-details hidden mt-2 text-sm">
+                  {% if apartment.yearBuilt or apartment.listingType or apartment.daysOnMarket %}
+                    <p><strong>Year Built:</strong> {{ apartment.yearBuilt }}</p>
+                    <p><strong>Listing Type:</strong> {{ apartment.listingType }}</p>
+                    <p><strong>Days on Market:</strong> {{ apartment.daysOnMarket }}</p>
+                  {% endif %}
+                  {% if apartment.listingAgent %}
+                    <br/>
+                    <p><strong>Agent:</strong> {{ apartment.listingAgent.name }}</p>
+                    <p>{{ apartment.listingAgent.email }} · {{ apartment.listingAgent.phone }}</p>
+                  {% endif %}
+                  {% if apartment.listingOffice %}
+                    <p><strong>Office:</strong> {{ apartment.listingOffice.name }}</p>
+                    <p>{{ apartment.listingOffice.email }} · {{ apartment.listingOffice.phone }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% endif %}
+
 
     {% if message.additional_data and message.additional_data.type == 'hotel_search' %}
     <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-full">
