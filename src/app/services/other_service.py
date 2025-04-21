@@ -8,6 +8,7 @@ from django.core.cache import cache
 import traceback
 
 class OtherSearchStrategy(SearchStrategy):
+    # always runs as fallback so keywords don't matter vvvv
     KEYWORDS = ['attractions', 'food']
 
     def __init__(self):

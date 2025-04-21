@@ -11,7 +11,8 @@ import traceback
 import requests
 
 class HotelSearchStrategy(SearchStrategy):
-    KEYWORDS = ['hotels', 'place to stay', 'accommodation', 'resort', 'motel', 'hotel']
+    # dont need 'hotels' and 'hotel' for example since it will catch both if only 'hotel'
+    KEYWORDS = ['hotel', 'place to stay', 'accommodation', 'resort', 'motel', 'stay overnight', 'a room', 'bnb']
 
     def __init__(self):
         #self.amadeus = Client(
