@@ -220,7 +220,7 @@ def send_prompt(request, conversation_id):
 
     if premade_prompt:
       premade_prompt = premade_prompt.lower()
-      prompt = f"I want to learn more about {premade_prompt} in {conversation.city}"
+      prompt = f"Find me {premade_prompt} in {conversation.city}"
 
     Message.objects.create(is_from_user=True, text=prompt, conversation=conversation)
 
@@ -509,7 +509,7 @@ def search_response(request, city, topic):
       elif topic == "Flights" and origin and flight_date:
         prompt = f"Find me flights between {origin} and {city} on {flight_date}"
       else:
-        prompt = f"I want to learn more about {topic} in {city}"
+        prompt = f"Find me {topic} in {city}"
       response = chatbot_response(request, prompt)
       # response = "Test Response"
       additional_data = None

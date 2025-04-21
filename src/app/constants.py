@@ -1,12 +1,15 @@
 premade_moving = [
-  "Diversity",
+  # "Diversity",
   "Farmers Markets",
   "Gas Stations",
   "Healthcare",
   "Hospitials",
   "Public Transportation",
-  "Safety",
-  "Traffic",
+  # "Safety",
+  # "Traffic",
+  "Parks",
+  "Libraries",
+  "Community Centers",
 ]
 
 premade_travel = [
@@ -16,26 +19,35 @@ premade_travel = [
   "Hospitials",
   "Museums",
   "Nightlife",
-  "Safety",
+  # "Safety",
   "Stores",
+  "Rest Stops",
+  "Car Rentals",
+  "Tours"
 ]
 
 topics_moving = [
-  "Employment",
   "Housing",
+  "Employment",
   "Schools",
-  "Things to do",
-  "Weather",
+  "Grocery Stores",
+  "Sports",
+  "Parks",
+  "Libraries",
+  # "Things to do",
+  # "Weather",
 ]
 
 topics_travel = [
+  "Flights",
+  "Hotels",
   "Attractions",
   "Events",
-  "Flights",
   "Food and Restaurants",
-  "Hotels",
-  "Things to do",
-  "Weather",
+  "Things To Do",
+  "Nightlife",
+  "Stores",
+  # "Weather",
 ]
 
 # Tone down in the future to major only
