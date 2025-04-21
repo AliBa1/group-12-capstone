@@ -28,53 +28,20 @@ class OtherSearchStrategy(SearchStrategy):
             if not prompt:
                 return None
             query = self._create_query(prompt, city)
-            # print(prompt)
-            # print(city)
-            # print(query)
             other_data = self._search_others(query)
-            
-            # other_data = self._search_others(prompt)
             if not other_data:
                 return None
             
-            # other_list = other_data.get("data", [])
-
-            # enhanced_other = self.other_details(other_list)
-            
-            # self._store_others(other_data)
             formatted_data = self._format_other_response(other_data)
-
-            # response_text = f"I found {len(enhanced_other)} {prompt} in {city}"
-            # response_text = f"I found {len(formatted_data.get('total_results'))} results related to your search in {city}"
             response_text = f"I found {formatted_data.get('total_results')} results related to your search in {city}"
 
             return {
                 'text': response_text,
                 'data': formatted_data
-                # 'data': other_data
             }
         except Exception as e:
             print(f"Error in process_query: {str(e)}")
             return None
-
-    # def _query_location_info(self, query):
-    #     try:
-    #         response = openai.chat.completions.create(
-    #             model="gpt-4o-mini",
-    #             messages=[{
-    #                 "role": "user",
-    #                 "content": f"Extract the city and state from this query, and if the city name, state name is misspelled, correct it and use the proper city name or state name: '{query}'. "
-    #                           f"Return ONLY a JSON object in this EXACT format: {{\"city\": \"Austin\", \"state\": \"TX\"}} "
-    #                           f"(replace Austin and TX with the appropriate city and state)"
-    #             }]
-    #         )
-    #         content = response.choices[0].message.content
-    #         #print(content)
-    #         return json.loads(content.strip())
-    #     except Exception as e:
-    #         print(f"Error in query_location_info: {e}")
-    #         return None
-
 
     def _create_query(self, prompt, city):
       try:
@@ -86,30 +53,7 @@ class OtherSearchStrategy(SearchStrategy):
               ]
 
           )
-          # response = openai.chat.completions.create(
-          #     model="gpt-4o-mini",
-          #     messages=[{
-          #         "role": "user",
-          #         "content": 
-          #             "Combine the user intent/prompt with the given location to create a query string for Google Places API Text Search.\n\n"
-          #             "Instructions:\n"
-          #             "- Use the user's prompt: '{prompt}'\n"
-          #             "- Use the given location: '{city}'\n"
-          #             "- If the user's prompt already includes a location, use that instead of the given location.\n"
-          #             "- Return ONLY the resulting query string (no extra explanation or formatting).\n\n"
-          #             "Example 1:\n"
-          #             "If prompt = 'Find me good attractions to visit' and "
-          #             "city = 'Los Angeles, CA'\n"
-          #             "Return: 'attractions in Los Angeles, CA'\n\n"
-          #             "Example 2:\n"
-          #             "If prompt = 'I am looking for the best food in Las Vegas, NV' and "
-          #             "city = 'Los Angeles, CA'\n"
-          #             "Return: 'best food in Las Vegas, NV'"
-          #     }]
-          # )
           content = response.choices[0].message.content
-          #print(content)
-          # return json.loads(content.strip())
           return content
       except Exception as e:
           print(f"Error in create_query: {e}")
@@ -128,7 +72,6 @@ class OtherSearchStrategy(SearchStrategy):
                 text_query=prompt,
             )
             field_mask = "places.displayName,places.name,places.primaryType,places.formattedAddress,places.location,places.photos,places.rating,places.priceRange,places.priceLevel"
-            # field_mask = "places.displayName,places.name"
             metadata = (("x-goog-fieldmask", field_mask),)
 
             response = self.places.search_text(request=request, metadata=metadata)
@@ -159,21 +102,6 @@ class OtherSearchStrategy(SearchStrategy):
 
         if place.photos:
             item['photo_references'] = [photo.name for photo in place.photos]
-            # for photo in place.photos:
-            #     photo_info = {
-            #         'photo_name': photo.name,
-            #         'width': photo.width_px,
-            #         'height': photo.height_px,
-            #         'attributions': []
-            #     }
-            #     if photo.author_attributions:
-            #         for author in photo.author_attributions:
-            #             photo_info['attributions'].append({
-            #                 'name': author.display_name,
-            #                 'uri': author.uri,
-            #                 'photo_uri': author.photo_uri
-            #             })
-            #     item['photo_references'].append(photo_info)
         else:
             item['photo_references'] = []
         data.append(item)
