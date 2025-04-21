@@ -390,6 +390,141 @@
         {% endfor %}
       </div>
     {% endif %}
+
+    {% if message.additional_data and message.additional_data.type == 'other_search' %}
+    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-full">
+      {% for place in message.additional_data.places %}
+          <input
+            type="checkbox"
+            id="place-modal-{{ forloop.counter }}"
+            class="modal-toggle"
+          />
+          <div class="modal modal-middle p-0 z-50">
+            <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
+              <label
+                for="place-modal-{{ forloop.counter }}"
+                class="btn btn-sm btn-circle absolute right-4 top-4 text-white z-50"
+              >✕</label>
+
+              <div class="carousel w-full h-full">
+                {% for image in place.images %}
+                  <div
+                    id="modal-slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-modal"
+                    class="carousel-item relative w-full h-full"
+                  >
+                    {# centered counter badge #}
+                    <div
+                      class="absolute top-4 left-1/2 z-50 -translate-x-1/2
+                            bg-black bg-opacity-50 text-white text-sm rounded px-3 py-1"
+                    >
+                      {{ forloop.counter }} of {{ place.images|length }}
+                    </div>
+
+                    <img
+                      class="w-full h-full object-cover object-center"
+                      src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                    />
+
+                    {% if place.images|length > 1 %}
+                      <div
+                        class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+                      >
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}-modal"
+                          class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                        >❮</a>
+                        <a
+                          href="#modal-slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}-modal"
+                          class="btn btn-circle bg-black bg-opacity-50 text-white border-none"
+                        >❯</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="card w-full bg-base-100 shadow-xl border border-primary">
+            <figure class="w-full">
+              {% if place.images %}
+                {% if place.images|length > 1 %}
+                  <label
+                    for="place-modal-{{ forloop.counter }}"
+                    class="carousel w-full h-48 overflow-hidden cursor-pointer"
+                  >
+                    {% for image in place.images %}
+                      <div
+                        id="slide-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                        class="carousel-item relative w-full h-full"
+                      >
+                        {# corner counter badge #}
+                        <div
+                          class="absolute top-2 right-2 z-50
+                                bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                        >
+                          {{ forloop.counter }} of {{ place.images|length }}
+                        </div>
+
+                        <img
+                          class="w-full h-full object-cover object-center"
+                          src="{% url 'proxy_hotel_photo' photo_reference=image|urlencode %}"
+                          alt="{{ place.title }}"
+                          onerror="this.src='/static/images/genhotel.jpg'"
+                        />
+
+                        {% if place.images|length > 1 %}
+                          <div
+                            class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between"
+                          >
+                            <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.first %}{{ place.images|length }}{% else %}{{ forloop.counter|add:'-1' }}{% endif %}" class="btn btn-circle">❮</a>
+                            <a href="#slide-{{ forloop.parentloop.counter }}-{% if forloop.last %}1{% else %}{{ forloop.counter|add:'1' }}{% endif %}" class="btn btn-circle">❯</a>
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </label>
+                {% else %}
+                  <label for="place-modal-{{ forloop.counter }}" class="block cursor-pointer">
+                    <img
+                      class="w-full h-48 object-cover object-center"
+                      src="{% url 'proxy_hotel_photo' photo_reference=place.images.0|urlencode %}"
+                      alt="{{ place.title }}"
+                      onerror="this.src='/static/images/genhotel.jpg'"
+                    />
+                  </label>
+                {% endif %}
+              {% endif %}
+            </figure>
+
+            <div class="card-body">
+              <h2 class="card-title text-xl mb-4">{{ place.name }}</h2>
+              <p class="text-base mb-6">{{ place.details.google_address }}</p>
+              <div class="extra-details hidden text-sm">
+                {% if place.details.google_rating %}
+                  <p><span class="font-bold">Rating (Google):</span>
+                    {{ place.details.google_rating }}</p>
+                {% else %}
+                  <p>No additional details</p>
+                {% endif %}
+              </div>
+              <div class="flex gap-4 justify-center mt-auto">
+                <button class="btn btn-primary w-1/2 toggle-details-btn">View Details</button>
+                <button
+                  class="btn btn-primary w-1/2 toggle-map-btn"
+                  data-title="{{ place.name }}"
+                  data-description="{{ place.details.google_address }}"
+                  data-lat="{{ place.details.latitude }}"
+                  data-lng="{{ place.details.longitude }}"
+                >View on Map</button>
+              </div>
+            </div>
+          </div>
+
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
   {% endfor %}
 

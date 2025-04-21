@@ -54,6 +54,14 @@ def chatbot_page(request):
             for hotel in hotels
             if "details" in hotel and "location" in hotel["details"]
           ]
+        elif "places" in data:
+          places = data.get("places", [])
+          locations = [
+            {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+            for place in places
+            if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
+          ]
+          print("Locations: ", places[0])
         elif "apartments" in data or "houses" in data:
           property_list = data.get("apartments", []) or data.get("houses", [])
           locations = [
@@ -113,6 +121,12 @@ def fetch_conversation(request, conversation_id):
           {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
           for hotel in data["hotels"]
           if "details" in hotel and "location" in hotel["details"]
+        ]
+      if "places" in data:
+        locations = [
+          {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+          for place in data["places"]
+            if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
         ]
       if "flights" in data:
         flights = data["flights"]
@@ -316,6 +330,12 @@ def send_response(request, conversation_id, prompt):
               for hotel in response["data"]["hotels"]
               if "details" in hotel and "location" in hotel["details"]
             ]
+          elif "places" in data:
+            locations = [
+              {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+              for place in response["data"]["places"]
+              if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
+            ]
           elif "houses" in response["data"]:
             locations = [
               {"lat": house["latitude"], "lng": house["longitude"]}
@@ -391,7 +411,9 @@ def chatbot_response(request, prompt):
           conversation = get_object_or_404(Conversation, id=conversation_id)
           city = conversation.city
 
-        strategy_response = strategy.process_query(prompt, city=city, user=request.user)
+        print("Strategy: ", strategy)
+        strategy_response = strategy.process_query(prompt=prompt, city=city, user=request.user)
+        print("Response: ", strategy_response)
         if strategy_response:
           if isinstance(strategy_response, dict):
             assistant_message = f"{assistant_message} {strategy_response.get('text', '')}"
@@ -509,6 +531,12 @@ def search_response(request, city, topic):
               {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
               for hotel in response["data"]["hotels"]
               if "details" in hotel and "location" in hotel["details"]
+            ]
+          if "places" in response["data"]:
+            locations = [
+              {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+              for place in response["data"]["places"]
+              if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
             ]
           # Add once added view on map to apartments
           if "apartments" in response["data"]:

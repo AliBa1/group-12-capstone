@@ -47,13 +47,10 @@ class HousingSearchStrategy(SearchStrategy):
 
         if prompt_location_info and 'city' in prompt_location_info and 'state' in prompt_location_info:
             location_info = prompt_location_info
-            original_city = prompt
         elif city and state:
             location_info = {'city': city, 'state': state}
-            original_city = city
         else:
             location_info = None
-            original_city = None
 
         if not location_info or 'city' not in location_info or 'state' not in location_info:
             return None

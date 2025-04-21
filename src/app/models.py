@@ -42,6 +42,21 @@ class Hotel(models.Model):
     def __str__(self):
         return f"{self.name} - {self.iata_code if self.iata_code else ''}"
 
+class Place(models.Model):
+    place_id = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255)
+    type = models.CharField(max_length=100, blank=True)
+    photo_references = models.JSONField(null=True, blank=True)
+    formatted_address = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    google_place_id = models.CharField(max_length=255, null=True, blank=True)
+    google_address = models.TextField(null=True, blank=True)
+    google_rating = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Flight(models.Model):
     flight_iata_num = models.CharField(max_length=10, null=True)
     flight_date = models.DateField(max_length=10, null=True)
