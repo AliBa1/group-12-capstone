@@ -672,8 +672,5 @@ def update_preferences(request, property_type):
     return JsonResponse({"status": "success"})
   return JsonResponse({"status": "error"}, status=400)
 
-def cookie_policy(request):
-  return render(request, "cookie_policy.html")
-
-def terms_of_use(request):
-  return render(request, "terms_of_use.html")
+def legal(request):
+  return render(request, "legal.html")

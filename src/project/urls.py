@@ -44,7 +44,7 @@ from app.views import (
   predict_heat_index,
   last_heat_index,
   update_preferences,
-  cookie_policy
+  legal
 )
 
 urlpatterns = [
@@ -78,5 +78,5 @@ urlpatterns = [
   path('heat_index/', predict_heat_index, name='predict_heat_index'),
   path('last_heat_index/', last_heat_index, name='last_heat_index'),
   path('update_preferences/<str:property_type>', update_preferences, name='update_preferences'),
-  path('cookie-policy/', cookie_policy, name='cookie_policy'),
+  path('legal/', legal, name='legal'),
 ]
