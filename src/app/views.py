@@ -545,7 +545,7 @@ def search_response(request, city, topic):
           },
         )
     except Exception as e:
-      print("En rror:", e)
+      print("Error:", e)
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
 
 
