@@ -11,6 +11,7 @@ from app.models import Conversation, Message, Preferences
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 from app.utils import choose_premade_prompts, choose_topics, is_title_valid, get_all_topics
@@ -671,3 +672,20 @@ def update_preferences(request, property_type):
     preferences.save()
     return JsonResponse({"status": "success"})
   return JsonResponse({"status": "error"}, status=400)
+
+def legal(request):
+  return render(request, "legal.html")
+
+def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+
+        # needs logic to send email or save message to database
+        print(f"Message from {name} ({email}): {message}")
+
+        messages.success(request, "Thanks for contacting us!")
+        return render(request, 'contact.html')
+
+    return render(request, 'contact.html')

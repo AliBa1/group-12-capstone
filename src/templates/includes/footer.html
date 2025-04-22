@@ -1,19 +1,15 @@
-<footer class="footer text-white p-3 min-h-30">
-    <nav>
-      <h6 class="footer-title">Services</h6>
-   
-      <a class="link link-hover">Advertisement</a>
-    </nav>
+<footer class="footer bg-base-300 shadow-lg p-3 min-h-30">
     <nav>
       <h6 class="footer-title">Company</h6>
-      <a class="link link-hover">About us</a>
-      <a class="link link-hover">Contact</a>
+      <a class="link link-hover" href="https://aliba1.github.io/group-12-capstone/index.html" target="_blank" rel="noopener noreferrer">About us</a>
+      <a class="link link-hover" href="{% url 'contact' %}">Contact</a>
+
      
     </nav>
     <nav>
       <h6 class="footer-title">Legal</h6>
-      <a class="link link-hover">Terms of use</a>
-      
-      <a class="link link-hover">Cookie policy</a>
+      <a class="link link-hover" href="{% url 'legal' %}#terms">Terms of use</a>
+      <a class="link link-hover" href="{% url 'legal' %}#cookies">Cookie policy</a>
+
     </nav>
   </footer>
