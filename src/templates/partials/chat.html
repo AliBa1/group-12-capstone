@@ -97,9 +97,8 @@
     {% endif %}
 
     {% if message.additional_data and message.additional_data.type == 'house_search' and not message.is_from_user %}
-    <div class="flex flex-col gap-6 text-white">
+    <div class="flex flex-col overflow-y-auto gap-4 pb-6 w-full md:w-full">
       {% for house in message.additional_data.houses %}
-      <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
         <input type="checkbox" id="house-modal-{{ forloop.counter }}" class="modal-toggle" />
         <div class="modal modal-middle p-0">
           <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
@@ -194,7 +193,6 @@
             </div>
           </div>
         </div>
-      </div>
       {% endfor %}
     </div>
     {% endif %}
@@ -203,7 +201,7 @@
     {% if message.additional_data and message.additional_data.type == 'apartment_search' and not message.is_from_user %}
       <div class="flex flex-col gap-6 text-white">
         {% for apartment in message.additional_data.apartments %}
-          <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col">
+          {% comment %} <div class="chat chat-start chat-bubble bg-slate-500 text-white shadow-xl flex flex-col"> {% endcomment %}
             <input type="checkbox" id="apt-modal-{{ forloop.counter }}" class="modal-toggle" />
             <div class="modal modal-middle p-0">
               <div class="modal-box relative w-full max-w-5xl h-[80vh] p-0 bg-black">
@@ -228,7 +226,7 @@
                 </div>
               {% endfor %}
             </div>
-          </div>
+          {% comment %} </div> {% endcomment %}
         </div>
 
         <!-- inline preview carousel -->
