@@ -342,7 +342,7 @@
 
   })
   document.body.addEventListener('change', e => {
-    if (e.target.matches('input[id^="hotel-modal-"]') || e.target.matches('input[id^="place-modal-"]')) {
+    if (e.target.matches('input[id^="hotel-modal-"]') || e.target.matches('input[id^="place-modal-"]') || e.target.matches('input[id^="house-modal-"]') || e.target.matches('input[id^="apt-modal-"]')) {
       const mapCont = document.getElementById('map-container');
       if (e.target.checked) {
         mapCont.classList.add('hidden');
