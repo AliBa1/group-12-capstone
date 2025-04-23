@@ -261,3 +261,4 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 ML_MODELS_DIR = os.path.join(BASE_DIR, 'app', 'ml_models')
+NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"

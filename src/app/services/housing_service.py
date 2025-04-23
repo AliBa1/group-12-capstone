@@ -77,7 +77,6 @@ class HousingSearchStrategy(SearchStrategy):
 
         extra_data = []
         for house in houses_data:
-            house['heatIndex'] = heat_index 
             address = house['formattedAddress']
 
             photos = []
@@ -105,7 +104,10 @@ class HousingSearchStrategy(SearchStrategy):
         self._store_houses(extra_data)
         formatted_data = self._format_house_response(extra_data)
 
-        response_text = f"I found {len(formatted_data['houses'])} properties in the {location_info['city']}, {location_info['state']} area"
+        response_text = (
+            f"I found {len(formatted_data['houses'])} properties in the {location_info['city']}, {location_info['state']} area. "
+            f"This area is projected to {heat_index[0]} in value, and I am {heat_index[1]} in this."
+        )
         print(f"Found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area")
         return {
             'text': response_text,
@@ -227,7 +229,6 @@ class HousingSearchStrategy(SearchStrategy):
                     'mlsNumber': house.get('mlsNumber', ''),
                     'listingAgent': house.get('listingAgent', {}),
                     'listingOffice': house.get('listingOffice', {}),
-                    'heatIndex': house.get('heatIndex', 0),
                     'photos': house.get('photos', []),
                 }
                 formatted_data.append(formatted_house)
@@ -242,18 +243,26 @@ class HousingSearchStrategy(SearchStrategy):
         }
     
     def _house_rating(self, city, state):
-        try:
+        try:            
             from app.views import load_model_and_data
+            try:
+                model, data, label_encoder = load_model_and_data()
+            except Exception as e:
+                print(f"Error loading model and data: {e}")
+                return None
+            
             location = f"{city}, {state}"
-            dataset = pd.read_csv(os.path.join(settings.ML_MODELS_DIR, "processed_metro_heat_index.csv"))
-            location_data = dataset[dataset["RegionName"] == location]
-
+            
+        
+            location_data = data[data["RegionName"] == location]
             location_last_heat_index = location_data.iloc[:, -1].values[0]
-
             location_last_heat_index = float(location_last_heat_index)
+    
+            try:
+                state_encoded = label_encoder.transform([state])[0]
+            except Exception as e:
+                print(f"Error in state encoding: {e}", "available_states:", label_encoder.classes_.tolist())
 
-            model, data, label_encoder = load_model_and_data()
-            state_encoded = label_encoder.transform([state])[0]
             location_data = data[(data["RegionName"] == location) & (data["StateName"] == state_encoded)]
             features = location_data[["RegionID", "SizeRank", "StateName"]]
             prediction = model.predict(features)[0]
@@ -262,19 +271,20 @@ class HousingSearchStrategy(SearchStrategy):
             confidance_score = prediction - location_last_heat_index
         
             if(prediction > location_last_heat_index):
-                rating = "Good"
-                confidance = "Low"
+                rating = "increase"
+                confidance = "not confident"
             if(confidance_score > 15):
-                confidance = "High"
+                confidance = "confident"
             
             elif(prediction < location_last_heat_index):
-                rating = "Bad"
-                confidance = "Low"
+                rating = "decrease"
+                confidance = "not confident"
             if(confidance_score > 15):
-                confidance = "High"
+                confidance = "confident"
             return rating, confidance
         except Exception as e:
             print(f"Error in _house_rating: {e}")
+            return None
     
     def _get_place_photos(self, address, max_photos=5, max_width_px=800):
         try:

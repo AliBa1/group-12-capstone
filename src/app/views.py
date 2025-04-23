@@ -11,6 +11,7 @@ from app.models import Conversation, Message, Preferences
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 from app.utils import choose_premade_prompts, choose_topics, is_title_valid, get_all_topics
@@ -50,14 +51,24 @@ def chatbot_page(request):
         if "hotels" in data:
           hotels = data.get("hotels", [])
           locations = [
-            {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+            {
+              "lat": hotel["details"]["location"]["lat"], 
+              "lng": hotel["details"]["location"]["lng"],
+              "title": hotel.get("title", "No Title"),
+              "description": hotel.get("description", "No description available."),
+            }
             for hotel in hotels
             if "details" in hotel and "location" in hotel["details"]
           ]
         elif "places" in data:
           places = data.get("places", [])
           locations = [
-            {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+            {
+              "lat": place["details"]["latitude"], 
+              "lng": place["details"]["longitude"],
+              "title": place.get("name", "No name"),
+              "description": place["details"].get("google_address", "No description available."),
+            }
             for place in places
             if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
           ]
@@ -65,7 +76,12 @@ def chatbot_page(request):
         elif "apartments" in data or "houses" in data:
           property_list = data.get("apartments", []) or data.get("houses", [])
           locations = [
-            {"lat": prop["latitude"], "lng": prop["longitude"]}
+            {
+              "lat": prop["latitude"], 
+              "lng": prop["longitude"],
+              "title": prop.get("formattedAddress", prop.get("propertyType", "Property")),
+              "description": f'{prop.get("bedrooms", "N/A")} beds, {prop.get("bathrooms", "N/A")} baths'
+            }
             for prop in property_list
             if "latitude" in prop and "longitude" in prop
           ]
@@ -118,13 +134,22 @@ def fetch_conversation(request, conversation_id):
 
       if "hotels" in data:
         locations = [
-          {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
+          {
+            "lat": hotel["details"]["location"]["lat"], 
+            "lng": hotel["details"]["location"]["lng"],
+            "title": hotel.get("title", "No title"),
+            "description": hotel.get("description", "No description available."),
+          }
           for hotel in data["hotels"]
           if "details" in hotel and "location" in hotel["details"]
         ]
       if "places" in data:
         locations = [
-          {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
+          {
+            "lat": place["details"]["latitude"], 
+            "lng": place["details"]["longitude"],
+            "title": place.get("name", "No name"),
+            "description": place["details"].get("google_address", "No address available")}
           for place in data["places"]
             if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
         ]
@@ -133,14 +158,24 @@ def fetch_conversation(request, conversation_id):
       if "houses" in data:
         houses = data["houses"]
         locations = [
-          {"lat": house["latitude"], "lng": house["longitude"]}
+          {
+            "lat": house["latitude"], 
+            "lng": house["longitude"],
+            "title": house.get("formattedAddress", house.get("propertyType", "Property")),
+            "description": f'{house.get("bedrooms", "Unknown")} beds, {house.get("bathrooms", "Unknown")} baths'
+          }
           for house in data["houses"]
           if "latitude" in house and "longitude" in house
         ]
       if "apartments" in data:
         apartments = data["apartments"]
         locations = [
-          {"lat": apartment["latitude"], "lng": apartment["longitude"]}
+          {
+            "lat": apartment["latitude"], 
+            "lng": apartment["longitude"],
+            "title": apartment.get("formattedAddress", apartment.get("propertyType", "Property")),
+            "description": f'{apartment.get("bedrooms", "Unknown")} beds, {apartment.get("bathrooms", "Unknown")} baths'
+          }
           for apartment in data["apartments"]
           if "latitude" in apartment and "longitude" in apartment
         ]
@@ -324,28 +359,51 @@ def send_response(request, conversation_id, prompt):
 
           except (json.JSONDecodeError, TypeError) as e:
             print(f"Error decoding response['data']: {e}")
-          if "hotels" in response["data"]:
+          if "hotels" in data:
             locations = [
-              {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-              for hotel in response["data"]["hotels"]
+              {
+                "lat": hotel["details"]["location"]["lat"], 
+                "lng": hotel["details"]["location"]["lng"],
+                "title": hotel.get("title", "No title"),
+                "description": hotel.get("description", "No description available."),
+              }
+              for hotel in data["hotels"]
               if "details" in hotel and "location" in hotel["details"]
             ]
-          elif "places" in data:
+          if "places" in data:
             locations = [
-              {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
-              for place in response["data"]["places"]
-              if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
+              {
+                "lat": place["details"]["latitude"], 
+                "lng": place["details"]["longitude"],
+                "title": place.get("name", "No name"),
+                "description": place["details"].get("google_address", "No address available")}
+              for place in data["places"]
+                if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
             ]
-          elif "houses" in response["data"]:
+          if "flights" in data:
+            flights = data["flights"]
+          if "houses" in data:
+            houses = data["houses"]
             locations = [
-              {"lat": house["latitude"], "lng": house["longitude"]}
-              for house in response["data"]["houses"]
+              {
+                "lat": house["latitude"], 
+                "lng": house["longitude"],
+                "title": house.get("formattedAddress", house.get("propertyType", "Property")),
+                "description": f'{house.get("bedrooms", "Unknown")} beds, {house.get("bathrooms", "Unknown")} baths'
+              }
+              for house in houses
               if "latitude" in house and "longitude" in house
             ]
-          elif "apartments" in response["data"]:
+          if "apartments" in data:
+            apartments = data["apartments"]
             locations = [
-              {"lat": apartment["latitude"], "lng": apartment["longitude"]}
-              for apartment in response["data"]["apartments"]
+              {
+                "lat": apartment["latitude"], 
+                "lng": apartment["longitude"],
+                "title": apartment.get("formattedAddress", apartment.get("propertyType", "Property")),
+                "description": f'{apartment.get("bedrooms", "Unknown")} beds, {apartment.get("bathrooms", "Unknown")} baths'
+              }
+              for apartment in apartments
               if "latitude" in apartment and "longitude" in apartment
             ]
 
@@ -385,7 +443,7 @@ def chatbot_response(request, prompt):
       run = client.beta.threads.runs.create_and_poll(
         thread_id=thread.id,
         assistant_id="asst_oiJLKxsdKui3utTSaBFGuwST",
-        instructions="Please assist the user with travel and relocation inquiries. When responding to travel and relocation queries, provide ONLY a brief, one-sentence welcome or introduction",
+        instructions="Please assist the user with travel and relocation inquiries. When responding to travel and relocation queries, provide ONLY a brief, one-sentence welcome or introduction, which will be followed by a solution response given by our functions. Do not recommend going to any other booking site ever.",
       )
 
       if run.status != "completed":
@@ -532,33 +590,54 @@ def search_response(request, city, topic):
       else:
         locations = []
         if "data" in response:
-          additional_data = response["data"]
+          data = response["data"]
 
-          if "hotels" in response["data"]:
+          if "hotels" in data:
             locations = [
-              {"lat": hotel["details"]["location"]["lat"], "lng": hotel["details"]["location"]["lng"]}
-              for hotel in response["data"]["hotels"]
+              {
+                "lat": hotel["details"]["location"]["lat"], 
+                "lng": hotel["details"]["location"]["lng"],
+                "title": hotel.get("title", "No title"),
+                "description": hotel.get("description", "No description available."),
+              }
+              for hotel in data["hotels"]
               if "details" in hotel and "location" in hotel["details"]
             ]
-          if "places" in response["data"]:
+          if "places" in data:
             locations = [
-              {"lat": place["details"]["latitude"], "lng": place["details"]["longitude"]}
-              for place in response["data"]["places"]
-              if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
+              {
+                "lat": place["details"]["latitude"], 
+                "lng": place["details"]["longitude"],
+                "title": place.get("name", "No name"),
+                "description": place["details"].get("google_address", "No address available")}
+              for place in data["places"]
+                if "details" in place and "latitude" in place["details"] and "longitude" in place["details"]
             ]
-          # Add once added view on map to apartments
-          if "apartments" in response["data"]:
+          if "flights" in data:
+            flights = data["flights"]
+          if "houses" in data:
+            houses = data["houses"]
             locations = [
-              {"lat": apartment["latitude"], "lng": apartment["longitude"]}
-              for apartment in response["data"]["apartments"]
-              if "latitude" in apartment and "longitude" in apartment
-            ]
-          
-          if "houses" in response["data"]:
-            locations = [
-              {"lat": house["latitude"], "lng": house["longitude"]}
-              for house in response["data"]["houses"]
+              {
+                "lat": house["latitude"], 
+                "lng": house["longitude"],
+                "title": house.get("formattedAddress", house.get("propertyType", "Property")),
+                "description": f'{house.get("bedrooms", "Unknown")} beds, {house.get("bathrooms", "Unknown")} baths'
+              }
+              for house in houses
               if "latitude" in house and "longitude" in house
+            ]
+          if "apartments" in data:
+            apartments = data["apartments"]
+            locations = [
+              {
+                "lat": apartment["latitude"], 
+                "lng": apartment["longitude"],
+                "title": apartment.get("formattedAddress", apartment.get("propertyType", "Property")),
+                "description": f'{apartment.get("bedrooms", "Unknown")} beds, {apartment.get("bathrooms", "Unknown")} baths'
+              }
+              for apartment in apartments
+              if "latitude" in apartment and "longitude" in apartment
             ]
             # print("Locations: ", locations)
             # print("Response: ", response)
@@ -575,13 +654,13 @@ def search_response(request, city, topic):
             "error": "",
             "loading": False,
             "text": text,
-            "additional_data": additional_data,
+            "additional_data": data,
             "locations": json.dumps(locations),
             "google_maps_api_key": settings.GOOGLE_PLACES_API_KEY,
           },
         )
     except Exception as e:
-      print("En rror:", e)
+      print("Error:", e)
       return JsonResponse({"error": "An error occurred processing your request."}, status=500)
 
 
@@ -671,3 +750,20 @@ def update_preferences(request, property_type):
     preferences.save()
     return JsonResponse({"status": "success"})
   return JsonResponse({"status": "error"}, status=400)
+
+def legal(request):
+  return render(request, "legal.html")
+
+def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+
+        # needs logic to send email or save message to database
+        print(f"Message from {name} ({email}): {message}")
+
+        messages.success(request, "Thanks for contacting us!")
+        return render(request, 'contact.html')
+
+    return render(request, 'contact.html')

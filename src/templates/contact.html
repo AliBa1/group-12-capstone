@@ -1,0 +1,29 @@
+{% extends "explore.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto p-6 mt-10 bg-base-white shadow-lg rounded-xl">
+  <h2 class="text-2xl font-bold mb-4">Contact Us</h2>
+  
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold">Name</label>
+      <input type="text" name="name" required class="w-full border p-2 rounded" />
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold">Email</label>
+      <input type="email" name="email" required class="w-full border p-2 rounded" />
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold">Message</label>
+      <textarea name="message" required rows="5" class="w-full border p-2 rounded"></textarea>
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Send
+    </button>
+  </form>
+</div>
+{% endblock %}

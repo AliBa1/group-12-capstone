@@ -150,7 +150,7 @@ class HotelSearchStrategy(SearchStrategy):
             hotel['name'] = place.display_name
             hotel['location'] = place.location
             if place.photos:
-                photo_references = [photo.name for photo in place.photos]
+                photo_references = [photo.name for photo in place.photos[:5]]
                 hotel['photo_references'] = photo_references
             else:
                 hotel['photo_references'] = []
@@ -186,7 +186,7 @@ class HotelSearchStrategy(SearchStrategy):
         
     def hotel_details(self, hotels_data):
         enhanced_hotels = []
-        for hotel in hotels_data[:5]:
+        for hotel in hotels_data[:2]:
             enhanced_hotel = self._get_place_details(hotel)
             enhanced_hotels.append(enhanced_hotel)
         return enhanced_hotels
