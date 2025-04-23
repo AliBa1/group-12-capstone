@@ -10,21 +10,31 @@ To check run `python3 --version` OR `python --version`
 - Create a python environment using `python -m venv env`
 
 - Create a database in postgres <br />
-  Once it's created make a .env file in the root folder (in group-12-capstone) and place these variables in it then fill out empty ones
+  Once it's created make a .env file in the root folder (in group-12-capstone) and place these variables and fill them out
 
 ```
-DB_NAME =
-DB_USER =
-DB_PASSWORD =
-DB_HOST = localhost
-DB_PORT = 5432
+DB_NAME = 
+DB_USER = 
+DB_PASSWORD = 
+DB_HOST = 
+DB_PORT = 
+OPENAI_API_KEY = 
+GOOGLE_CLIENT_ID = 
+GOOGLE_PLACES_API_KEY = 
+AMADEUS_API_KEY = 
+AMADEUS_API_SECRET = 
+AVIATIONSTACK_API_KEY=
+RENTCAST_API_KEY=
+FLIGHTS_API_KEY=
+REDIS_HOST=
+REDIS_PORT=
 
 ```
 
 - Create a cache in redis <br />
 #### Steps for Windows:
   - Install docker.
-  - If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after.
+  - If you are using the Docker GUI, just search for Redis in images and pull the first option. You should be able to run the redis container after. Make sure to set your ports the ones in the .env
   - If you are using docked in the CLI, run the following command: docker run --name my-redis -p 6379:6379 -d redis
   - To confirm connection to docker, the command is: docker ps.
   - You should be able to start the container with the command: docker start my-redis and stop the container with docker stop my-redis
@@ -48,14 +58,9 @@ DB_PORT = 5432
 - Install dependencies: `pip install -r requirements.txt`
 - Enter project directory: `cd src`
 - Run server<br /> Linux/Mac: `python manage.py runserver` <br /> Windows: `py manage.py runserver`<br /> and follow instructions on terminal
-- (optional) To use tailwind with hot reloading run<br /> Linux/Mac: `python manage.py tailwind start`<br />Windows: `py manage.py tailwind start` <br />in a seperate terminal
 
 #### Option 2
 - Run `make run` in terminal
-
-### Run Project (in Docker)
-
-_STILL NOT FULLY SET UP YET_
 
 ### Run Tests
 #### Option 1
@@ -67,7 +72,6 @@ _STILL NOT FULLY SET UP YET_
 - Run `make test` in terminal
 
 ### Make new app (if needed)
-
 - Make a new app to seperate concerns for each part (user, ml, app, etc.)
 - To make app: `python manage.py startapp [app_name_here]`
 - If other people need to work in it submit a pull request as soon as possible
@@ -75,7 +79,6 @@ _STILL NOT FULLY SET UP YET_
 ### GitHub
 
 Recommended to use GitHub Desktop <br/>
-
 - Create branches for each feature or section of work being done (ex: yourname-auth-ui)
 - Create branch from main if not dependent on any other branches
 - Commit often
