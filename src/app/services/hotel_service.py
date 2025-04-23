@@ -139,7 +139,6 @@ class HotelSearchStrategy(SearchStrategy):
             field_mask = "places.displayName,places.name,places.formattedAddress,places.location,places.photos,places.rating,places.priceRange,places.priceLevel"
             metadata = (("x-goog-fieldmask", field_mask),)
             places_result = self.places.search_text(request=request, metadata=metadata)
-            places_result.places = places_result.places[:5]
             # print(f"Places Result: {places_result}")
 
             if not places_result.places:
@@ -147,7 +146,7 @@ class HotelSearchStrategy(SearchStrategy):
             place = places_result.places[0]
             hotel['google_place_id'] = place.name
             hotel['google_address'] = place.formatted_address
-            hotel['name'] = place.display_name
+            hotel['name'] = place.display_name.text if place.display_name else None
             hotel['location'] = place.location
             if place.photos:
                 photo_references = [photo.name for photo in place.photos[:5]]
@@ -186,7 +185,7 @@ class HotelSearchStrategy(SearchStrategy):
         
     def hotel_details(self, hotels_data):
         enhanced_hotels = []
-        for hotel in hotels_data[:2]:
+        for hotel in hotels_data[:5]:
             enhanced_hotel = self._get_place_details(hotel)
             enhanced_hotels.append(enhanced_hotel)
         return enhanced_hotels
@@ -234,7 +233,6 @@ class HotelSearchStrategy(SearchStrategy):
                         'dupe_id': hotel_data.get('dupeId'),
                         'latitude': float(hotel_data['geoCode']['latitude']),
                         'longitude': float(hotel_data['geoCode']['longitude']),
-                        'country_code': hotel_data['address']['countryCode'],
                         'google_place_id': hotel_data.get('google_place_id'),
                         'google_address': hotel_data.get('google_address'),
                         'google_rating': hotel_data.get('google_rating'),
@@ -254,9 +252,9 @@ class HotelSearchStrategy(SearchStrategy):
                 photo_references = [None, None, None]  
                 
             formatted_hotel = {
-                'title': hotel['name'].text,
-                'description': hotel.get('google_address', f"Located in {hotel['iataCode']}, {hotel['address']['countryCode']}"),
-                'location': f"{hotel['iataCode']}, {hotel['address']['countryCode']}",
+                'title': hotel['name'],
+                'description': hotel.get('google_address', f"Located in {hotel['iataCode']}"),
+                'location': f"{hotel['iataCode']}",
                 'images': [ref for ref in photo_references if ref], 
                 'details': {
                     'name': hotel['name'],
