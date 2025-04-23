@@ -106,8 +106,7 @@ class HousingSearchStrategy(SearchStrategy):
 
         response_text = (
             f"I found {len(formatted_data['houses'])} properties in the {location_info['city']}, {location_info['state']} area. "
-            f"This area is projected to {heat_index[0]} in value, and I am {heat_index[1]} in this."
-        )
+            f"This area is projected to {heat_index[0]} in value, and I am {heat_index[1]} in the prediction." )
         print(f"Found {len(houses_data)} houses in the {location_info['city']}, {location_info['state']} area")
         return {
             'text': response_text,
