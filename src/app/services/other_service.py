@@ -76,6 +76,7 @@ class OtherSearchStrategy(SearchStrategy):
             metadata = (("x-goog-fieldmask", field_mask),)
 
             response = self.places.search_text(request=request, metadata=metadata)
+            response.places = response.places[:5]
             result = self._parse_data(response.places)
             
             cache.set(cache_key, result, timeout=86400)  # 24 hrs 

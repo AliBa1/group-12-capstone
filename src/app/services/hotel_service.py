@@ -139,6 +139,7 @@ class HotelSearchStrategy(SearchStrategy):
             field_mask = "places.displayName,places.name,places.formattedAddress,places.location,places.photos,places.rating,places.priceRange,places.priceLevel"
             metadata = (("x-goog-fieldmask", field_mask),)
             places_result = self.places.search_text(request=request, metadata=metadata)
+            places_result.places = places_result.places[:5]
             # print(f"Places Result: {places_result}")
 
             if not places_result.places:
