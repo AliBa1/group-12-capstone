@@ -69,9 +69,16 @@
 
           htmlElement.setAttribute("data-theme", newTheme);
           localStorage.setItem("theme", newTheme);
+
+          const themeChangedEvent = new Event("themeChanged");
+          window.dispatchEvent(themeChangedEvent);
+          console.log("Theme changed to ", newTheme);
+          window.dispatchEvent(new Event("themeChanged"));
+          console.log("themeChanged event dispatched");
         });
       });
   </script>
+  
   
   </body>
 </html>

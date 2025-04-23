@@ -216,7 +216,7 @@
             <div
               class="absolute top-2 left-1/2 z-40 -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1"
             >
-              {{ forloop.counter }} of {{ place.images|length }}
+              {{ forloop.counter }} of {{ place.images|length}}
             </div>
             <img
               class="w-full h-full object-cover object-center"
@@ -679,10 +679,17 @@
           ? { lat: locations[0].lat, lng: locations[0].lng }
           : { lat: 39.8283, lng: -98.5795 };
 
+      const MAP_ID_LIGHT = "6f362b76ea462f96";
+      const MAP_ID_DARK = "e41633b479c5068b";
+
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+
+      const MAP_ID = currentTheme === "night" ? MAP_ID_DARK : MAP_ID_LIGHT;
+
       const mapOptions = {
         center: initialCenter,
         zoom: locations.length > 0 ? 15 : 4,
-        mapId: "8e0a97af9386fef",
+        mapId: MAP_ID_LIGHT,
         useStaticMap: false,
         minZoom: 2,
         maxZoom: 18,
@@ -690,6 +697,8 @@
       };
 
       map = new Map(mapElement, mapOptions);
+
+      console.log("Creating map with mapId: ", MAP_ID);
 
       await new Promise((resolve) =>
         google.maps.event.addListenerOnce(map, "idle", resolve)
@@ -772,7 +781,8 @@
         google.maps.event.clearInstanceListeners(map);
         map = null;
       }
-      setTimeout(resolve, 100);
+
+    setTimeout(resolve, 100);
     });
   }
 
@@ -840,6 +850,9 @@
       });
       markers.push(marker);
 
+      const title = location.title || location.propertyType;
+      const description = location.description || "No description available.";
+
       // code below styled by ChatGPT
       const content = `
             <div style="
@@ -854,23 +867,29 @@
               <h1 style="
                 font-size: 18px;
                 margin: 0 0 8px 0;
-                line-height: 1.5;
               ">
                 ${title}
               </h1>
               <p style="
                 font-size: 14px;
-                line-height: 1.5;
-                margin: 0;
                 color: #555;
               ">
                 ${description}
               </p>
             </div>
           `;
+      marker.addListener("click", () => {
+        infoWindow.close();
+        infoWindow.setContent(content);
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: true,
+        });
+      });
 
       if (curLat == location.lat && curLng == location.lng) {
-        infoWindow.close();
+        // infoWindow.close();
         infoWindow.setContent(content);
         infoWindow.open({
           anchor: marker,
@@ -950,6 +969,12 @@
           history.replaceState(null, "", hash);
         });
       });
+  });
+
+  window.addEventListener("themeChanged", () => {
+    setTimeout(() => {
+      reinitializeMap();
+    }, 300);
   });
 </script>
 
