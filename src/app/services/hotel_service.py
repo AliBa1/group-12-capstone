@@ -11,7 +11,8 @@ import traceback
 import requests
 
 class HotelSearchStrategy(SearchStrategy):
-    KEYWORDS = ['hotels', 'place to stay', 'accommodation', 'resort', 'motel', 'hotel']
+    # dont need 'hotels' and 'hotel' for example since it will catch both if only 'hotel'
+    KEYWORDS = ['hotel', 'place to stay', 'accommodation', 'resort', 'motel', 'stay overnight', 'a room', 'bnb']
 
     def __init__(self):
         #self.amadeus = Client(
@@ -138,6 +139,7 @@ class HotelSearchStrategy(SearchStrategy):
             field_mask = "places.displayName,places.name,places.formattedAddress,places.location,places.photos,places.rating,places.priceRange,places.priceLevel"
             metadata = (("x-goog-fieldmask", field_mask),)
             places_result = self.places.search_text(request=request, metadata=metadata)
+            places_result.places = places_result.places[:5]
             # print(f"Places Result: {places_result}")
 
             if not places_result.places:

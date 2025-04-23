@@ -11,7 +11,7 @@ from copy import deepcopy
 
 
 class FlightSearchStrategy(SearchStrategy):
-    KEYWORDS = ['flights', 'airplane', 'fly', 'airport']
+    KEYWORDS = ['flight', 'airplane', 'fly', 'airport']
     BASE_URL = "https://booking-com18.p.rapidapi.com/flights"
 
     def __init__(self):
