@@ -26,14 +26,18 @@ class OtherSearchStrategy(SearchStrategy):
 
     def process_query(self, prompt, city=None, reason=None, user=None):
         try:
+            print(f"Prompt: {prompt}")
             if not prompt:
                 return None
             query = self._create_query(prompt, city)
-            other_data = self._search_others(query)
+            other_data = self._search_others(prompt)
             if not other_data:
                 return None
             
+            city = query.strip("'\"")
+            
             formatted_data = self._format_other_response(other_data)
+            print( f"City in process_query: {city}")
             response_text = f"I found {formatted_data.get('total_results')} results related to your search in {city}"
 
             return {
@@ -49,8 +53,7 @@ class OtherSearchStrategy(SearchStrategy):
           response = openai.chat.completions.create(
               model="gpt-4o-mini",
               messages=[
-                  {"role": "system", "content": "You're a helpful assistant that generates Google Places text search queries. If a location is included in the prompt, use it. Otherwise, use the fallback location."},
-                  {"role": "user", "content": f"Prompt: '{prompt}'\nFallback city: '{city}'"}
+                  {"role": "user", "content": f"Extract the desired city from the prompt: {prompt}. Return a string containing only the desired city: Ex: \'Las Vegas\'."}
               ]
 
           )
