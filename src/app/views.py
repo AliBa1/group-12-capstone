@@ -443,7 +443,7 @@ def chatbot_response(request, prompt):
       run = client.beta.threads.runs.create_and_poll(
         thread_id=thread.id,
         assistant_id="asst_oiJLKxsdKui3utTSaBFGuwST",
-        instructions="Please assist the user with travel and relocation inquiries. When responding to travel and relocation queries, provide ONLY a brief, one-sentence welcome or introduction, which will be followed by a solution response given by our functions. Do not recommend going to any other booking site ever.",
+        instructions="Please assist the user with travel and relocation inquiries. When responding to travel and relocation queries, provide ONLY a brief, one-sentence welcome or introduction, which will be followed by a solution response given by our functions. Do not make specific recommendations for the prompt, just greet the user. Do not recommend going to any other booking site ever.",
       )
 
       if run.status != "completed":
