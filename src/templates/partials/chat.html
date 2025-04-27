@@ -776,7 +776,7 @@
           center: { lat: Number(lat), lng: Number(lng) },
           zoom: 15
         });
-        const mapLocations = JSON.parse('{{ locations|safe }}');
+        const mapLocations = JSON.parse(`{{ locations|safe }}`);
         console.log("Map Locations: ", mapLocations);
         readMarkers(lat, lng, mapLocations, title, description)
     });

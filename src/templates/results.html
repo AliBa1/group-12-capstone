@@ -24,7 +24,7 @@
     <div id="map" style="height: 400px; width: 100%;"></div>
 
     <script>
-    const mapLocations = JSON.parse('{{ locations|safe }}');
+    const mapLocations = JSON.parse(`{{ locations|safe }}`);
     let map;
 
     function initMap() {

@@ -243,7 +243,7 @@
   }
 
 
-  const mapLocations = JSON.parse('{{ locations|safe }}');
+  const mapLocations = JSON.parse(`{{ locations|safe }}`);
   let map;
   let markers = [];
   let markerCluster;
@@ -299,7 +299,7 @@
     });
 
 
-    const initialLocations = JSON.parse('{{ locations|safe }}');
+    const initialLocations = JSON.parse(`{{ locations|safe }}`);
     if (initialLocations.length > 0) {
       addMarkers(initialLocations);
     }
@@ -334,6 +334,7 @@
   const toggleConversation = document.getElementById('toggle-menu');
   const conversationMenu = document.getElementById('conversation-menu');
   toggleConversation.addEventListener('click', () => {
+    console.log(conversationMenu);
     if (conversationMenu.style.display === 'none') {
       conversationMenu.style.display = 'flex';
     } else {
